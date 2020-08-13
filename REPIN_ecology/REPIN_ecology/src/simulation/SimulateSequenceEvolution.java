@@ -198,7 +198,7 @@ public class SimulateSequenceEvolution {
 	
 	private void replicate(){
 		ArrayList<String> add=new ArrayList<String>();
-		ArrayList<Integer> parent=new ArrayList<>();
+		ArrayList<Integer> parent=new ArrayList<Integer>();
 		for(int i=0;i<population.size();i++){
 			double p=Math.random();
 			double fit=getFitness2(population.get(i).toString());
