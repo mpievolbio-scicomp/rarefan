@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
 dependencies:
+  - ipywidgets>=7.5
   - openjdk=11.0.8
   - jupyter=1.0.0
   - voila=0.1.21
