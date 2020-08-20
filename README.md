@@ -6,6 +6,26 @@
 $> conda env create --file=environment.yml
 ```
 
+This step will install a number of dependencies from the conda repository. For
+details, inspect the file `environment.yml` which lists the dependencies and
+version requirements.
+
+
+## Install 3rd party libraries through cmake.
+Not all dependencies are available on the conda archives. `andi` [Efficient
+Estimation of Evolutionary Distances](https://github.com/EvolBioInf/andi.git),
+it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git), and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility:
+
+```
+$> mkdir build
+$> cd build
+$> cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+$> make
+```
+
+This will download the required source codes for all three dependencies, build,
+and install the executables into the `conda` environment created in the first
+step.
 
 ## Build the java code:
 `RepinPop` requires at least java version 11. Building is done by
