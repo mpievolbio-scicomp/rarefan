@@ -19,7 +19,7 @@ it's dependency `divsufsort` [A lightweight suffix-sorting library](https://gith
 ```
 $> mkdir build
 $> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX
+$> cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
 $> make
 ```
 
