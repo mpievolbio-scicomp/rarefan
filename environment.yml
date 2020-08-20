@@ -7,3 +7,5 @@ dependencies:
   - openjdk=11.0.8
   - jupyter=1.0.0
   - voila=0.1.21
+  - cmake>=3.12
+  - blast=2.10
