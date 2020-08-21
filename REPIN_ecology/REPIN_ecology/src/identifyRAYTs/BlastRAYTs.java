@@ -40,7 +40,7 @@ public class BlastRAYTs {
 					if(!maxREPIN.equals("-1")){
 						System.out.println(maxREPIN);
 						int maxREPINNum=Integer.parseInt(maxREPIN.split("_|\\s+")[1]);
-						
+
 						int repins=Integer.parseInt(maxREPIN.split("_")[2]);
 						int allREPs=getREPNumbers(seqName, inFolder,repType[k]);
 						int numREPINClusters=getNumREPINClusters(seqName,inFolder,repType[k]);
@@ -54,7 +54,7 @@ public class BlastRAYTs {
 		}
 
 	}
-	
+
 	public static int getNumREPINClusters(String name,File folder,String repType) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".mcl");
@@ -92,7 +92,7 @@ public class BlastRAYTs {
 		return -1;
 	}
 
-	
+
 	public static String getMaxREPIN(String name,File folder,String repType) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+"_largestCluster.nodes");
@@ -107,7 +107,7 @@ public class BlastRAYTs {
 				while((line=br.readLine())!=null) {
 
 					String[] split=line.split("_|\\s+");
-					
+
 					int num= Integer.parseInt(split[1]);
 					String curr=split[0];
 					if(isREPIN(curr)) {
@@ -132,7 +132,7 @@ public class BlastRAYTs {
 		}
 		return "-1";
 	}
-	
+
 	private static boolean isREPIN(String repin) {
 		int length=repin.length();
 		if(repin.substring(length/2).equals(makeREPIN('A',length/2))) {
@@ -140,7 +140,7 @@ public class BlastRAYTs {
 		}
 		return true;
 	}
-	
+
 	private static String makeREPIN(char nuc,int rep) {
 		StringBuffer sb=new StringBuffer();
 		for(int i=0;i<rep;i++) {
@@ -148,7 +148,7 @@ public class BlastRAYTs {
 		}
 		return sb.toString();
 	}
-	
+
 	public static int getREPNumbers(String name,File folder,String repType) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".nodes");
@@ -171,7 +171,7 @@ public class BlastRAYTs {
 		}
 		return -1;
 	}
-	
+
 	public static void printHM(HashMap<String,String> hm,File out,File maxREPINOut) {
 		try {
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
@@ -187,7 +187,7 @@ public class BlastRAYTs {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 	}
 	public static String getName(String fasIdent) {
 		String split[]=fasIdent.split("\\s+");
@@ -200,17 +200,17 @@ public class BlastRAYTs {
 	      name=name.replace(".","");
 	      name=name.replace("*","");
 	      name=name.replace(",","");
-	      
+
 	      return name;
 	}
-	
+
 	public static void print(ArrayList<Info> inf,File in,ArrayList<Fasta> seqs) {
 		for(int i=0;i<inf.size();i++) {
 			//System.out.println(inf.get(i).toString());
 			ArrayList<Fasta> fas=Fasta.readFasta(in);
 			String fasIdent=fas.get(0).getIdent();
 			//String shortName=getName(fasIdent);
-			
+
 
 			String name=fasIdent.split("\\s+")[0]+"_"+inf.get(i).getStart()+"_"+inf.get(i).getEnd();
 			int start=inf.get(i).getStart();
@@ -223,13 +223,13 @@ public class BlastRAYTs {
 				rev=true;
 			}
 			String seq=getSeq(fas,start,end,rev);
-		
+
 			seqs.add(new Fasta(name+" "+inf.get(i).toString(),seq));
-			
+
 
 		}
 	}
-	
+
 	private static String getSeq(ArrayList<Fasta> fas,int start,int end,boolean rev) {
 		String seq=fas.get(0).getSequence().substring(start-add,end+add);
 
@@ -245,18 +245,18 @@ public class BlastRAYTs {
 		}
 		return seq;
 	}
-	
+
 	public static ArrayList<Info> blastQuery(File db, File query,File outFolder,String e,String program){
-		return blastQuery(db, query, outFolder, e, program, "/usr/local/share/");
+		return blastQuery(db, query, outFolder, e, program, "");
 	}
-	
+
 	public static ArrayList<Info> blastQuery(File db, File query,File outFolder,String e,String program,String legacyBlastPerlLocation){
 		File blastFolder=new File(outFolder+"/blastout/");
 		blastFolder.mkdir();
 		File out=new File(blastFolder+"/"+db.getName()+".blast");
 		ArrayList<Info> blastIntervals=new ArrayList<Info>();
 		//out.deleteOnExit();
-	
+
 		PerformBlast.blast(legacyBlastPerlLocation+"legacy_blast.pl blastall",legacyBlastPerlLocation+"legacy_blast.pl formatdb",program, Double.parseDouble(e), out, query, db, false,false,true,false);
 		ReadBlast rb=new ReadBlast(out);
 		int querylength=Fasta.readFasta(query).get(0).getSequence().length();
@@ -266,7 +266,7 @@ public class BlastRAYTs {
 			//int temp=start;
 			//start=start<end?start:end;
 			//end=end>start?end:temp;
-			
+
 			if(Math.abs(start-end)>240) {
 				int multi=program.equals("blastn")?1:3;
 				int adjstart=end>start?start-rb.getStartQuery().get(i)*multi:start+rb.getStartQuery().get(i)*multi;
