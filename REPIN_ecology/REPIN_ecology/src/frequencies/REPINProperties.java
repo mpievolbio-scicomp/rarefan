@@ -192,8 +192,13 @@ public class REPINProperties {
 			if(!ecoli){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
+                String mcl_command =mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout;
+                System.out.println("mcl_command = " + mcl_command);
                 //<<< DEBUG
-				RunTreePrograms.runProgram(mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout, "", new File(System.getProperty("user.dir")));
+				RunTreePrograms.runProgram(
+                        mcl_command,
+                        "",
+                        new File(System.getProperty("user.dir")));
 				int maxNode=getMaxNode(nodes);
 				ArrayList<String> seqSelection=getLargestCluster(mclout,maxNode,true);
 				seqSelection=addSequences(seqSelection,numDifferencesToCluster);//genomeID.equals("DC3000")||genomeID.equals("putGB1")?addSequences(seqSelection,numDifferencesToCluster+1):addSequences(seqSelection,numDifferencesToCluster);
