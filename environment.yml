@@ -9,3 +9,4 @@ dependencies:
   - voila=0.1.21
   - cmake>=3.12
   - blast=2.10
+  - mcl=14.137
