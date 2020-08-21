@@ -2,6 +2,7 @@ name: repinpop
 channels:
   - conda-forge
   - defaults
+  - bioconda
 dependencies:
   - ipywidgets>=7.5
   - openjdk=11.0.8
@@ -10,3 +11,4 @@ dependencies:
   - cmake>=3.12
   - blast=2.10
   - mcl=14.137
+  - gsl>=2.4
