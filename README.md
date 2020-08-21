@@ -3,12 +3,20 @@
 ## Create the conda environment
 
 ```
-$> conda env create --file=environment.yml
+$> conda env create -n repinpop --file=environment.yml
 ```
 
-This step will install a number of dependencies from the conda repository. For
+This step will create a new conda environment named `repinpop` and install a number of dependencies from the conda repository. For
 details, inspect the file `environment.yml` which lists the dependencies and
-version requirements.
+version requirements. 
+
+Activate the new environment:
+
+```
+$> conda activate repinpop
+```
+
+
 
 
 ## Install 3rd party libraries through cmake.
