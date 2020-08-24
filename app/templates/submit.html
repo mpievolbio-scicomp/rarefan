@@ -2,7 +2,7 @@
 
 {% block body %}
     <h1>Submit REPINPop run</h1>
-    <form action="" method="post" novalidate>
+    <form action="" method="post" action="" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
         <p>
             {{ form.sequences.label }}<br>
@@ -14,7 +14,6 @@
         </p>
         <p>
            {{ form.rayt.label }}<br>
-:wa
            {{ form.rayt(size=32) }}
         </p>
         <p>{{ form.submit() }}</p>
