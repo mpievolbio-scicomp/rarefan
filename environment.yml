@@ -12,3 +12,8 @@ dependencies:
   - blast=2.10
   - mcl=14.137
   - gsl>=2.4
+  - flask
+  - pip
+  - pip:
+      - flask-pymongo
+       
