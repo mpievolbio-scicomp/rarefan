@@ -10,7 +10,7 @@ from app import app
 
 from wtforms import Form, TextField, TextAreaField, validators, StringField, SubmitField
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+    sequences = StringField('Sequences', validators=[DataRequired()])
+    reference_sequence = StringField('Reference sequence', validators=[DataRequired()])
+    rayt = StringField('Rayt')
+    submit = SubmitField('Submit')
