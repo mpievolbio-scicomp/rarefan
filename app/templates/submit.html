@@ -1,21 +1,32 @@
 {% extends "base.html" %}
-
 {% block body %}
-    <h1>Submit REPINPop run</h1>
-    <form action="" method="post" action="" enctype="multipart/form-data">
-        {{ form.hidden_tag() }}
+    <h1>Upload Sequences</h1>
+    <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
+        {{ upload_form.hidden_tag() }}
         <p>
-            {{ form.sequences.label }}<br>
-            {{ form.sequences(size=32) }}
+            {{ upload_form.sequences.label }}<br>
+            {{ upload_form.sequences(size=32) }}
+            {{ upload_form.upload() }}
         </p>
+    <!-- </form> -->
+    <!-- <h1>Submit run</h1> -->
+    <!-- <form action="{{ url_for('submit') }}" method="post"> -->
         <p>
-            {{ form.reference_sequence.label }}<br>
-            {{ form.reference_sequence(size=32) }}
+            {{ upload_form.reference_strain.label }}</br>
+            {{ upload_form.reference_strain() }}</br>
+            {{ upload_form.query_rayt.label }}
+            {{ upload_form.query_rayt() }}</br>
+            {{ upload_form.min_nmer_occurence.label }}
+            {{ upload_form.min_nmer_occurence() }}</br>
+            {{ upload_form.nmer_length.label }}
+            {{ upload_form.nmer_length() }}</br>
+            {{ upload_form.e_value_cutoff.label }}
+            {{ upload_form.e_value_cutoff() }}</br>
+            {{ upload_form.go() }} 
         </p>
-        <p>
-           {{ form.rayt.label }}<br>
-           {{ form.rayt(size=32) }}
-        </p>
-        <p>{{ form.submit() }}</p>
+    </form>
+    <form action="/run_repinpop" method="post">
+        <button name="run" type="submit">Go</button>
     </form>
 {% endblock %}
+</html>
