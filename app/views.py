@@ -28,7 +28,6 @@ class SubmitForm(FlaskForm):
             )
     upload = SubmitField("Upload!")
 
-
     reference_strain = SelectField(
             'Reference sequence',
             choices=[],
@@ -58,4 +57,7 @@ class SubmitForm(FlaskForm):
                                 )
 
     go = SubmitField("Go!")
+
+class RunForm(FlaskForm):
+    go = SubmitField("GoGo!")
 

@@ -22,10 +22,7 @@
             {{ upload_form.nmer_length() }}</br>
             {{ upload_form.e_value_cutoff.label }}
             {{ upload_form.e_value_cutoff() }}</br>
+            {{ upload_form.go() }}
         </p>
     </form>
-    <form action="/run_repinpop" method="post">
-        {{ upload_form.go() }}
-    </form>
 {% endblock %}
-</html>
