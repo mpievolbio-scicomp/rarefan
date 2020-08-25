@@ -1,4 +1,4 @@
-from flask import render_template, request
+from flask import render_template, request, session
 from app.views import SubmitForm
 from app import app
 
@@ -33,6 +33,16 @@ def submit():
                 fnames = [os.path.join(tmpdir, bn) for bn in basenames]
                 [seq.save(fname) for seq,fname in zip(seqs,fnames)]
                 upload_form.reference_strain.choices = strain_names
+            
+            elif request.form.get('reference_strain') is not None:
+                session['tmpdir'] = tmpdir
+                session['reference_strain'] = request.form.get('reference_strain')
+                session['query_rayt'] = request.form.get('query_rayt')
+                session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
+                session['nmer_length'] = request.form.get('nmer_length')
+                session['e_value_cutoff'] = request.form.get('e_value_cutoff')
+
+                print(session)
 
             else:
                 print("ERROR: no sequence files found.")
@@ -42,37 +52,7 @@ def submit():
             #         upload_form=upload_form, 
             #         )
 
-        if upload_form.go.data:
-            print("Run")
-
-            # oldwd = os.getcwd()
-            # os.chdir(app.config["UPLOAD_DIR"])
-            # command = ['java',
-            #         '-jar',
-            #         os.path.abspath(
-            #             os.path.join(os.path.dirname(__file__),
-            #                 '..',
-            #                 'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
-            #                 )
-            #             ),
-            #         tmpdir,
-            #         request.form.get('reference_strain'),
-            #         # '{0:d}'.format(request.form.get['min_nmer_occurence']),
-            #         # '{0:d}'.format(upload_form.nmer_length),
-            #         # os.path.join(tmpdir, upload_form.query_rayt),
-            #         # os.path.join(tmpdir, 'tree.nwk'),
-            #         # '{0:e}'.format(upload_form.e_value_cutoff)
-            #         ]
-            #
-            # with subprocess.Popen(command,
-            #                       stdout=subprocess.PIPE,
-            #                       stderr=subprocess.STDOUT) as proc:
-            #
-            #
-            #     print(proc.stdout.read())
-            #
-            # os.chdir(oldwd)
-
+            
             # return render_template('submit.html',
             #         title='Submit',
             #         upload_form=upload_form, 
@@ -89,8 +69,35 @@ def submit():
             upload_form=upload_form, 
             )
 
-@app.route('/run_repinpop', methods=['POST'])
+@app.route('/run_repinpop', methods=['GET', 'POST'])
 def run_repinpop():
-    print("Ajax Run")
+    oldwd = os.getcwd()
+    os.chdir(app.config["UPLOAD_DIR"])
 
-    return "Nothing"
+    tmpdir = session['tmpdir']
+    command = ['java',
+            '-jar',
+            os.path.abspath(
+                os.path.join(os.path.dirname(__file__),
+                    '..',
+                    'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
+                    )
+                ),
+            tmpdir,
+            session['reference_strain'],
+            '{0:s}'.format(session['min_nmer_occurence']),
+            '{0:s}'.format(session['nmer_length']),
+            os.path.join(tmpdir, session['query_rayt']),
+            os.path.join(tmpdir, 'tree.nwk'),
+            '{0:s}'.format(session['e_value_cutoff'])
+            ]
+    print(command)
+
+    with subprocess.Popen(command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT) as proc:
+        print(proc.stdout.read())
+
+    os.chdir(oldwd)
+
+    return "Running REPINPop. Stay tuned...."

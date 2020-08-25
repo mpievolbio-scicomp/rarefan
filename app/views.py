@@ -56,3 +56,6 @@ class SubmitForm(FlaskForm):
                                 default=1.0e-30,
                                 validators=[DataRequired(),]
                                 )
+
+    go = SubmitField("Go!")
+
