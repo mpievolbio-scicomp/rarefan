@@ -44,6 +44,14 @@ $> cd REPIN_ecology/REPIN_ecology
 $> gradle build
 ```
 
+## Set library path.
+Some environment variables (in particular `LD_LIBRARY_PATH`) have to be set
+explicitely. 
+
+```
+source setenv.sh
+```
+
 ## Launch the server
 Our application is served as a web form where users can upload their sequence
 files, set the parameters, run the analysis and visualize the results. The web
