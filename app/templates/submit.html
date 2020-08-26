@@ -4,7 +4,7 @@
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ upload_form.hidden_tag() }}
         <p>
-            {{ upload_form.sequences.label }}<br>
+            {{ upload_form.sequences.label }}
             {{ upload_form.sequences(size=32) }}
             {{ upload_form.upload() }}
         </p>
@@ -16,6 +16,8 @@
             {{ upload_form.reference_strain() }}</br>
             {{ upload_form.query_rayt.label }}
             {{ upload_form.query_rayt() }}</br>
+            {{ upload_form.treefile.label }}
+            {{ upload_form.treefile() }}</br>
             {{ upload_form.min_nmer_occurence.label }}
             {{ upload_form.min_nmer_occurence() }}</br>
             {{ upload_form.nmer_length.label }}

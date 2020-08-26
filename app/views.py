@@ -1,6 +1,6 @@
 # views.py
 
-from flask import Flask, render_template, flash, request
+from flask import Flask, render_template, flash, request, session
 
 from flask_wtf import FlaskForm
 from wtforms import StringField,\
@@ -12,6 +12,8 @@ from wtforms import StringField,\
 
 from wtforms.validators import DataRequired
 from flask_wtf.file import FileRequired
+
+import tempfile
 from app import app
 
 from wtforms import Form,\
@@ -28,6 +30,7 @@ class SubmitForm(FlaskForm):
             )
     upload = SubmitField("Upload!")
 
+    
     reference_strain = SelectField(
             'Reference sequence',
             choices=[],
@@ -39,6 +42,11 @@ class SubmitForm(FlaskForm):
                        'yafM_SBW25',
                        ], 
             validators=[DataRequired(),]
+            )
+
+    treefile = SelectField(
+            "Tree file",
+            choices=[],
             )
 
     min_nmer_occurence = IntegerField("Min. nmer occurence", 
@@ -60,4 +68,3 @@ class SubmitForm(FlaskForm):
 
 class RunForm(FlaskForm):
     go = SubmitField("GoGo!")
-

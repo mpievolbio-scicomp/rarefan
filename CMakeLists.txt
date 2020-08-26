@@ -47,3 +47,5 @@ ExternalProject_Add(clustdist
     INSTALL_COMMAND cd ../clustdist && install build/clustDist $ENV{CONDA_PREFIX}/bin
 )
 
+# legacy_blast patch
+execute_process(patch ${CONDA_PREFIX}/bin/legacy_blast.pl patch)
