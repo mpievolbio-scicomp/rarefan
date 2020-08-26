@@ -58,11 +58,11 @@ public class DeterminePopulationFrequencies {
 		this.genomeFolder=inFolder;
 		e=evalue;
 		calculateResults();
-		// BlastRAYTs.runProgram(inFolder, queryRAYT, inFolder, e, program, getREPtype(), "yafM_relatives.fna");
+		BlastRAYTs.runProgram(inFolder, queryRAYT, inFolder, e, program, getREPtype(), "yafM_relatives.fna");
 		treeFile=new File(inFolder+"/"+treeFile);
-		//if(!treeFile.exists()) {
-		//	generateTree(treeFile);
-		//}
+		if(!treeFile.exists()) {
+			generateTree(treeFile);
+		}
 	}
 
 	private void generateTree(File treeFile) {
