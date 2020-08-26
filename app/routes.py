@@ -93,7 +93,25 @@ def submit():
                 sys.stdout.write(line.decode('ascii'))
                 log.write(line)
 
-        os.chdir(oldwd)
+
+            command = ["Rscript",
+                       os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
+                       session['tmpdir'],
+                       treefile
+                       ]
+
+            proc = subprocess.Popen(command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
+
+            for line in iter(proc.stdout.readline, b''):
+                sys.stdout.write(line)
+                log.write(line)
+
+        os.chdir(oldwd) ### TODO: needed?
+
+
+
 
     return render_template('submit.html',
                     title='Submit',

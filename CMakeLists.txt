@@ -48,7 +48,7 @@ ExternalProject_Add(clustdist
 )
 
 # legacy_blast patch
-execute_process(patch ${CONDA_PREFIX}/bin/legacy_blast.pl patch)
+execute_process(COMMAND "patch ${CONDA_PREFIX}/bin/legacy_blast.pl patch")
 
 # provide libRlapack requested by r-ape.
-execute_process(ln -s ${CONDA_PREFIX}/lib/R/modules/lapack.so ${CONDA_PREFIX}/lib/libRlapack.so)
+execute_process(COMMAND "ln -s ${CONDA_PREFIX}/lib/R/modules/lapack.so ${CONDA_PREFIX}/lib/libRlapack.so")

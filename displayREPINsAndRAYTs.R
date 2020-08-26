@@ -70,7 +70,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
 
-  t=read.table(paste0(folder,"presAbs_",type,".txt"),sep="\t")
+  t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t")
   popSize=data.frame(name=t[,1],
                      rayts=t[,2],
                      repins=t[,3],
@@ -80,7 +80,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                      diffRAYTCluster=t[,7]-t[,2])
 
 
-  tree=read.tree(paste0(folder,treeFile))
+  tree=read.tree(paste0(folder,"/",treeFile))
   tips=tree$tip.label
 
   p=ggtree(tree)+
@@ -174,7 +174,7 @@ plotCorrelationSingle=function(folder,type,
                                repinThreshold=0,
                                name=F,
                                labelOdd){
-    t=read.table(paste0(folder,"presAbs_",type,".txt"),sep="\t")
+    t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t")
     t$propMaster=t[,5]/t[,3]
     t$numRepin=t[,3]
     p=ggplot(t,
@@ -211,7 +211,9 @@ plotCorrelationSingle=function(folder,type,
 }
 
 
-pN=plotREPINs(data_dir,treefile,0,"#40e0d0",2,fontsize)
-pN
-pNeisseria=plotCorrelationSingle(data_dir,0,c(0,1),c(0,320),theme,fontsize,"left","bottom")
-pNeisseria
+repins_plot=plotREPINs(data_dir,treefile,0,"#40e0d0",2,fontsize)
+ggsave(paste0(data_dir, '/', 'repins.png'), plot=repins_plot)
+
+correlation_plot = plotCorrelationSingle(data_dir,0,c(0,1),c(0,320),theme,fontsize,"left","bottom")
+ggsave(paste0(data_dir, '/', 'correlations.png'), plot=repins_plot)
+

@@ -21,6 +21,7 @@ dependencies:
   - r-stringr
   - r-cowplot
   - r-ggplot2
+  - gradle
   - pip
   - pip:
       - flask-pymongo
