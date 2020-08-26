@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - defaults
   - bioconda
+  - anaconda
 dependencies:
   - ipywidgets>=7.5
   - openjdk=11.0.8
@@ -14,6 +15,12 @@ dependencies:
   - gsl>=2.4
   - flask
   - wtforms
+  - r-ggpmisc
+  - bioconductor-ggtree
+  - r-dplyr
+  - r-stringr
+  - r-cowplot
+  - r-ggplot2
   - pip
   - pip:
       - flask-pymongo
