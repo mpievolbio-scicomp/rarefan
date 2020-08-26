@@ -78,7 +78,7 @@ def submit():
                 '{0:s}'.format(session['min_nmer_occurence']),
                 '{0:s}'.format(session['nmer_length']),
                 query_rayt_fname,
-                os.path.join(tmpdir, treefile),
+                treefile,
                 '{0:s}'.format(session['e_value_cutoff'])
                 ]
         print(" ".join(command))
