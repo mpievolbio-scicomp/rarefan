@@ -2,7 +2,7 @@ from flask import render_template, request, session
 from app.views import SubmitForm, RunForm
 from app import app
 
-import os, shutil
+import os, shutil, sys
 import subprocess
 import tempfile
 #from werkzeug import secure_filename
@@ -81,12 +81,17 @@ def submit():
                 os.path.join(tmpdir, treefile),
                 '{0:s}'.format(session['e_value_cutoff'])
                 ]
-        print(command)
+        print(" ".join(command))
 
-        with subprocess.Popen(command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT) as proc:
-            print(proc.stdout.read())
+        # Open log stream.
+        with open(os.path.join(tmpdir, 'repinpop.log'), 'wb') as log:
+            # Start subprocess as context manager.
+            proc = subprocess.Popen(command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
+            for line in iter(proc.stdout.readline, b''):
+                sys.stdout.write(line.decode('ascii'))
+                log.write(line)
 
         os.chdir(oldwd)
 
