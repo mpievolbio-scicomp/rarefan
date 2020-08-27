@@ -36,15 +36,15 @@ public class BlastRAYTs {
 					File db=dbs[i];
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
 					String seqName=getName(dbs[i]);
-					String maxREPIN=getMaxREPIN(seqName,inFolder,repType[k],analyseREPIN);
-					System.out.println(seqName+" "+inFolder+" "+repType[k]);
+					String maxREPIN=getMaxREPIN(seqName,outFolder,repType[k],analyseREPIN);
+					System.out.println(seqName+" "+outFolder+" "+repType[k]);
 					if(!maxREPIN.equals("-1")){
 						System.out.println(maxREPIN);
 						int maxREPINNum=Integer.parseInt(maxREPIN.split("_|\\s+")[1]);
 
 						int repins=Integer.parseInt(maxREPIN.split("_")[2]);
-						int allREPs=getREPNumbers(seqName, inFolder,repType[k]);
-						int numREPINClusters=getNumREPINClusters(seqName,inFolder,repType[k],analyseREPIN);
+						int allREPs=getREPNumbers(seqName, outFolder,repType[k]);
+						int numREPINClusters=getNumREPINClusters(seqName,outFolder,repType[k],analyseREPIN);
 						presAbsHash.put(seqName, bi.size()+"\t"+repins+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters);
 						print(bi,dbs[i],seqs);
 					}
