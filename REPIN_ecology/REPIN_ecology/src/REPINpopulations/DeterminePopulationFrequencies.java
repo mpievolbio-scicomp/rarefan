@@ -29,7 +29,14 @@ public class DeterminePopulationFrequencies {
 
     // Entry point.
 	public static void main(String args[]) {
-		File inFolder=new File(args[0]);
+		// Handle wrong number of arguments.
+        if(args.length<9) {
+            System.out.println("Usage: java -jar REPIN_ecology.jar IN_DIR OUT_DIR REFERENCE_STRAIN NMER_OCCURENCE MIN_NMER_LENGTH QUERY_RAYT TREEFILE E_VALUE_CUTOFF ANALYZE_REPINS [PATH_TO_LEGACY_BLAST.PL]");
+
+            System.exit(1);
+        }
+
+        File inFolder=new File(args[0]);
 		File outFolder=new File(args[1]);
 		String focalSeedGenome=args[2];
 		int minRepFreq=Integer.parseInt(args[3]);
@@ -38,23 +45,24 @@ public class DeterminePopulationFrequencies {
 		File treeFile=new File(args[6]);
 		String evalue=args[7];
 		boolean analyseREPIN=args[8].equalsIgnoreCase("true");
-		File out=new File(inFolder+"/results.txt");
+		File out=new File(outFolder+"/results.txt");
 		DeterminePopulationFrequencies dpf;
 		String program="tblastn";
-		if(args.length>9) {
+        
+        // legacy_blast path not given.
+		if(args.length==9) {
+			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN);
+		    dpf.print(out);
+		}
+        // legacy_blast path given.
+        else if(args.length==10) {
 			String legacyBlastPerlLocation=args[9];
 			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN);
-
-		}else {
-			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN);
-		}
-
-
-		dpf.print(out);
-	}
+		    dpf.print(out);
+        }
+    }
 	
-	
-	
+    // Workhorse function.
 	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN){
 		this.inFolder=inFolder;
 		this.outFolder=outFolder;
@@ -128,8 +136,10 @@ public class DeterminePopulationFrequencies {
 	private void calculateResults() {
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
+        // TODO: Can we parallelize this loop?
 		for(int i=0;i<genomes.size();i++) {
 			String[] split=genomes.get(i).getAbsolutePath().split("\\/|\\.");
+            // parallelize?
 			for(int j=0;j<focalSeeds.length;j++) {
 				String genomeID=split[split.length-2]+"_"+j;
 
