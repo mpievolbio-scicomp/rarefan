@@ -173,7 +173,7 @@ public class REPINProperties {
 			sn.writeCytoscapeInput(simNet);
 			sn.writeNodes(nodes);
 
-			if(!ecoli){
+			if(analyseREPIN){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
                 String mcl_command =mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout;
