@@ -1,0 +1,6 @@
+.*.*.swp
+.*.*.swo
+.gradle/
+build/
+.ipynb_checkpoints/
+tags

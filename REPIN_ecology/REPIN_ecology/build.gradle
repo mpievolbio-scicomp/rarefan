@@ -1,0 +1,47 @@
+/**
+* gradle file for repinpop
+**/
+
+// Load plugins
+plugins {
+    id 'java-library'
+}
+
+// Since sources are in non-standard locations, specify them here.
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/blastTools',
+                       'src/ecoliREP',
+                       'src/extragenicSequenceSimulation',
+                       'src/frequencies',
+                       'src/identifyRAYTs',
+                       'src/overrepresented',
+                       'src/pairwiseAlignment',
+                       'src/randomGenomes',
+                       'src/repinEvolution',
+                       'src/seedAnalysis',
+                       'src/sequenceDistribution',
+                       'src/simulation',
+                       'src/statistics',
+                       'src/util',
+                       'src/yafMSignificance',
+                       'src/REPINpopulations'
+                        ]
+             }
+          }
+}
+
+// The main manifest.
+jar {
+    manifest {
+        attributes (
+            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Main-Class': 'REPINpopulations.DeterminePopulationFrequencies'
+                    )
+            }
+        }
+
+// Set minimum java version. (11 at time of writing.)
+apply plugin: 'java'
+sourceCompatibility = 1.11

@@ -13,7 +13,8 @@ import util.phylogenetics.RunTreePrograms;
 
 public class REPINProperties {
 	//File mclPath=new File("/home/bertels/Programs/mcl-14-137//src/shmcl/mcl");
-	File mclPath=new File("/Users/bertels/Programs/mcl-12-068/src/shmcl/mcl");
+    //File mclPath=new File("/Users/bertels/Programs/mcl-12-068/src/shmcl/mcl");
+    String mclPath="mcl";
 	File wordFrequencies;
 	String genomeID;
 	File seedSequence;
@@ -69,7 +70,7 @@ public class REPINProperties {
 			largestClusterRepinPositions=getSeedSequencePositions();
 		}
 		return largestClusterRepinPositions;
-		
+
 	}
 	
 	private HashMap<String,ArrayList<REPINposition>> getSeedSequencePositions(){
@@ -89,7 +90,7 @@ public class REPINProperties {
 			}
 		}
 		return pos;
-			
+
 	}
 	
 	
@@ -105,7 +106,7 @@ public class REPINProperties {
 		seedSequence=new File(outFolder+"/"+genomeID+seedExt);
 		System.out.println("Processing genome "+genomeID);
 		System.out.println("Calculate word frequencies...");
-		maxWord=word==null?new MaxWord(fas,wordlength,outFolder,genomeID):new MaxWord(fas,word,wordlength,outFolder,genomeID); 
+		maxWord=word==null?new MaxWord(fas,wordlength,outFolder,genomeID):new MaxWord(fas,word,wordlength,outFolder,genomeID);
 		if(maxWord.getFrequency()>11){
 			System.out.println("Write seed sequences...");
 			//NEEDS TO BE CONVERTED TO REPINS!!!!
@@ -131,7 +132,7 @@ public class REPINProperties {
 			System.out.println("Done with REPIN properties.");
 		}
 	}
-	
+
 
 	private void calculateHistogram(){
 		mutHist=new File(outFolder+"/"+genomeID+".hist");
@@ -144,8 +145,8 @@ public class REPINProperties {
 			//cdh.writeMCH(seedSequence, mutationClassHist);
 		//}
 	}
-	
-	
+
+
 	private void writeAllSequenceClusters(){
 		File mclout=new File(outFolder+"/"+genomeID+".mcl");
 		File seeds=new File(outFolder+"/"+genomeID+seedExt);
@@ -157,7 +158,7 @@ public class REPINProperties {
 		}
 	}
 
-	
+
 	//will have to overwrite "File seedSequence"
 	public void determineLargestSequenceCluster(){
 		simNet=new File(outFolder+"/"+genomeID+"_allSeed.nw");
@@ -171,9 +172,17 @@ public class REPINProperties {
 			SimilarityNetwork sn=new SimilarityNetwork(seedSequence);
 			sn.writeCytoscapeInput(simNet);
 			sn.writeNodes(nodes);
-			
+
 			if(analyseREPIN){
-				RunTreePrograms.runProgram(mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout, "", outFolder);
+                //>>> DEBUG
+                System.out.println("Working Directory = " + System.getProperty("user.dir"));
+                String mcl_command =mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout;
+                System.out.println("mcl_command = " + mcl_command);
+                //<<< DEBUG
+				RunTreePrograms.runProgram(
+                        mcl_command,
+                        "",
+                        new File(System.getProperty("user.dir")));
 				int maxNode=getMaxNode(nodes);
 				ArrayList<String> seqSelection=getLargestCluster(mclout,maxNode,true);
 				seqSelection=addSequences(seqSelection,numDifferencesToCluster);//genomeID.equals("DC3000")||genomeID.equals("putGB1")?addSequences(seqSelection,numDifferencesToCluster+1):addSequences(seqSelection,numDifferencesToCluster);
@@ -196,11 +205,11 @@ public class REPINProperties {
 			}
 			popsize=getNumREPINs(nodes);
 	}
-	
+
 	public int getPopSize() {
 		return popsize;
 	}
-	
+
 	private String makeAs() {
 		StringBuffer sb=new StringBuffer();
 		for(int i=0;i<wordlength;i++) {
@@ -217,7 +226,7 @@ public class REPINProperties {
 				String[] split=line.split("\\s+");
 				int nodefreq=Integer.parseInt(split[1]);
 
-				
+
 				if(maxNode<nodefreq && !split[0].contains(makeAs())){
 					maxNode=nodefreq;
 				}
@@ -229,7 +238,7 @@ public class REPINProperties {
 		}
 		return maxNode;
 	}
-	
+
 	private ArrayList<String> addSequences(ArrayList<String> seqSelection,int muts){
 		HashSet<String> seqSelectionHash=new HashSet<String>(seqSelection);
 		ArrayList<String> newSelection=new ArrayList<String>();
@@ -250,7 +259,7 @@ public class REPINProperties {
 		}
 		return newSelection;
 	}
-	
+
 	private void writeNodes(File out,ArrayList<String> nodes){
 		try{
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
@@ -263,8 +272,8 @@ public class REPINProperties {
 			System.exit(-1);
 		}
 	}
-	
-	
+
+
 	private ArrayList<String> getLargestCluster(File in,int maxNode,boolean useMaxNode){
 		ArrayList<String> ids=new ArrayList<String>();
 		try{
@@ -295,7 +304,7 @@ public class REPINProperties {
 		}
 		return ids;
 	}
-	
+
 	private ArrayList<ArrayList<String>> getAllClusters(File in){
 		ArrayList<ArrayList<String>> allClusters=new ArrayList<ArrayList<String>>();
 		try{
@@ -318,7 +327,7 @@ public class REPINProperties {
 		}
 		return allClusters;
 	}
-	
+
 	private HashMap<String,Fasta> getHash(ArrayList<Fasta> fas){
 		HashMap<String,Fasta> hm=new HashMap<String,Fasta>();
 		for(int i=0;i<fas.size();i++){
@@ -330,20 +339,20 @@ public class REPINProperties {
 		}
 		return hm;
 	}
-	
+
 	private void replaceSeedSequences(File out,ArrayList<String> ids,File seeds){
 		HashMap<String,Fasta> fas=getHash(Fasta.readFasta(seeds));
 
 		ArrayList<Fasta> largestCluster=new ArrayList<Fasta>();
 		for(int i=0;i<ids.size();i++){
-			
+
 			largestCluster.add(fas.get(ids.get(i)));
 		}
 		Fasta.write(largestCluster, out);
 	}
-	
 
-	
+
+
 	public REPINProperties(File outFolder,REPINProperties real,String regime,double minFrac,File mutRate,File fitnessOut,int mutclasses){
 		this.mutclasses=mutclasses;
 		this.fitnessOut=fitnessOut;
@@ -367,18 +376,18 @@ public class REPINProperties {
 			calculateHistogram();
 
 	}
-	
-	
+
+
 	private void calculatePropNonMainHub(){
 		double maxSeed=getNumMaxSeqs(seedSequence);
 
 		propNonHub= (1.0*maxSeed)/numSeqs;
 	}
-	
+
 	public NetworkProperties getNetworkProperties(){
 		return nw;
 	}
-	
+
 //	private void simulateSeqEvol(REPINProperties real){
 //			int max=real.numSeqs;
 //			mutationRate=real.mutationRate;
@@ -393,8 +402,8 @@ public class REPINProperties {
 //			sse.printMutFreqTime(mutFreqTimeOut);
 //	}
 
-	
-	
+
+
 //	private double calculateGC(File fas){
 //		ArrayList<Fasta> seqs=Fasta.readFasta(fas);
 //		int count=0;
@@ -411,7 +420,7 @@ public class REPINProperties {
 //		}
 //		return (GC*1.0)/count;
 //	}
-	
+
 	static int getNumMaxSeqs(File in){
 		ArrayList<Fasta> fas=Fasta.readFasta(in);
 		int max=0;
@@ -423,7 +432,7 @@ public class REPINProperties {
 		}
 		return max;
 	}
-	
+
 	public static String getMaxSequence(File in){
 		ArrayList<Fasta> fas=Fasta.readFasta(in);
 		int max=0;
@@ -437,7 +446,7 @@ public class REPINProperties {
 		}
 		return seq;
 	}
-	
+
 	static int getNumSeqs(File in){
 		ArrayList<Fasta> fas=Fasta.readFasta(in);
 		int sum=0;
@@ -461,7 +470,7 @@ public class REPINProperties {
 				if(!seq.contains(as)||!analyseREPIN) {
 					sum+=num;
 				}
-				
+
 			}
 			br.close();
 		}catch(IOException e) {
@@ -470,7 +479,7 @@ public class REPINProperties {
 		}
 		return sum;
 	}
-	
+
 	private void calculateSimilarityNetwork(){
 		degreeDist=new File(outFolder+"/"+genomeID+ddExt);
 		SimilarityNetwork sn=new SimilarityNetwork(seedSequence);
@@ -485,8 +494,8 @@ public class REPINProperties {
 
 		nw.writeDegreeDist(degreeDist);
 	}
-	
-	
+
+
 	private void writeSeedSequence(int numMuts){
 		ArrayList<String> rawWords=new ArrayList<String>();
 		rawWords.add(maxWord.getMaxWord());
@@ -495,17 +504,17 @@ public class REPINProperties {
 		//if(!seedSequence.exists()) {//&& !ecoli){
 			ConvertToREPIN ctr=new ConvertToREPIN(seedSequenceREP,fas,130,maxWord.getMaxWord());
 			ctr.write(seedSequence);
-			repinPositions=ctr.getPositions(); 
-			
+			repinPositions=ctr.getPositions();
+
 		//}else {
 		//	if(ecoli) {
 		//		util.FileHandler.copy(seedSequenceREP, seedSequence);
 		//	}
 		//}
-		
+
 	}
 //	private void writeMutationFrequencies(){
-//		mutFreqs=new HashMap<String,Double>();	
+//		mutFreqs=new HashMap<String,Double>();
 //		mutFreqFile=new File(outFolder+"/"+genomeID+mutFreqExt);
 //
 //		RAYTfrequencyGraph rfg=new RAYTfrequencyGraph(seedSequence);
@@ -516,6 +525,6 @@ public class REPINProperties {
 //		mutFreqs=rfg.getMutationFrequencies();
 //	}
 
-	
-	
+
+
 }

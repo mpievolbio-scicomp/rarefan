@@ -1,0 +1,28 @@
+name: repinpop
+channels:
+  - conda-forge
+  - defaults
+  - bioconda
+  - anaconda
+dependencies:
+  - ipywidgets>=7.5
+  - openjdk=11.0.8
+  - jupyter=1.0.0
+  - voila=0.1.21
+  - cmake>=3.12
+  - blast=2.10
+  - mcl=14.137
+  - gsl>=2.4
+  - flask
+  - wtforms
+  - r-ggpmisc
+  - bioconductor-ggtree
+  - r-dplyr
+  - r-stringr
+  - r-cowplot
+  - r-ggplot2
+  - gradle
+  - pip
+  - pip:
+      - flask-pymongo
+      - flask-wtf

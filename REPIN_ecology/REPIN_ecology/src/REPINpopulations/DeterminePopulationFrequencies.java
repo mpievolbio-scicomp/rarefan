@@ -5,7 +5,7 @@ import java.util.*;
 import frequencies.REPINProperties;
 import identifyRAYTs.BlastRAYTs;
 import util.*;
-//the idea is to determine the REPIN populations that are present in a number of focal strains 
+//the idea is to determine the REPIN populations that are present in a number of focal strains
 //(runnning word freqs, identify groups etc) at first I will supply the sequence seeds (focal sequences)
 //for each sequence group we determine the frequency in each of the given strains
 //this data will then be displayed on a tree using R
@@ -47,7 +47,7 @@ public class DeterminePopulationFrequencies {
 			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN);
 		}
 
-		
+
 		dpf.print(out);
 	}
 	
@@ -71,7 +71,7 @@ public class DeterminePopulationFrequencies {
 			generateTree(treeFile);
 		}
 	}
-	
+
 	private void generateTree(File treeFile) {
 		String filenames=generateFileNameString();
 		String treeID=treeFile.getName().split("\\.")[0];
@@ -79,7 +79,7 @@ public class DeterminePopulationFrequencies {
 		RunTreePrograms.runProgram("/usr/local/bin/andi "+filenames, "", outFolder,distFile);
 		RunTreePrograms.runProgram("/usr/local/bin/clustDist "+distFile, "", outFolder, treeFile);
 	}
-	
+
 	private String generateFileNameString() {
 		StringBuffer sb=new StringBuffer();
 		File[] files=inFolder.listFiles();
@@ -90,7 +90,7 @@ public class DeterminePopulationFrequencies {
 		}
 		return sb.toString();
 	}
-	
+
 	private String[] getREPtype() {
 		ArrayList<String> list=new ArrayList<String>();
 		for(int i=0;i<focalSeeds.length;i++) {
@@ -98,13 +98,13 @@ public class DeterminePopulationFrequencies {
 		}
 		return list.toArray(new String[0]);
 	}
-	
+
 	private String[] getFocalSeeds(String genome,int minRepFreq,int wl) {
 		File fsg=new File(inFolder+"/"+genome);
 		DetermineFocalSeeds dfs=new DetermineFocalSeeds(fsg,outFolder,minRepFreq,wl);
 		return dfs.getFocalSeeds();
 	}
-	
+
 	public void print(File out) {
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(out));
@@ -116,13 +116,13 @@ public class DeterminePopulationFrequencies {
 				}
 			}
 			bw.close();
-			
+
 		}catch(IOException e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 	}
-	
+
 	private void calculateResults() {
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
@@ -160,12 +160,12 @@ public class DeterminePopulationFrequencies {
 		rrp.writeStats(new File(this.outFolder+"/prox.stats"));
 
 	}
-	
-	
+
+
 	private ArrayList<Info> writeRAYTLocation(File genome) {
 		String genomeID=genome.getName().split("\\.")[0];
 		ArrayList<Info> RAYTLocations;
-		if(legacyBlastPerlLocation==null) {
+		if(legacyBlastPerlLocation!="") {
 			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn",legacyBlastPerlLocation);
 		}else {
 			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn");
@@ -173,8 +173,8 @@ public class DeterminePopulationFrequencies {
 		WriteArtemis.write(RAYTLocations, new File(genomeFolder+"/rayt_"+genomeID+".tab"));
 		return RAYTLocations;
 	}
-	
-	
+
+
 	private void writeREPINArtemis(File in,int group) {
 		if(in.exists()) {
 			ArrayList<Fasta> fas=Fasta.readFasta(in);
@@ -188,7 +188,7 @@ public class DeterminePopulationFrequencies {
 
 		}
 	}
-		
+
 	private ArrayList<Info> getPos(String ident,String inf){
 		String split[]=ident.split("\\s+");
 		ArrayList<Info> pos=new ArrayList<Info>();
@@ -212,5 +212,5 @@ public class DeterminePopulationFrequencies {
 		}
 		return genomes;
 	}
-	
+
 }

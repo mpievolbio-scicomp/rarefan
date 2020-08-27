@@ -20,7 +20,7 @@ public class RunTreePrograms {
 		outtree.renameTo(out);
 		return out;
 	}
-	
+
 	public static HashMap<String,Boolean> getParameters(File in){
 		HashMap<String,Boolean> para=new HashMap<String, Boolean>();
 		try{
@@ -39,7 +39,7 @@ public class RunTreePrograms {
 		}
 		return para;
 	}
-	
+
 	public static String getParametersLine(File in){
 		String para="";
 		try{
@@ -55,17 +55,17 @@ public class RunTreePrograms {
 		}
 		return para;
 	}
-	
+
 	public static void runRAxML(File in,File RAxMLPath,int seqLength,String suffix,String root,boolean noGenes,int seed){
 			File outFolder=new File(in.getParent());
 			if(!RAxMLPath.exists()){
 				System.err.println("Cannot find raxml executable. Not building tree. Exiting.");
 				System.exit(-1);
 			}
-		
-			String modelFile="";			
+
+			String modelFile="";
 			deleteAllRAxMLFiles(outFolder,suffix);
-			
+
 			if(root.length()>0){
 				root=" -o "+root;
 			}
@@ -75,7 +75,7 @@ public class RunTreePrograms {
 				modelFile=" -q "+model.toString();
 			}
 			String raxMLcom=RAxMLPath+" -s "+in+" -w "+outFolder+" -m GTRGAMMA -p "+seed+" -n "+suffix+" "+root+" "+modelFile;
-			
+
 			runProgram(raxMLcom,"",outFolder);
 	}
 
@@ -149,7 +149,8 @@ public class RunTreePrograms {
 		try{
 
 			Runtime runtime=Runtime.getRuntime();
-			p=runtime.exec(command,new String[0],dir);
+            //p=runtime.exec(command,new String[0],dir);
+			p=runtime.exec(command);
 
 			OutputStream stdin=p.getOutputStream();
 			if(standardIn==null){
@@ -166,10 +167,10 @@ public class RunTreePrograms {
 				}
 				br.close();
 				bw.close();
-				
+
 			}
 			BufferedReader bri = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			
+
 			String line="";
             if(time>-1){
             	timer = new Timer(true);
@@ -196,13 +197,13 @@ public class RunTreePrograms {
 			bri.close();
 			if(p.waitFor()!=0){
 				System.err.println(command);
-				
+
 
 				while((line=br.readLine())!=null){
 					System.err.println(line);
 				}
 				br.close();
-				
+
 				System.err.println(command+" was not successful!");
 				System.exit(-1);
 			}
@@ -245,12 +246,12 @@ public class RunTreePrograms {
 		if(!in.getName().equals("intree"))runProgram(consensecom,in.toString()+"\ny\r\n",in.getParentFile());
 		else{
 			System.err.println("Please do not choose \"intree\" as file name!");
-			
+
 		}
 		return new File(in.getParentFile()+"/outfile");
 	}
-	
-	
+
+
 	public static void deleteConsenseFiles(File outFolder){
 		File outfile=new File(outFolder+"/outfile");
 		File outtree=new File(outFolder+"/outtree");
@@ -259,14 +260,14 @@ public class RunTreePrograms {
 		if(outtree.exists())outtree.delete();
 		if(intree.exists())intree.delete();
 	}
-	
+
 	public static File runPhyml(File in,String PhymlPath){
-		
-		
+
+
 		return runPhyml(in, PhymlPath,"");
 	}
 	public static File runPhyml(File in,String PhymlPath,String params){
-		
+
 		File phymlExec=new File(PhymlPath);
 		if(!phymlExec.exists()){
 			System.err.println("Cannot find Phyml executable. Not building tree. Exiting.");
@@ -288,7 +289,7 @@ public class RunTreePrograms {
 	}
 
 	public static void runTreePuzzle(File in,String treePuzzlePath){
-			
+
 			File puzzleExec=new File(treePuzzlePath);
 			if(!puzzleExec.exists()){
 				System.err.println("Cannot find TREE-PUZZLE executable. Not building tree. Exiting.");
@@ -305,7 +306,7 @@ public class RunTreePrograms {
 			}
 		}
 	}
-	
+
 	private static File generateModelFile(int seqLength,File outFolder){
 		try{
 			File modelOut=new File(outFolder+"/model.txt");
@@ -313,7 +314,7 @@ public class RunTreePrograms {
 			bw.write("DNA, codon1 = 1-"+seqLength+"\\3\n"+
 					"DNA, codon2 = 2-"+seqLength+"\\3\n"+
 					"DNA, codon3 = 3-"+seqLength+"\\3\n");
-			
+
 			bw.close();
 			return modelOut;
 		}catch(IOException e){
