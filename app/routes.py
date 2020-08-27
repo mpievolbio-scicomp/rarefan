@@ -35,6 +35,7 @@ def submit():
         
     if submit_form.go.data:
         tmpdir = session['tmpdir']
+        session['outdir'] = outdir = os.path.join(tmpdir, 'out')
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
@@ -69,13 +70,14 @@ def submit():
                         )
                     ),
                 session['tmpdir'],
+                session['outdir'],
                 session['reference_strain']+".fas",
                 '{0:s}'.format(session['min_nmer_occurence']),
                 '{0:s}'.format(session['nmer_length']),
                 query_rayt_fname,
                 treefile,
                 '{0:s}'.format(session['e_value_cutoff']),
-                {"y": "true", "n": "false"}[session['analyse_repins']],
+                {"y": "true", None: "false"}[session['analyse_repins']],
                 ]
         print(" ".join(command))
 
@@ -89,26 +91,26 @@ def submit():
                 sys.stdout.write(line.decode('ascii'))
                 log.write(line)
 
-
             command = ["Rscript",
                        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
-                       session['tmpdir'],
+                       session['outdir'],
                        treefile
                        ]
 
             proc = subprocess.Popen(command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
+            
+            proc.wait()
 
-            # for line in iter(proc.stdout.readline, b''):
-            #     sys.stdout.write(line.decode('ascii'))
-            #     log.write(line)
-
-        os.chdir(oldwd) ### TODO: needed?
+            results_dst = os.path.abspath(os.path.join(os.path.dirname(__file__),'static'))
+            shutil.move(tmpdir, results_dst)
+                    
+            os.chdir(oldwd) ### TODO: needed?
 
         return render_template('results.html',
                             title='Results',
-                            results_path=os.path.join(tmpdir)
+                            results_path=os.path.join(os.path.basename(tmpdir), os.path.basename(outdir)),
                             )
 
     return render_template('submit.html',
@@ -123,3 +125,9 @@ def run_repinpop():
     print(session["nmer_length"])
     
     return "`'/-"
+
+def splitpath(path, maxdepth=20):
+     ( head, tail ) = os.path.split(path)
+     return splitpath(head, maxdepth - 1) + [ tail ] \
+         if maxdepth and head and head != path \
+         else [ head or tail ]
