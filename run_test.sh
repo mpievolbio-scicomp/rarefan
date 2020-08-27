@@ -25,4 +25,3 @@ status=0
 # rm -rf $RUN_DATA_DIR
 
 exit ${status}
-

@@ -18,8 +18,9 @@ def submit():
     if submit_form.upload.data:
         seqs = request.files.getlist(submit_form.sequences.name)
         
-        session['tmpdir'] = tempfile.mkdtemp(suffix=None,
-                              prefix=None,
+        session['tmpdir'] = tempfile.mkdtemp(
+                              suffix=None,
+                              prefix="",
                               dir=app.config["UPLOAD_DIR"]
                               )
         if seqs:
@@ -103,17 +104,15 @@ def submit():
             
             proc.wait()
 
-            results_dst = os.path.abspath(os.path.join(os.path.dirname(__file__),'static'))
-            shutil.move(tmpdir, results_dst)
-                    
-            os.chdir(oldwd) ### TODO: needed?
+            os.chdir(oldwd) 
 
         return render_template('results.html',
                             title='Results',
-                            results_path=os.path.join(os.path.basename(tmpdir), os.path.basename(outdir)),
+                            results_path=os.path.basename(tmpdir),
                             )
 
-    return render_template('submit.html',
+    return render_template(
+                    'submit.html',
                     title='Submit',
                     submit_form=submit_form, 
                     )
