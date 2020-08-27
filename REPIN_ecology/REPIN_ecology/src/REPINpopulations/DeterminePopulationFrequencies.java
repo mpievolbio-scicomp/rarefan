@@ -5,7 +5,7 @@ import java.util.*;
 import frequencies.REPINProperties;
 import identifyRAYTs.BlastRAYTs;
 import util.*;
-//the idea is to determine the REPIN populations that are present in a number of focal strains 
+//the idea is to determine the REPIN populations that are present in a number of focal strains
 //(runnning word freqs, identify groups etc) at first I will supply the sequence seeds (focal sequences)
 //for each sequence group we determine the frequency in each of the given strains
 //this data will then be displayed on a tree using R
@@ -43,12 +43,12 @@ public class DeterminePopulationFrequencies {
 			dpf=new DeterminePopulationFrequencies(inFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue);
 		}
 
-		
+
 		dpf.print(out);
 	}
-	
-	
-	
+
+
+
 	public DeterminePopulationFrequencies(File inFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue){
 		this.inFolder=inFolder;
 		genomes=getFiles(inFolder);
@@ -60,19 +60,19 @@ public class DeterminePopulationFrequencies {
 		calculateResults();
 		BlastRAYTs.runProgram(inFolder, queryRAYT, inFolder, e, program, getREPtype(), "yafM_relatives.fna");
 		treeFile=new File(inFolder+"/"+treeFile);
-		//if(!treeFile.exists()) {
-		//	generateTree(treeFile);
-		//}
+		if(!treeFile.exists()) {
+			generateTree(treeFile);
+		}
 	}
-	
+
 	private void generateTree(File treeFile) {
 		String filenames=generateFileNameString();
 		String treeID=treeFile.getName().split("\\.")[0];
 		File distFile=new File(inFolder+"/"+treeID+".dist");
-		RunTreePrograms.runProgram("/usr/local/bin/andi "+filenames, "", inFolder,distFile);
-		RunTreePrograms.runProgram("/usr/local/bin/clustDist "+distFile, "", inFolder, treeFile);
+		RunTreePrograms.runProgram("andi "+filenames, "", inFolder,distFile);
+		RunTreePrograms.runProgram("clustDist "+distFile, "", inFolder, treeFile);
 	}
-	
+
 	private String generateFileNameString() {
 		StringBuffer sb=new StringBuffer();
 		File[] files=inFolder.listFiles();
@@ -83,7 +83,7 @@ public class DeterminePopulationFrequencies {
 		}
 		return sb.toString();
 	}
-	
+
 	private String[] getREPtype() {
 		ArrayList<String> list=new ArrayList<String>();
 		for(int i=0;i<focalSeeds.length;i++) {
@@ -91,13 +91,13 @@ public class DeterminePopulationFrequencies {
 		}
 		return list.toArray(new String[0]);
 	}
-	
+
 	private String[] getFocalSeeds(String genome,int minRepFreq,int wl) {
 		File fsg=new File(inFolder+"/"+genome);
 		DetermineFocalSeeds dfs=new DetermineFocalSeeds(fsg,minRepFreq,wl);
 		return dfs.getFocalSeeds();
 	}
-	
+
 	public void print(File out) {
 		try {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(out));
@@ -109,13 +109,13 @@ public class DeterminePopulationFrequencies {
 				}
 			}
 			bw.close();
-			
+
 		}catch(IOException e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
 	}
-	
+
 	private void calculateResults() {
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
@@ -129,7 +129,7 @@ public class DeterminePopulationFrequencies {
 				File outFolder=new File(inFolder+"/"+genomeID+"/");
 				outFolder.mkdir();
 				int wl=focalSeeds[j].length();
-				
+
 				REPINProperties rp=new REPINProperties(outFolder,genomeID,genomes.get(i),wl,numMuts,minFrac,null,focalSeeds[j],false);
 				System.out.println("Write REPINs as artemis files for "+genomeID+"...");
 
@@ -153,12 +153,12 @@ public class DeterminePopulationFrequencies {
 		rrp.writeStats(new File(inFolder+"/prox.stats"));
 
 	}
-	
-	
+
+
 	private ArrayList<Info> writeRAYTLocation(File genome) {
 		String genomeID=genome.getName().split("\\.")[0];
 		ArrayList<Info> RAYTLocations;
-		if(legacyBlastPerlLocation==null) {
+		if(legacyBlastPerlLocation!="") {
 			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn",legacyBlastPerlLocation);
 		}else {
 			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn");
@@ -166,8 +166,8 @@ public class DeterminePopulationFrequencies {
 		WriteArtemis.write(RAYTLocations, new File(genomeFolder+"/rayt_"+genomeID+".tab"));
 		return RAYTLocations;
 	}
-	
-	
+
+
 	private void writeREPINArtemis(File in,int group) {
 		if(in.exists()) {
 			ArrayList<Fasta> fas=Fasta.readFasta(in);
@@ -181,7 +181,7 @@ public class DeterminePopulationFrequencies {
 
 		}
 	}
-		
+
 	private ArrayList<Info> getPos(String ident,String inf){
 		String split[]=ident.split("\\s+");
 		ArrayList<Info> pos=new ArrayList<Info>();
@@ -193,8 +193,8 @@ public class DeterminePopulationFrequencies {
 		}
 		return pos;
 	}
-	
-	
+
+
 	private ArrayList<File> getFiles(File inFolder) {
 		ArrayList<File> genomes=new ArrayList<File>();
 		File[] all=inFolder.listFiles();
@@ -205,5 +205,5 @@ public class DeterminePopulationFrequencies {
 		}
 		return genomes;
 	}
-	
+
 }
