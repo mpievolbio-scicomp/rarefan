@@ -13,16 +13,10 @@ def index():
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
-    upload_form = SubmitForm()
+    submit_form = SubmitForm()
 
-    
-
-    
-
-    print(upload_form.upload.data)
-    print(upload_form.go.data)
-    if upload_form.upload.data:
-        seqs = request.files.getlist(upload_form.sequences.name)
+    if submit_form.upload.data:
+        seqs = request.files.getlist(submit_form.sequences.name)
         
         session['tmpdir'] = tempfile.mkdtemp(suffix=None,
                               prefix=None,
@@ -35,12 +29,13 @@ def submit():
             tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
             fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
             [seq.save(fname) for seq,fname in zip(seqs,fnames)]
-            upload_form.reference_strain.choices = strain_names
-            upload_form.query_rayt.choices += rayt_names
-            upload_form.treefile.choices = ["None"] + tree_names
+            submit_form.reference_strain.choices = strain_names
+            submit_form.query_rayt.choices += rayt_names
+            submit_form.treefile.choices = ["None"] + tree_names
         
-    if upload_form.go.data:
+    if submit_form.go.data:
         tmpdir = session['tmpdir']
+        session['outdir'] = outdir = os.path.join(tmpdir, 'out')
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
@@ -50,6 +45,7 @@ def submit():
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
+        session['analyse_repins'] = request.form.get('analyse_repins')
 
         # copy query rayt to working dir
         query_rayt_fname = os.path.join(session['tmpdir'],session['query_rayt']+".faa")
@@ -74,12 +70,14 @@ def submit():
                         )
                     ),
                 session['tmpdir'],
+                session['outdir'],
                 session['reference_strain']+".fas",
                 '{0:s}'.format(session['min_nmer_occurence']),
                 '{0:s}'.format(session['nmer_length']),
                 query_rayt_fname,
                 treefile,
-                '{0:s}'.format(session['e_value_cutoff'])
+                '{0:s}'.format(session['e_value_cutoff']),
+                {"y": "true", None: "false"}[session['analyse_repins']],
                 ]
         print(" ".join(command))
 
@@ -93,29 +91,31 @@ def submit():
                 sys.stdout.write(line.decode('ascii'))
                 log.write(line)
 
-
             command = ["Rscript",
                        os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
-                       session['tmpdir'],
+                       session['outdir'],
                        treefile
                        ]
 
             proc = subprocess.Popen(command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
+            
+            proc.wait()
 
-            for line in iter(proc.stdout.readline, b''):
-                sys.stdout.write(line)
-                log.write(line)
+            results_dst = os.path.abspath(os.path.join(os.path.dirname(__file__),'static'))
+            shutil.move(tmpdir, results_dst)
+                    
+            os.chdir(oldwd) ### TODO: needed?
 
-        os.chdir(oldwd) ### TODO: needed?
-
-
-
+        return render_template('results.html',
+                            title='Results',
+                            results_path=os.path.join(os.path.basename(tmpdir), os.path.basename(outdir)),
+                            )
 
     return render_template('submit.html',
                     title='Submit',
-                    upload_form=upload_form, 
+                    submit_form=submit_form, 
                     )
           
 @app.route('/run_repinpop', methods=['GET', 'POST'])
@@ -126,6 +126,8 @@ def run_repinpop():
     
     return "`'/-"
 
-
-        #
-    # return "Running REPINPop. Stay tuned...."
+def splitpath(path, maxdepth=20):
+     ( head, tail ) = os.path.split(path)
+     return splitpath(head, maxdepth - 1) + [ tail ] \
+         if maxdepth and head and head != path \
+         else [ head or tail ]

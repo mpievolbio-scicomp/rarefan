@@ -64,6 +64,11 @@ class SubmitForm(FlaskForm):
                                 validators=[DataRequired(),]
                                 )
 
+    analyse_repins = BooleanField("Analyse REPINs",
+                                  default=True,
+                                  description="Leave unchecked to analyse REPs only."
+                                  )
+
     go = SubmitField("Go!")
 
 class RunForm(FlaskForm):
