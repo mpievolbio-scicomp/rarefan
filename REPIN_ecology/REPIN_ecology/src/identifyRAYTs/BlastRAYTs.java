@@ -228,6 +228,8 @@ public class BlastRAYTs {
 				end=end>start?end:temp;
 				rev=true;
 			}
+			System.out.println(fasIdent+" "+in);
+			System.out.println(start+" "+end);
 			String seq=getSeq(fas.get(fasIdent),start,end,rev);
 		
 			seqs.add(new Fasta(name+" "+inf.get(i).toString(),seq));
@@ -267,6 +269,8 @@ public class BlastRAYTs {
 		ReadBlast rb=new ReadBlast(out);
 		int querylength=Fasta.readFasta(query).get(0).getSequence().length();
 		for(int i=0;i<rb.getDatabase().size();i++){
+			HashMap<String,Fasta> fas=Fasta.fasToFastaHash(Fasta.readFasta(db), false);
+			int seqlength=fas.get(rb.getDatabase().get(i)).getSequence().length();
 			int start=rb.getStartDB().get(i);
 			int end=rb.getEndDB().get(i);
 			//int temp=start;
@@ -278,6 +282,12 @@ public class BlastRAYTs {
 				int adjstart=end>start?start-rb.getStartQuery().get(i)*multi:start+rb.getStartQuery().get(i)*multi;
 				int adjend=end>start?end+(querylength-rb.getEndQuery().get(i))*multi:end-(querylength-rb.getEndQuery().get(i))*multi;
 				System.out.println(adjstart-adjend);
+				if(adjend>seqlength) {
+					adjend=seqlength;
+				}
+				if(adjstart<0) {
+					adjstart=1;
+				}
 				blastIntervals.add(new Info(adjstart,adjend,rb.getDatabase().get(i)+"---"+rb.getEvalue().get(i)));
 			}
 		}
