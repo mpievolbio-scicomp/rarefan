@@ -60,7 +60,9 @@ public class DeterminePopulationFrequencies {
 		this.genomeFolder=inFolder;
 		this.analyseREPIN=analyseREPIN;
 		e=evalue;
-		//calculateResults();
+
+		calculateResults();
+
 		BlastRAYTs.runProgram(inFolder, queryRAYT, inFolder, e, program, getREPtype(), "yafM_relatives.fna",analyseREPIN);
 		treeFile=new File(inFolder+"/"+treeFile);
 		if(!treeFile.exists()) {
