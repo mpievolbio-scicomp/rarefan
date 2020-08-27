@@ -15,7 +15,7 @@ public class DeterminePopulationFrequencies {
 	//requires mcl, andi, clustDist and BLAST+
 	String focalSeeds[];
 	ArrayList<File> genomes;
-	File inFolder;
+	File inFolder; 
 	int numMuts=1;
 	double minFrac=0.01;
 	//distance from repin to rayt, if within vicinity then repin cluster is associated with that rayt
@@ -50,7 +50,7 @@ public class DeterminePopulationFrequencies {
 
 		dpf.print(out);
 	}
-	
+	 
 	
 	
 	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN){
