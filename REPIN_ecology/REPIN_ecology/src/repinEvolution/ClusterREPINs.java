@@ -3,9 +3,10 @@ package repinEvolution;
 import java.io.*;
 import java.util.*;
 
+import REPINpopulations.REPINposition;
 import frequencies.*;
 import util.*;
-
+//THIS HAS TO BE FIXED, SO IT CAN DEAL WITH MULTIPLE SEQUENCES PER FASTA FILE!
 public class ClusterREPINs {
 	int minREPINSize=30;
 	REPINCluster rc;
@@ -46,22 +47,21 @@ public class ClusterREPINs {
 		}
 	}
 	
-	private HashMap<Integer,Integer> toPosHashMap(HashMap<String,HashMap<Integer,Integer>> repinPos){
-		HashMap<Integer,Integer> pos=new HashMap<Integer, Integer>();
+	private ArrayList<REPINposition> toPosHashMap(HashMap<String,ArrayList<REPINposition>> repinPos){
+		ArrayList<REPINposition> pos=new ArrayList<REPINposition>();
 		String[] keys=repinPos.keySet().toArray(new String[0]);
 		for(int i=0;i<keys.length;i++) {
-			pos.putAll(repinPos.get(keys[i]));
+			pos.addAll(repinPos.get(keys[i]));
 		}
 		return pos;
 	}
 	
-	private ArrayList<REPIN> convertToRepin(HashMap<Integer,Integer> pos,HashMap<Integer,Integer> largestCluster,int repintype,String genome,String genomeID){
+	private ArrayList<REPIN> convertToRepin(ArrayList<REPINposition> pos,HashMap<Integer,Integer> largestCluster,int repintype,String genome,String genomeID){
 		ArrayList<REPIN> repins=new ArrayList<REPIN>();
 		
-		Integer[] starts=pos.keySet().toArray(new Integer[0]);
-		for(int i=0;i<starts.length;i++) {
-			int start=starts[i];
-			int end=pos.get(starts[i]);
+		for(int i=0;i<pos.size();i++) {
+			int start=pos.get(i).start;
+			int end=pos.get(i).end;
 			int isLargestCluster;
 			if(largestCluster.containsKey(start)) {
 				isLargestCluster=1;
