@@ -18,10 +18,11 @@ public class BlastRAYTs {
 		String nameSeqs=args[4];
 		String[] repType=Arrays.copyOfRange(args,5,args.length);
 
-		runProgram(inFolder,query,outFolder,e,program,repType,nameSeqs);
+		runProgram(inFolder,query,outFolder,e,program,repType,nameSeqs,true);
 	}
 	static int minClusterSize=10;
-	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs) {
+	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs,boolean analyseREPIN) {
+		
 		for(int k=0;k<repType.length;k++) {
 			ArrayList<Fasta> seqs=new ArrayList<Fasta>();
 			File out=new File(outFolder+"/"+nameSeqs);
@@ -34,8 +35,8 @@ public class BlastRAYTs {
 				if(dbs[i].getName().endsWith("fas")||dbs[i].getName().endsWith("fna")) {
 					File db=dbs[i];
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
-					String seqName=dbs[i].getName().split("\\.")[0];
-					String maxREPIN=getMaxREPIN(seqName,inFolder,repType[k]);
+					String seqName=getName(dbs[i]);
+					String maxREPIN=getMaxREPIN(seqName,inFolder,repType[k],analyseREPIN);
 					System.out.println(seqName+" "+inFolder+" "+repType[k]);
 					if(!maxREPIN.equals("-1")){
 						System.out.println(maxREPIN);
@@ -43,7 +44,7 @@ public class BlastRAYTs {
 
 						int repins=Integer.parseInt(maxREPIN.split("_")[2]);
 						int allREPs=getREPNumbers(seqName, inFolder,repType[k]);
-						int numREPINClusters=getNumREPINClusters(seqName,inFolder,repType[k]);
+						int numREPINClusters=getNumREPINClusters(seqName,inFolder,repType[k],analyseREPIN);
 						presAbsHash.put(seqName, bi.size()+"\t"+repins+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters);
 						print(bi,dbs[i],seqs);
 					}
@@ -54,8 +55,13 @@ public class BlastRAYTs {
 		}
 
 	}
-
-	public static int getNumREPINClusters(String name,File folder,String repType) {
+	
+	private static String getName(File in) {
+		String[] parts=in.getName().split("\\.");
+		return parts[parts.length-2];
+	}
+	
+	public static int getNumREPINClusters(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".mcl");
 			//System.out.println(in);
@@ -70,7 +76,7 @@ public class BlastRAYTs {
 						String[] splitREPIN=split[i].split("_");
 						String REPIN=splitREPIN[0];
 						int num=Integer.parseInt(splitREPIN[1]);
-						if(isREPIN(REPIN)) {
+						if(isREPIN(REPIN)||!analyseREPIN) {
 							sum+=num;
 						}else {
 							break;
@@ -92,8 +98,8 @@ public class BlastRAYTs {
 		return -1;
 	}
 
-
-	public static String getMaxREPIN(String name,File folder,String repType) {
+	
+	public static String getMaxREPIN(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+"_largestCluster.nodes");
 			if(!in.exists())System.err.println(in);
@@ -110,7 +116,7 @@ public class BlastRAYTs {
 
 					int num= Integer.parseInt(split[1]);
 					String curr=split[0];
-					if(isREPIN(curr)) {
+					if(isREPIN(curr)||!analyseREPIN) {
 						sum+=num;
 						if(num>max) {
 							max=num;
@@ -203,14 +209,14 @@ public class BlastRAYTs {
 
 	      return name;
 	}
-
-	public static void print(ArrayList<Info> inf,File in,ArrayList<Fasta> seqs) {
+	
+	public static void print(ArrayList<Info> inf/*blast result*/,File in/*genome Fasta sequence*/,ArrayList<Fasta> seqs/*result sequences*/) {
 		for(int i=0;i<inf.size();i++) {
-			//System.out.println(inf.get(i).toString());
-			ArrayList<Fasta> fas=Fasta.readFasta(in);
-			String fasIdent=fas.get(0).getIdent();
-			//String shortName=getName(fasIdent);
 
+			HashMap<String,String> fas=Fasta.fasToHash(Fasta.readFasta(in), false);
+			String fasIdent=inf.get(i).info.split("---")[0];
+
+			
 
 			String name=fasIdent.split("\\s+")[0]+"_"+inf.get(i).getStart()+"_"+inf.get(i).getEnd();
 			int start=inf.get(i).getStart();
@@ -222,25 +228,25 @@ public class BlastRAYTs {
 				end=end>start?end:temp;
 				rev=true;
 			}
-			String seq=getSeq(fas,start,end,rev);
-
+			String seq=getSeq(fas.get(fasIdent),start,end,rev);
+		
 			seqs.add(new Fasta(name+" "+inf.get(i).toString(),seq));
 
 
 		}
 	}
-
-	private static String getSeq(ArrayList<Fasta> fas,int start,int end,boolean rev) {
-		String seq=fas.get(0).getSequence().substring(start-add,end+add);
+	
+	private static String getSeq(String genomeSeq,int start,int end,boolean rev) {
+		String seq=genomeSeq.substring(start-add,end+add);
 
 		if(rev) {
 			seq=DNAmanipulations.reverse(seq);
 			if(seq.startsWith("T")) {
-				seq=fas.get(0).getSequence().substring(start-add,end+add+1);
+				seq=genomeSeq.substring(start-add,end+add+1);
 				seq=DNAmanipulations.reverse(seq);
 			}
 		}else {
-			seq=fas.get(0).getSequence().substring(start-add-1,end+add);
+			seq=genomeSeq.substring(start-add-1,end+add);
 
 		}
 		return seq;

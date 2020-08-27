@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
 
+import REPINpopulations.REPINposition;
 import frequencies.util.*;
 import seedAnalysis.WriteSeedSequences;
 import util.Fasta;
@@ -46,78 +47,61 @@ public class REPINProperties {
 	File mutHist;
 	File mutFreqTimeOut;
 	File mutationClassHist;
-	boolean ecoli;
+	boolean analyseREPIN=true;
 	File fitnessOut;
 	int mutclasses;
 	int numDifferencesToCluster=2;
 	String word=null;
 	int popsize;
 	boolean needsToContainWord=false;
-	HashMap<String,HashMap<Integer,Integer>> repinPositions=new HashMap<String,HashMap<Integer,Integer>>();
-	HashMap<String,HashMap<Integer,Integer>> largestClusterRepinPositions;
+	HashMap<String,ArrayList<REPINposition>> repinPositions=new HashMap<String,ArrayList<REPINposition>>();
+	HashMap<String,ArrayList<REPINposition>> largestClusterRepinPositions;
 
 	public String getRegime(){
 		return regime;
 	}
-
-	public HashMap<String,HashMap<Integer,Integer>> getREPINPositions(){
+	
+	public HashMap<String,ArrayList<REPINposition>> getREPINPositions(){
 		return repinPositions;
 	}
-
-	public HashMap<String,HashMap<Integer,Integer>> getLargestClusterREPINPositions(){
+	
+	public HashMap<String,ArrayList<REPINposition>> getLargestClusterREPINPositions(){
 		if(largestClusterRepinPositions==null) {
 			largestClusterRepinPositions=getSeedSequencePositions();
 		}
 		return largestClusterRepinPositions;
 
 	}
-
-	private HashMap<String,HashMap<Integer,Integer>> getSeedSequencePositions(){
+	
+	private HashMap<String,ArrayList<REPINposition>> getSeedSequencePositions(){
 		ArrayList<Fasta> fas=Fasta.readFasta(seedSequence);
-		HashMap<String,HashMap<Integer,Integer>> pos=new HashMap<String,HashMap<Integer, Integer>>();
+		HashMap<String,ArrayList<REPINposition>> pos=new HashMap<String,ArrayList<REPINposition>>();
 		for(int i=0;i<fas.size();i++) {
 			String line=fas.get(i).getIdent();
 			String[] split=line.split("\\s+");
 			String seq=fas.get(i).getSequence();
-			pos.put(seq,new HashMap<Integer, Integer>());
+			pos.put(seq,new ArrayList<REPINposition>());
 			for(int j=1;j<split.length;j++) {
 				String posSplit[]=split[j].split("_");
-				int start=Integer.parseInt(posSplit[0]);
-				int end=Integer.parseInt(posSplit[1]);
-				pos.get(seq).put(start, end);
+				int id=Integer.parseInt(posSplit[0]);
+				int start=Integer.parseInt(posSplit[1]);
+				int end=Integer.parseInt(posSplit[2]);
+				pos.get(seq).add(new REPINposition(start, end, id));
 			}
 		}
 		return pos;
 
 	}
+	
+	
 
-
-	static HashSet<String> ecoliHS=new HashSet<String>();
-	static{
-		ecoliHS.add("UMN026");
-		ecoliHS.add("536");
-		ecoliHS.add("IAI1");
-		ecoliHS.add("REL606");
-		ecoliHS.add("UTI89");
-		ecoliHS.add("MG1655");
-		ecoliHS.add("Ealb07-3866");
-		ecoliHS.add("Ebac_57");
-		ecoliHS.add("Ckos_BAA-895");
-		ecoliHS.add("Sbon_SARC11");
-		ecoliHS.add("Sent_9150");
-		ecoliHS.add("Sent_P-stx-12");
-		ecoliHS.add("Kvar_342");
-		ecoliHS.add("NC_013440");
-
-	}
-
-	public REPINProperties(File outFolder,String genomeID,File fas,int wordlength,int numMuts,double minFrac,File mutRate,String word,boolean needsToContainWord){
+	public REPINProperties(File outFolder,String genomeID,File fas,int wordlength,int numMuts,double minFrac,File mutRate,String word,boolean needsToContainWord,boolean analyseREPIN){
 		this.word=word;
 		this.needsToContainWord=needsToContainWord;
 		this.outFolder=outFolder;
 		this.genomeID=genomeID;
 		this.fas=fas;
-		ecoli=ecoliHS.contains(genomeID);
+		this.analyseREPIN=analyseREPIN;
 		this.wordlength=wordlength;
 		seedSequence=new File(outFolder+"/"+genomeID+seedExt);
 		System.out.println("Processing genome "+genomeID);
@@ -131,7 +115,7 @@ public class REPINProperties {
 			System.out.println("Determine largest sequence cluster...");
 			determineLargestSequenceCluster();
 			//}
-			writeAllSequenceClusters();
+			if(analyseREPIN)writeAllSequenceClusters();
 			//System.out.println("Write mutation frequencies...");
 			//writeMutationFrequencies();
 			//System.out.println("Calculate mutation rates...");
@@ -189,7 +173,7 @@ public class REPINProperties {
 			sn.writeCytoscapeInput(simNet);
 			sn.writeNodes(nodes);
 
-			if(!ecoli){
+			if(analyseREPIN){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
                 String mcl_command =mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout;
@@ -215,7 +199,7 @@ public class REPINProperties {
 				}
 			}
 		//}
-			if(!ecoli){
+			if(analyseREPIN){
 				seedSequence=newSeedSequences;
 
 			}
@@ -483,7 +467,7 @@ public class REPINProperties {
 				String[] split=line.split("_|\\s+");
 				int num=Integer.parseInt(split[1]);
 				String seq=split[0];
-				if(!seq.contains(as)) {
+				if(!seq.contains(as)||!analyseREPIN) {
 					sum+=num;
 				}
 
