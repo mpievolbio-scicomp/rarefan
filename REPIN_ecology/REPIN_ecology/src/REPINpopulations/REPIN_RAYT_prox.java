@@ -31,7 +31,7 @@ public class REPIN_RAYT_prox {
 			remove(all,clusters);
 			HashSet<String> rest=all;
 			clusters.add(toArrayList(rest));
-			HashMap<String,HashMap<Integer,Integer>> repinPos=rp.getREPINPositions();
+			HashMap<String,ArrayList<REPINposition>> repinPos=rp.getREPINPositions();
 			try {
 				File out=new File(outFolder+"/"+genomeID+"_rayt_repin_prox.txt");
 				BufferedWriter bw=new BufferedWriter(new FileWriter(out));
@@ -155,7 +155,7 @@ public class REPIN_RAYT_prox {
 		}
 		return clusters;
 	}
-	private boolean isNear(ArrayList<String> repins,Info raytPos,HashMap<String,HashMap<Integer,Integer>> repinPos) {
+	private boolean isNear(ArrayList<String> repins,Info raytPos,HashMap<String,ArrayList<REPINposition>> repinPos) {
 		ArrayList<Info> repinInfo=getREPINPos(repinPos,repins);
 		for(int i=0;i<repinInfo.size();i++) {
 			int repinstart=repinInfo.get(i).getStart();
@@ -173,7 +173,7 @@ public class REPIN_RAYT_prox {
 		return false;
 	}
 	
-	private ArrayList<Info> getREPINPos(HashMap<String,HashMap<Integer,Integer>> repinPos,ArrayList<String> repins){
+	private ArrayList<Info> getREPINPos(HashMap<String,ArrayList<REPINposition>> repinPos,ArrayList<String> repins){
 		ArrayList<Info> repinInf=new ArrayList<Info>();
 		for(int i=0;i<repins.size();i++) {
 			repinInf.addAll(getREPINPos(repinPos,repins.get(i)));
@@ -181,13 +181,13 @@ public class REPIN_RAYT_prox {
 		return repinInf;
 	}
 	
-	private ArrayList<Info> getREPINPos(HashMap<String,HashMap<Integer,Integer>> repinPos,String repin){
+	private ArrayList<Info> getREPINPos(HashMap<String,ArrayList<REPINposition>> repinPos,String repin){
 		ArrayList<Info> repinInf=new ArrayList<Info>();
-		Integer[] keys=repinPos.get(repin).keySet().toArray(new Integer[0]);
-		for(int i=0;i<keys.length;i++) {
-			int start=keys[i];
-			int end=repinPos.get(repin).get(start);
-			repinInf.add(new Info(start,end,repin));
+		ArrayList<REPINposition> repList=repinPos.get(repin);
+		for(int i=0;i<repList.size();i++) {
+			int start=repList.get(i).start;
+			int end=repList.get(i).end;
+			repinInf.add(new Info(start,end,repin+"_fastaPos_"+repList.get(i).id));
 		}
 		return repinInf;
 	}
