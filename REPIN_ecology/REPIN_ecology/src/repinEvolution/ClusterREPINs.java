@@ -39,7 +39,7 @@ public class ClusterREPINs {
 		
 		for(int i=0;i<reps.length;i++) {
 			REPINProperties props=rp.getREPINProperties(reps[i]);
-			ArrayList<REPIN> repins=convertToRepin(toPosHashMap(props.getREPINPositions()),toPosHashMap(props.getLargestClusterREPINPositions()),i,genomeSeq,genomeID);
+			ArrayList<REPIN> repins=convertToRepin(toArrayList(props.getREPINPositions()),toPosHashMap(props.getLargestClusterREPINPositions()),i,genomeSeq,genomeID);
 			for(int j=0;j<repins.size();j++) {
 				int refPos=isReference?repins.get(j).start:atg.getPositionQuery(repins.get(j).start, genomeID);
 				rc.addREPIN(reference, refPos, repins.get(j));
@@ -47,7 +47,7 @@ public class ClusterREPINs {
 		}
 	}
 	
-	private ArrayList<REPINposition> toPosHashMap(HashMap<String,ArrayList<REPINposition>> repinPos){
+	private ArrayList<REPINposition> toArrayList(HashMap<String,ArrayList<REPINposition>> repinPos){
 		ArrayList<REPINposition> pos=new ArrayList<REPINposition>();
 		String[] keys=repinPos.keySet().toArray(new String[0]);
 		for(int i=0;i<keys.length;i++) {
@@ -56,33 +56,50 @@ public class ClusterREPINs {
 		return pos;
 	}
 	
-	private ArrayList<REPIN> convertToRepin(ArrayList<REPINposition> pos,HashMap<Integer,Integer> largestCluster,int repintype,String genome,String genomeID){
+	private HashMap<Integer,REPINposition> toPosHashMap(HashMap<String,ArrayList<REPINposition>> repinPos){
+		HashMap<Integer,REPINposition> pos=new HashMap<Integer,REPINposition>();
+		String[] keys=repinPos.keySet().toArray(new String[0]);
+		for(int i=0;i<keys.length;i++) {
+			ArrayList<REPINposition> repinpos=repinPos.get(keys[i]);
+			for(int j=0;j<repinpos.size();j++) {
+				if(repinpos.get(j).id==0) {
+					pos.put(repinpos.get(j).start, repinpos.get(j));
+					pos.put(repinpos.get(j).end, repinpos.get(j));
+				}
+			}
+		}
+		return pos;
+	}
+	
+	private ArrayList<REPIN> convertToRepin(ArrayList<REPINposition> pos,HashMap<Integer,REPINposition> largestCluster,int repintype,String genome,String genomeID){
 		ArrayList<REPIN> repins=new ArrayList<REPIN>();
 		
 		for(int i=0;i<pos.size();i++) {
 			int start=pos.get(i).start;
 			int end=pos.get(i).end;
-			int isLargestCluster;
-			if(largestCluster.containsKey(start)) {
-				isLargestCluster=1;
-			}else {
-				isLargestCluster=0;
+			if(pos.get(i).id==0) {
+				int isLargestCluster;
+				if(largestCluster.containsKey(start)) {
+					isLargestCluster=1;
+				}else {
+					isLargestCluster=0;
+				}
+				if(start>end) {
+					int mem=start;
+					start=end;
+					end=mem;
+				}
+
+				int size=end-start;
+				int isREPIN;
+				if(size<minREPINSize) {
+					isREPIN=0;
+				}else {
+					isREPIN=1;
+				}
+				REPIN repin=new REPIN(start,end , repintype, new Fasta("repin_"+repintype+"_"+i,genome.subSequence(start, end)+""), genomeID,isREPIN,isLargestCluster);
+				repins.add(repin);
 			}
-			if(start>end) {
-				int mem=start;
-				start=end;
-				end=mem;
-			}
-			
-			int size=end-start;
-			int isREPIN;
-			if(size<minREPINSize) {
-				isREPIN=0;
-			}else {
-				isREPIN=1;
-			}
-			REPIN repin=new REPIN(start,end , repintype, new Fasta("repin_"+repintype+"_"+i,genome.subSequence(start, end)+""), genomeID,isREPIN,isLargestCluster);
-			repins.add(repin);
 		}
 		return repins;
 	}
