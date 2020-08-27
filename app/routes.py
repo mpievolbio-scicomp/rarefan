@@ -13,16 +13,10 @@ def index():
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
-    upload_form = SubmitForm()
+    submit_form = SubmitForm()
 
-    
-
-    
-
-    print(upload_form.upload.data)
-    print(upload_form.go.data)
-    if upload_form.upload.data:
-        seqs = request.files.getlist(upload_form.sequences.name)
+    if submit_form.upload.data:
+        seqs = request.files.getlist(submit_form.sequences.name)
         
         session['tmpdir'] = tempfile.mkdtemp(suffix=None,
                               prefix=None,
@@ -35,11 +29,11 @@ def submit():
             tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
             fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
             [seq.save(fname) for seq,fname in zip(seqs,fnames)]
-            upload_form.reference_strain.choices = strain_names
-            upload_form.query_rayt.choices += rayt_names
-            upload_form.treefile.choices = ["None"] + tree_names
+            submit_form.reference_strain.choices = strain_names
+            submit_form.query_rayt.choices += rayt_names
+            submit_form.treefile.choices = ["None"] + tree_names
         
-    if upload_form.go.data:
+    if submit_form.go.data:
         tmpdir = session['tmpdir']
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
@@ -50,6 +44,7 @@ def submit():
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
+        session['analyse_repins'] = request.form.get('analyse_repins')
 
         # copy query rayt to working dir
         query_rayt_fname = os.path.join(session['tmpdir'],session['query_rayt']+".faa")
@@ -79,7 +74,8 @@ def submit():
                 '{0:s}'.format(session['nmer_length']),
                 query_rayt_fname,
                 treefile,
-                '{0:s}'.format(session['e_value_cutoff'])
+                '{0:s}'.format(session['e_value_cutoff']),
+                {"y": "true", "n": "false"}[session['analyse_repins']],
                 ]
         print(" ".join(command))
 
@@ -104,18 +100,20 @@ def submit():
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
 
-            for line in iter(proc.stdout.readline, b''):
-                sys.stdout.write(line)
-                log.write(line)
+            # for line in iter(proc.stdout.readline, b''):
+            #     sys.stdout.write(line.decode('ascii'))
+            #     log.write(line)
 
         os.chdir(oldwd) ### TODO: needed?
 
-
-
+        return render_template('results.html',
+                            title='Results',
+                            results_path=os.path.join(tmpdir)
+                            )
 
     return render_template('submit.html',
                     title='Submit',
-                    upload_form=upload_form, 
+                    submit_form=submit_form, 
                     )
           
 @app.route('/run_repinpop', methods=['GET', 'POST'])
@@ -125,7 +123,3 @@ def run_repinpop():
     print(session["nmer_length"])
     
     return "`'/-"
-
-
-        #
-    # return "Running REPINPop. Stay tuned...."

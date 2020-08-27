@@ -25,6 +25,8 @@ public class DeterminePopulationFrequencies {
 	String e;
 	boolean analyseREPIN;
 	HashMap<String/*genomes*/,HashMap<String/*focal seed*/,Integer/*pop size*/>> results=new HashMap<String,HashMap<String,Integer>>();
+
+    // Entry point.
 	public static void main(String args[]) {
 		File inFolder=new File(args[0]);
 		String focalSeedGenome=args[1];
