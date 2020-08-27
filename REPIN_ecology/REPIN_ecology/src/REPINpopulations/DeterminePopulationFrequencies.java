@@ -76,8 +76,8 @@ public class DeterminePopulationFrequencies {
 		String filenames=generateFileNameString();
 		String treeID=treeFile.getName().split("\\.")[0];
 		File distFile=new File(outFolder+"/"+treeID+".dist");
-		RunTreePrograms.runProgram("/usr/local/bin/andi "+filenames, "", outFolder,distFile);
-		RunTreePrograms.runProgram("/usr/local/bin/clustDist "+distFile, "", outFolder, treeFile);
+		RunTreePrograms.runProgram("andi "+filenames, "", outFolder,distFile);
+		RunTreePrograms.runProgram("clustDist "+distFile, "", outFolder, treeFile);
 	}
 
 	private String generateFileNameString() {
