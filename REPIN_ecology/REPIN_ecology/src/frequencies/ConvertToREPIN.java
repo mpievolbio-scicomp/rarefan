@@ -3,6 +3,7 @@ package frequencies;
 import java.io.*;
 import java.util.*;
 
+import REPINpopulations.REPINposition;
 import util.*;
 
 
@@ -21,8 +22,8 @@ public class ConvertToREPIN {
 	ArrayList<Fasta> REPINSeeds;
 	int maxDist;
 	String masterSeq;
-	HashMap<String,TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> positions;
-	HashMap<String,HashMap<Integer,Integer>> REPINposition=new  HashMap<String,HashMap<Integer,Integer>>();
+	ArrayList</*list of positions in fasta seqs, each element in list corresponds to sequence in fasta file*/TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> positions;
+	HashMap<String,ArrayList<REPINpopulations.REPINposition>> REPINposition=new  HashMap<String,ArrayList<REPINpopulations.REPINposition>>();
 	
 	public static void main(String args[]) {
 		File folder=new File("/Users/bertels/Documents/Arne/mutationFrequencies/chlororaphis/REPINs21/");
@@ -66,7 +67,7 @@ public class ConvertToREPIN {
 		REPINSeeds=getREPINs();
 	} 
 	
-	public HashMap<String,HashMap<Integer,Integer>> getPositions(){
+	public HashMap<String,ArrayList<REPINpopulations.REPINposition>> getPositions(){
 		return REPINposition;
 		
 	}
@@ -87,17 +88,16 @@ public class ConvertToREPIN {
 		return clusters;
 	}
 	
-	private ArrayList<TreeMap<Integer,OrientationSequence>> getClusters(){
-		ArrayList<TreeMap<Integer,OrientationSequence>> clusters=new ArrayList<TreeMap<Integer,OrientationSequence>>();
-		String[] ids=positions.keySet().toArray(new String[0]);
-		for(int i=0;i<ids.length;i++){
-			clusters.addAll(getClusters(positions.get(ids[i])));
+	private HashMap<Integer/*fasta id*/,ArrayList<TreeMap<Integer,OrientationSequence>>> getClusters(){
+		HashMap<Integer,ArrayList<TreeMap<Integer,OrientationSequence>>> clusters=new HashMap<Integer,ArrayList<TreeMap<Integer,OrientationSequence>>>();
+		for(int i=0;i<positions.size();i++){
+			clusters.put(i,getClusters(positions.get(i)));
 		}
 		return clusters;
 	}
 	
 	private ArrayList<Fasta> getREPINs(){
-		ArrayList<TreeMap<Integer,OrientationSequence>> clusters=getClusters();
+		HashMap<Integer/*sequence position in fasta file*/,ArrayList<TreeMap<Integer,OrientationSequence>>> clusters=getClusters();
 	
 		HashMap<String,ArrayList<String>> REPINfreq= makeREPINs(clusters);
 
@@ -120,10 +120,14 @@ public class ConvertToREPIN {
 		return repins;
 	}
 	
-	private HashMap<String,ArrayList<String>> makeREPINs(ArrayList<TreeMap<Integer,OrientationSequence>> clusters){
+	private HashMap<String,ArrayList<String>> makeREPINs(HashMap<Integer,ArrayList<TreeMap<Integer,OrientationSequence>>> clusters){
 		HashMap<String,ArrayList<String>> repinFreq=new HashMap<String,ArrayList<String>>();
-		for(int i=0;i<clusters.size();i++){
-			add(repinFreq,calculateREPINsFromClusters(clusters.get(i)));
+		Integer[] ids=clusters.keySet().toArray(new Integer[0]);
+		for(int i=0;i<ids.length;i++){
+			ArrayList<TreeMap<Integer,OrientationSequence>> positions=clusters.get(ids[i]);
+			for(int j=0;j<positions.size();j++) {
+				add(repinFreq,calculateREPINsFromClusters(positions.get(j), ids[i]));
+			}
 		}
 		return repinFreq;
 	}
@@ -140,7 +144,7 @@ public class ConvertToREPIN {
 	}
 	
 	
-	private HashMap<String,ArrayList<String>> calculateREPINsFromClusters(TreeMap<Integer,OrientationSequence> clusters){
+	private HashMap<String,ArrayList<String>> calculateREPINsFromClusters(TreeMap<Integer,OrientationSequence> clusters,int id){
 		HashMap<String,ArrayList<String>> REPINs=new HashMap<String,ArrayList<String>>();
 		Integer[] pos=clusters.keySet().toArray(new Integer[0]);
 		for(int i=0;i<pos.length;i++){
@@ -176,10 +180,10 @@ public class ConvertToREPIN {
 				REPINs.put(repin, new ArrayList<String>());
 			}
 			if(!REPINposition.containsKey(repin)) {
-				REPINposition.put(repin, new HashMap<Integer,Integer>());
+				REPINposition.put(repin, new ArrayList<REPINposition>());
 			}
-			REPINs.get(repin).add(pos1+"_"+pos2);
-			REPINposition.get(repin).put(pos1, pos2);
+			REPINs.get(repin).add(id+"_"+pos1+"_"+pos2);
+			REPINposition.get(repin).add(new REPINposition(pos1,pos2, id));
 		}
 		return REPINs;
 	}
@@ -192,33 +196,29 @@ public class ConvertToREPIN {
 		return sb.toString();
 	}
 	
+	private  void initPositions(){
+		positions=new ArrayList<TreeMap<Integer,OrientationSequence>>();
+
+		for(int i=0;i<fas.size();i++) {
+			positions.add(new TreeMap<Integer, ConvertToREPIN.OrientationSequence>());
+		}
+	}
+	
 	private void calculatePositionsOrientation(){
-		positions=new HashMap<String, TreeMap<Integer,OrientationSequence>>();
+		initPositions();
 		
 		addAll(positions,find(true));
-		String key=positions.keySet().toArray(new String[0])[0];
-		System.out.println(positions.get(key).size());
 		addAll(positions,find(false));
-		System.out.println(positions.get(key).size());
 	}
 	
-	private void addAll(HashMap<String,TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> posOrient,HashMap<String,TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> add){
-		String[] keys=posOrient.keySet().toArray(new String[0]);
-		for(int i=0;i<keys.length;i++){
-			if(add.containsKey(keys[i])){
-				posOrient.get(keys[i]).putAll(add.get(keys[i]));
-			}
+	private void addAll(ArrayList<TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> posOrient,ArrayList<TreeMap<Integer/*pos*/,OrientationSequence/*orientation and sequence*/>> add){
+		for(int i=0;i<posOrient.size();i++) {
+			posOrient.get(i).putAll(add.get(i));
 		}
-		String[] keysA=add.keySet().toArray(new String[0]);
-		for(int i=0;i<keysA.length;i++){
-			if(!posOrient.containsKey(keysA[i])){
-				posOrient.put(keysA[i],add.get(keysA[i]));
-			}
-		}	
 	}
 	
-	private HashMap<String,TreeMap<Integer,OrientationSequence>> find(boolean orientation){
-		HashMap<String,TreeMap<Integer,OrientationSequence>> posOrient=new HashMap<String, TreeMap<Integer,OrientationSequence>>();
+	private ArrayList<TreeMap<Integer,OrientationSequence>> find(boolean orientation){
+		ArrayList<TreeMap<Integer,OrientationSequence>> posOrient=new ArrayList< TreeMap<Integer,OrientationSequence>>();
 
 		for(int i=0;i<fas.size();i++){
 			TreeMap<Integer,OrientationSequence> tm=new TreeMap<Integer, ConvertToREPIN.OrientationSequence>();
@@ -237,7 +237,7 @@ public class ConvertToREPIN {
 					
 				}
 			}
-			posOrient.put(fas.get(i).getIdent(), tm);
+			posOrient.add(tm);
 		}
 
 		return posOrient;
@@ -266,9 +266,10 @@ public class ConvertToREPIN {
 	}
 	
 	private String getSequence(String pos) {
-		int start=Integer.parseInt(pos.split("_")[0]);
-		int end=Integer.parseInt(pos.split("_")[1]);
-		return fas.get(0).getSequence().substring(start,end);
+		int id=Integer.parseInt(pos.split("_")[0]);
+		int start=Integer.parseInt(pos.split("_")[1]);
+		int end=Integer.parseInt(pos.split("_")[2]);
+		return fas.get(id).getSequence().substring(start,end);
 	}
 	
 }

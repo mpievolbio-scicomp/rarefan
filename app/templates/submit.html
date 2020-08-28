@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block body %}
+    <h1>REPINPop Job Submission Form</h1>
+    <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
+        {{ submit_form.hidden_tag() }}
+        <p>
+            {{ submit_form.sequences.label }}
+            {{ submit_form.sequences(size=32) }}
+            {{ submit_form.upload() }}
+        </p>
+        <p>
+            {{ submit_form.reference_strain.label }}
+            {{ submit_form.reference_strain() }}</br>
+            {{ submit_form.query_rayt.label }}
+            {{ submit_form.query_rayt() }}</br>
+            {{ submit_form.treefile.label }}
+            {{ submit_form.treefile() }}</br>
+            {{ submit_form.min_nmer_occurence.label }}
+            {{ submit_form.min_nmer_occurence() }}</br>
+            {{ submit_form.nmer_length.label }}
+            {{ submit_form.nmer_length() }}</br>
+            {{ submit_form.e_value_cutoff.label }}
+            {{ submit_form.e_value_cutoff() }}</br>
+            {{ submit_form.analyse_repins.label }}
+            {{ submit_form.analyse_repins() }}</br>
+            {{ submit_form.go() }}
+        </p>
+    </form>
+{% endblock %}

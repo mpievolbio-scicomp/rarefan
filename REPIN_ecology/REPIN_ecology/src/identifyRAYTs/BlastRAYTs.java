@@ -18,10 +18,11 @@ public class BlastRAYTs {
 		String nameSeqs=args[4];
 		String[] repType=Arrays.copyOfRange(args,5,args.length);
 
-		runProgram(inFolder,query,outFolder,e,program,repType,nameSeqs);
+		runProgram(inFolder,query,outFolder,e,program,repType,nameSeqs,true);
 	}
 	static int minClusterSize=10;
-	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs) {
+	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs,boolean analyseREPIN) {
+		
 		for(int k=0;k<repType.length;k++) {
 			ArrayList<Fasta> seqs=new ArrayList<Fasta>();
 			File out=new File(outFolder+"/"+nameSeqs);
@@ -34,16 +35,16 @@ public class BlastRAYTs {
 				if(dbs[i].getName().endsWith("fas")||dbs[i].getName().endsWith("fna")) {
 					File db=dbs[i];
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
-					String seqName=dbs[i].getName().split("\\.")[0];
-					String maxREPIN=getMaxREPIN(seqName,inFolder,repType[k]);
-					System.out.println(seqName+" "+inFolder+" "+repType[k]);
+					String seqName=getName(dbs[i]);
+					String maxREPIN=getMaxREPIN(seqName,outFolder,repType[k],analyseREPIN);
+					System.out.println(seqName+" "+outFolder+" "+repType[k]);
 					if(!maxREPIN.equals("-1")){
 						System.out.println(maxREPIN);
 						int maxREPINNum=Integer.parseInt(maxREPIN.split("_|\\s+")[1]);
-						
+
 						int repins=Integer.parseInt(maxREPIN.split("_")[2]);
-						int allREPs=getREPNumbers(seqName, inFolder,repType[k]);
-						int numREPINClusters=getNumREPINClusters(seqName,inFolder,repType[k]);
+						int allREPs=getREPNumbers(seqName, outFolder,repType[k]);
+						int numREPINClusters=getNumREPINClusters(seqName,outFolder,repType[k],analyseREPIN);
 						presAbsHash.put(seqName, bi.size()+"\t"+repins+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters);
 						print(bi,dbs[i],seqs);
 					}
@@ -55,7 +56,12 @@ public class BlastRAYTs {
 
 	}
 	
-	public static int getNumREPINClusters(String name,File folder,String repType) {
+	private static String getName(File in) {
+		String[] parts=in.getName().split("\\.");
+		return parts[parts.length-2];
+	}
+	
+	public static int getNumREPINClusters(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".mcl");
 			//System.out.println(in);
@@ -70,7 +76,7 @@ public class BlastRAYTs {
 						String[] splitREPIN=split[i].split("_");
 						String REPIN=splitREPIN[0];
 						int num=Integer.parseInt(splitREPIN[1]);
-						if(isREPIN(REPIN)) {
+						if(isREPIN(REPIN)||!analyseREPIN) {
 							sum+=num;
 						}else {
 							break;
@@ -93,7 +99,7 @@ public class BlastRAYTs {
 	}
 
 	
-	public static String getMaxREPIN(String name,File folder,String repType) {
+	public static String getMaxREPIN(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+"_largestCluster.nodes");
 			if(!in.exists())System.err.println(in);
@@ -107,10 +113,10 @@ public class BlastRAYTs {
 				while((line=br.readLine())!=null) {
 
 					String[] split=line.split("_|\\s+");
-					
+
 					int num= Integer.parseInt(split[1]);
 					String curr=split[0];
-					if(isREPIN(curr)) {
+					if(isREPIN(curr)||!analyseREPIN) {
 						sum+=num;
 						if(num>max) {
 							max=num;
@@ -132,7 +138,7 @@ public class BlastRAYTs {
 		}
 		return "-1";
 	}
-	
+
 	private static boolean isREPIN(String repin) {
 		int length=repin.length();
 		if(repin.substring(length/2).equals(makeREPIN('A',length/2))) {
@@ -140,7 +146,7 @@ public class BlastRAYTs {
 		}
 		return true;
 	}
-	
+
 	private static String makeREPIN(char nuc,int rep) {
 		StringBuffer sb=new StringBuffer();
 		for(int i=0;i<rep;i++) {
@@ -148,7 +154,7 @@ public class BlastRAYTs {
 		}
 		return sb.toString();
 	}
-	
+
 	public static int getREPNumbers(String name,File folder,String repType) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".nodes");
@@ -171,7 +177,7 @@ public class BlastRAYTs {
 		}
 		return -1;
 	}
-	
+
 	public static void printHM(HashMap<String,String> hm,File out,File maxREPINOut) {
 		try {
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
@@ -187,7 +193,7 @@ public class BlastRAYTs {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
 	}
 	public static String getName(String fasIdent) {
 		String split[]=fasIdent.split("\\s+");
@@ -200,16 +206,16 @@ public class BlastRAYTs {
 	      name=name.replace(".","");
 	      name=name.replace("*","");
 	      name=name.replace(",","");
-	      
+
 	      return name;
 	}
 	
-	public static void print(ArrayList<Info> inf,File in,ArrayList<Fasta> seqs) {
+	public static void print(ArrayList<Info> inf/*blast result*/,File in/*genome Fasta sequence*/,ArrayList<Fasta> seqs/*result sequences*/) {
 		for(int i=0;i<inf.size();i++) {
-			//System.out.println(inf.get(i).toString());
-			ArrayList<Fasta> fas=Fasta.readFasta(in);
-			String fasIdent=fas.get(0).getIdent();
-			//String shortName=getName(fasIdent);
+
+			HashMap<String,String> fas=Fasta.fasToHash(Fasta.readFasta(in), false);
+			String fasIdent=inf.get(i).info.split("---")[0];
+
 			
 
 			String name=fasIdent.split("\\s+")[0]+"_"+inf.get(i).getStart()+"_"+inf.get(i).getEnd();
@@ -222,56 +228,66 @@ public class BlastRAYTs {
 				end=end>start?end:temp;
 				rev=true;
 			}
-			String seq=getSeq(fas,start,end,rev);
+			System.out.println(fasIdent+" "+in);
+			System.out.println(start+" "+end);
+			String seq=getSeq(fas.get(fasIdent),start,end,rev);
 		
 			seqs.add(new Fasta(name+" "+inf.get(i).toString(),seq));
-			
+
 
 		}
 	}
 	
-	private static String getSeq(ArrayList<Fasta> fas,int start,int end,boolean rev) {
-		String seq=fas.get(0).getSequence().substring(start-add,end+add);
+	private static String getSeq(String genomeSeq,int start,int end,boolean rev) {
+		String seq=genomeSeq.substring(start-add,end+add);
 
 		if(rev) {
 			seq=DNAmanipulations.reverse(seq);
 			if(seq.startsWith("T")) {
-				seq=fas.get(0).getSequence().substring(start-add,end+add+1);
+				seq=genomeSeq.substring(start-add,end+add+1);
 				seq=DNAmanipulations.reverse(seq);
 			}
 		}else {
-			seq=fas.get(0).getSequence().substring(start-add-1,end+add);
+			seq=genomeSeq.substring(start-add-1,end+add);
 
 		}
 		return seq;
 	}
-	
+
 	public static ArrayList<Info> blastQuery(File db, File query,File outFolder,String e,String program){
-		return blastQuery(db, query, outFolder, e, program, "/usr/local/share/");
+		return blastQuery(db, query, outFolder, e, program, "");
 	}
-	
+
 	public static ArrayList<Info> blastQuery(File db, File query,File outFolder,String e,String program,String legacyBlastPerlLocation){
 		File blastFolder=new File(outFolder+"/blastout/");
 		blastFolder.mkdir();
 		File out=new File(blastFolder+"/"+db.getName()+".blast");
 		ArrayList<Info> blastIntervals=new ArrayList<Info>();
 		//out.deleteOnExit();
-	
+
 		PerformBlast.blast(legacyBlastPerlLocation+"legacy_blast.pl blastall",legacyBlastPerlLocation+"legacy_blast.pl formatdb",program, Double.parseDouble(e), out, query, db, false,false,true,false);
 		ReadBlast rb=new ReadBlast(out);
 		int querylength=Fasta.readFasta(query).get(0).getSequence().length();
 		for(int i=0;i<rb.getDatabase().size();i++){
+			HashMap<String,Fasta> fas=Fasta.fasToFastaHash(Fasta.readFasta(db), false);
+			int seqlength=fas.get(rb.getDatabase().get(i)).getSequence().length();
 			int start=rb.getStartDB().get(i);
 			int end=rb.getEndDB().get(i);
 			//int temp=start;
 			//start=start<end?start:end;
 			//end=end>start?end:temp;
-			
+
 			if(Math.abs(start-end)>240) {
 				int multi=program.equals("blastn")?1:3;
 				int adjstart=end>start?start-rb.getStartQuery().get(i)*multi:start+rb.getStartQuery().get(i)*multi;
 				int adjend=end>start?end+(querylength-rb.getEndQuery().get(i))*multi:end-(querylength-rb.getEndQuery().get(i))*multi;
 				System.out.println(adjstart-adjend);
+				if(adjend>seqlength) {
+					adjend=seqlength;
+				}
+				if(adjstart<0) {
+					adjstart=1;
+				}
 				blastIntervals.add(new Info(adjstart,adjend,rb.getDatabase().get(i)+"---"+rb.getEvalue().get(i)));
 			}
 		}

@@ -17,19 +17,21 @@ public class MakeREPINClusters {
 	GenomeAlignments ga;
 	String reference;
 	String[] reps;
+	boolean analyseREPIN;
 	HashMap<String,ArrayList<Fasta>> repinAlignments;
 	public static void main(String[] args) {
 		File inFolder=new File(args[0]);
 		String[] focalSeeds=Arrays.copyOfRange(args, 1, args.length);
 		File out=new File(inFolder+"/repinClusters.txt");
-		MakeREPINClusters mrc=new MakeREPINClusters(inFolder, focalSeeds);
+		MakeREPINClusters mrc=new MakeREPINClusters(inFolder, focalSeeds,true);
 		mrc.writeClusters(out);
 		File fasAlignments=new File(out.getParentFile()+"/fas/");
 		fasAlignments.mkdir();
 		mrc.writeREPINAlignments(fasAlignments);
 	}
 	
-	public MakeREPINClusters(File inFolder,String[] reps) {
+	public MakeREPINClusters(File inFolder,String[] reps,boolean analyseREPIN) {
+		this.analyseREPIN=analyseREPIN;
 		File[] genomes=getGenomes(inFolder);
 		reference=AlignTwoGenomes.getID(genomes[0]);
 		ArrayList<Fasta> refGenome=Fasta.readFasta(genomes[0]);
@@ -96,7 +98,7 @@ public class MakeREPINClusters {
 			String id=AlignTwoGenomes.getID(genomes[i]);
 			rp.put(id, new REPINpopulations());
 			for(int j=0;j<reps.length;j++) {
-				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false));
+				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false,analyseREPIN));
 			}
 		}
 		
