@@ -1,5 +1,5 @@
 from flask import render_template, request, session
-from app.views import SubmitForm, RunForm
+from app.views import SubmitForm, RunForm, ResultsForm
 from app import app
 
 import os, shutil, sys
@@ -117,16 +117,6 @@ def submit():
                     submit_form=submit_form, 
                     )
           
-@app.route('/run_repinpop', methods=['GET', 'POST'])
-def run_repinpop():
-    print(session["tmpdir"])
-    print(session["reference_strain"])
-    print(session["nmer_length"])
-    
-    return "`'/-"
-
-def splitpath(path, maxdepth=20):
-     ( head, tail ) = os.path.split(path)
-     return splitpath(head, maxdepth - 1) + [ tail ] \
-         if maxdepth and head and head != path \
-         else [ head or tail ]
+@app.route('/results', methods=['GET'])
+def results():
+    results_form = ResultsForm()
