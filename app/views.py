@@ -73,3 +73,8 @@ class SubmitForm(FlaskForm):
 
 class RunForm(FlaskForm):
     go = SubmitField("GoGo!")
+
+
+class ResultsForm(FlaskForm):
+    run_id_form = StringField("Enter run ID")
+
