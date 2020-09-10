@@ -1,5 +1,8 @@
 # RepinPop
 
+## Compilers and build system
+Make sure, a C++ compiler and the `autoconf` utility are installed on your system.
+
 ## Create the conda environment
 
 ```
@@ -15,9 +18,6 @@ Activate the new environment:
 ```
 $> conda activate repinpop
 ```
-
-
-
 
 ## Install 3rd party libraries through cmake.
 Not all dependencies are available on the conda archives. `andi` [Efficient
