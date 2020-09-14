@@ -1,15 +1,24 @@
 {% extends "base.html" %}
 {% block body %}
     <p>
-    <h1>REPINPop Results</h1>
+    <h1>REPINPop Results for run {{args['run_id']}}</h1>
     </p>
     <body>
+        <form method="get">
+        {{ results_form.hidden_tag() }}
         <p>
-        <img src="/static/uploads/{{results_path}}/out/repins.png" alt="REPINs" width="400" height="400">
+            {{ results_form.run_id.label }}
+            {{ results_form.run_id() }}
         </p>
         <p>
-        <img src="/static/uploads/{{results_path}}/out/correlations.png" alt="REPINs" width="400" height="400">
+        <img src="/static/uploads/{{args['run_id']}}/out/repins.png" alt="REPINs" width="400" height="400">
         </p>
+        <p>
+        <img src="/static/uploads/{{args['run_id']}}/out/correlations.png" alt="Correlations" width="400" height="400">
+        </p>
+        </p>
+        <h2> Browse data </h2>
+        <a href={{url_for('files', req_path=args['run_id'])}}>{{args['run_id']}}</a>
     </body>
 {% endblock %}
 

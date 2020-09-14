@@ -1,6 +1,14 @@
-from flask import render_template, request, session
-from app.views import SubmitForm, RunForm, ResultsForm
+from flask import render_template,\
+                  request,\
+                  session,\
+                  redirect,\
+                  url_for,\
+                  abort,\
+                  send_from_directory
+
+from app.views import SubmitForm, RunForm, AnalysisForm
 from app import app
+from flask_autoindex import AutoIndex
 
 import os, shutil, sys
 import subprocess
@@ -58,9 +66,9 @@ def submit():
                                                              )
                                                 )
             shutil.copyfile(src, query_rayt_fname)
-
+        
         oldwd = os.getcwd()
-        os.chdir(app.config["UPLOAD_DIR"])
+        os.chdir(tmpdir)
 
         command = ['java',
                 '-jar',
@@ -101,15 +109,11 @@ def submit():
             proc = subprocess.Popen(command,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT)
-            
+
             proc.wait()
-
-            os.chdir(oldwd) 
-
-        return render_template('results.html',
-                            title='Results',
-                            results_path=os.path.basename(tmpdir),
-                            )
+        
+        os.chdir(oldwd)
+        return redirect(url_for('results', run_id=os.path.basename(tmpdir)))
 
     return render_template(
                     'submit.html',
@@ -119,4 +123,40 @@ def submit():
           
 @app.route('/results', methods=['GET'])
 def results():
-    results_form = ResultsForm()
+
+    args = request.args
+
+    results_form = AnalysisForm()
+    
+    if 'run_id' in args.keys():
+        return render_template('results.html',
+                title="Results",
+                results_form=results_form,
+                args=args,
+                )
+    else:
+        return render_template('results_query.html',
+                title="Results",
+                results_form=results_form
+                )
+
+
+@app.route('/files/<path:req_path>')
+def files(req_path):
+
+    base_dir = os.path.join(app.static_folder, 'uploads')
+    abs_path = os.path.join(base_dir, req_path)
+    print(base_dir, abs_path)
+
+    if not os.path.exists(abs_path):
+        print("{} not found".format(abs_path))
+        return abort(404)
+
+    if os.path.isfile(abs_path):
+        print("serving file")
+        return send_from_directory(base_dir, req_path)
+
+    fnames = os.listdir(abs_path)
+    print(fnames)
+
+    return render_template('files.html', files=fnames)
