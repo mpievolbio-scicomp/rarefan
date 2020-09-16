@@ -4,7 +4,7 @@
     <h1>REPINPop Results for run {{args['run_id']}}</h1>
     </p>
     <body>
-        <form method="get">
+        <form  method="get">
         {{ results_form.hidden_tag() }}
         <p>
             {{ results_form.run_id.label }}
@@ -18,7 +18,14 @@
         </p>
         </p>
         <h2> Browse data </h2>
+        <p>
         <a href={{url_for('files', req_path=args['run_id'])}}>{{args['run_id']}}</a>
+        </p>
+        <h2> Download data </h2>
+        <a href="/static/uploads/{{args['run_id']}}/{{args['run_id']}}_out.zip">{{args['run_id']}}_out.zip</a>
+        <p>
+        </p>
+        </form>
     </body>
 {% endblock %}
 

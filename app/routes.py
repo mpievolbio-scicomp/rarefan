@@ -109,7 +109,20 @@ def submit():
                     stderr=subprocess.STDOUT)
 
             proc.wait()
-        
+
+            # Zip results.
+            command = ["zip",
+                       "-rv",
+                       os.path.split(session['tmpdir'])[-1]+"_out.zip",
+                       'out'
+                       ]
+
+            proc = subprocess.Popen(command,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT)
+
+            proc.wait()
+
         os.chdir(oldwd)
         return redirect(url_for('results', run_id=os.path.basename(tmpdir)))
 
@@ -119,14 +132,16 @@ def submit():
                     submit_form=submit_form, 
                     )
           
-@app.route('/results', methods=['GET'])
+@app.route('/results', methods=['GET', 'POST'])
 def results():
 
     args = request.args
+    print(args)
 
     results_form = AnalysisForm()
-    
+
     if 'run_id' in args.keys():
+
         return render_template('results.html',
                 title="Results",
                 results_form=results_form,
@@ -158,3 +173,5 @@ def files(req_path):
     print(fnames)
 
     return render_template('files.html', files=fnames)
+
+ 

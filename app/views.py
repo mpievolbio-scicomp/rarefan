@@ -77,4 +77,5 @@ class RunForm(FlaskForm):
 
 class AnalysisForm(FlaskForm):
     run_id = StringField("Enter run ID")
+    go = SubmitField("Download zip")
 
