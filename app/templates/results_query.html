@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block body %}
+    <p>
+    <h1>Query REPINPop</h1>
+    </p>
+    <body>
+        <form method="get">
+        {{ results_form.hidden_tag() }}
+        <p>
+            {{ results_form.run_id.label }}
+            {{ results_form.run_id() }}
+        </p>
+    </body>
+{% endblock %}
+
