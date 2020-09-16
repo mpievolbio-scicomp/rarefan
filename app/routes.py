@@ -8,7 +8,6 @@ from flask import render_template,\
 
 from app.views import SubmitForm, RunForm, AnalysisForm
 from app import app
-from flask_autoindex import AutoIndex
 
 import os, shutil, sys
 import subprocess
@@ -73,8 +72,7 @@ def submit():
         command = ['java',
                 '-jar',
                 os.path.abspath(
-                    os.path.join(os.path.dirname(__file__),
-                        '..',
+                    os.path.join(os.path.dirname(app.root_path),
                         'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
                         )
                     ),
