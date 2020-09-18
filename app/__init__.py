@@ -2,9 +2,11 @@
 
 from flask import Flask
 import os
-
+import redis
+from rq import Queue
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
-
+r = redis.Redis()
+q = Queue(connection=r)
 from werkzeug.debug import DebuggedApplication
 
 from app import views, routes 
