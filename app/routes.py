@@ -9,7 +9,7 @@ from flask import render_template,\
 from app.views import SubmitForm, RunForm, AnalysisForm
 from app import app
 
-import os, shutil, sys
+import os, shutil, sys, stat
 import subprocess
 import tempfile
 #from werkzeug import secure_filename
@@ -69,7 +69,7 @@ def submit():
         oldwd = os.getcwd()
         os.chdir(tmpdir)
 
-        java_command = ['java',
+        java_command = " ".join(['java',
                 '-jar',
                 os.path.abspath(
                     os.path.join(os.path.dirname(app.root_path),
@@ -85,34 +85,43 @@ def submit():
                 treefile,
                 '{0:s}'.format(session['e_value_cutoff']),
                 {"y": "true", None: "false"}[session['analyse_repins']],
-                ]
+                ])
+
         java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
 
-        R_command = ["Rscript",
+        R_command = " ".join(["Rscript",
                    os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
                    session['outdir'],
                    treefile
-                   ]
+                   ])
         R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
         # Zip results.
-        zip_command = ["zip",
+        zip_command = " ".join(["zip",
                    "-rv",
                    os.path.split(session['tmpdir'])[-1]+"_out.zip",
                    'out'
-                   ]
+                   ])
+
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
-        command = shjava_command + \
-            ["&&", "touch", java_stamp]  #+\
-#            ["&&"] + R_command + ["&&", "touch",  R_stamp]  +\
-#            ["&&"] + zip_command + ["&&", "touch", "zip_stamp"]
-         
-        print(" ".join(command))
+        command_lines = [java_command+" && ",
+                        "touch {} && ".format(java_stamp),
+                        R_command+" && ",
+                        "touch {} && ".format(R_stamp),
+                        zip_command+" && ",
+                        "touch {}".format(zip_stamp)
+                        ]
         
-        proc = subprocess.Popen(command,
-                                shell=False,
-                                )
+        with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
+            fp.write(r"#! /bin/sh") 
+            fp.write('\n')
+            for line in command_lines:
+                fp.write(line)
+            fp.write('\n')
+
+        os.chmod('job.sh', stat.S_IRWXU )
+        proc = subprocess.Popen(os.path.join(tmpdir, 'job.sh'))
  
         os.chdir(oldwd)
         

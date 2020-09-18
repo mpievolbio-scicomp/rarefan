@@ -1,9 +1,5 @@
 {% extends "base.html" %}
 {% block body %}
-    <p>
-    <h1>{{title}}</h1>
-    <h2>REPINPop Results for run {{run_id}}</h2>
-    </p>
     <body>
         <form  method="get">
         {{ results_form.hidden_tag() }}
@@ -11,30 +7,41 @@
             {{ results_form.run_id.label }}
             {{ results_form.run_id() }}
         </p>
+		<p>
+		<h1>{{title}}</h1>
+		<h2>Run {{run_id}}</h2>
+		</p>
         {% if is_valid_run_id %}
-			{% if is_R_finished %}
-				<p>
-				<img src="/static/uploads/{{run_id}}/out/repins.png" alt="REPINs" width="400" height="400">
-				</p>
-				<p>
-				<img src="/static/uploads/{{run_id}}/out/correlations.png" alt="Correlations" width="400" height="400">
-				</p>
-			{% endif %}
 			{% if is_java_finished %}
-				</p>
-				<h2> Browse data </h2>
+				<h2> Figures </h2>
+				{% if is_R_finished %}
+					<p>
+					<img src="/static/uploads/{{run_id}}/out/repins.png" alt="REPINs" width="400" height="400">
+					</p>
+					<p>
+					<img src="/static/uploads/{{run_id}}/out/correlations.png" alt="Correlations" width="400" height="400">
+					</p>
+				{% else %}
 				<p>
-				<a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
+				R script is processing, please wait and reload.
 				</p>
+				{% endif %}
+				<h2> Browse data </h2>
+					<p>
+					<a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
+					</p>
+				<h2> Download data </h2>
+				{% if is_zip_finished %}
+					<p>
+					<a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
+					</p>
+				<p>
+				Compressing files for download, please wait and reload page.
+				</p>
+				{% endif %}
 			{% else %}
 				<p>
 				Run has not finished. Please wait and reload this page after a while.
-				</p>
-			{% endif %}
-			{% if is_zip_finished %}
-				<h2> Download data </h2>
-				<p>
-				<a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
 				</p>
 			{% endif %}
 		{% else %}
