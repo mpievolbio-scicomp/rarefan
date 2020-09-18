@@ -69,7 +69,7 @@ def submit():
         oldwd = os.getcwd()
         os.chdir(tmpdir)
 
-        command = ['java',
+        java_command = ['java',
                 '-jar',
                 os.path.abspath(
                     os.path.join(os.path.dirname(app.root_path),
@@ -86,45 +86,37 @@ def submit():
                 '{0:s}'.format(session['e_value_cutoff']),
                 {"y": "true", None: "false"}[session['analyse_repins']],
                 ]
+        java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
+
+        R_command = ["Rscript",
+                   os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
+                   session['outdir'],
+                   treefile
+                   ]
+        R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
+
+        # Zip results.
+        zip_command = ["zip",
+                   "-rv",
+                   os.path.split(session['tmpdir'])[-1]+"_out.zip",
+                   'out'
+                   ]
+        zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
+        
+        command = shjava_command + \
+            ["&&", "touch", java_stamp]  #+\
+#            ["&&"] + R_command + ["&&", "touch",  R_stamp]  +\
+#            ["&&"] + zip_command + ["&&", "touch", "zip_stamp"]
+         
         print(" ".join(command))
-
-        # Open log stream.
-        with open(os.path.join(tmpdir, 'repinpop.log'), 'wb') as log:
-            # Start subprocess as context manager.
-            proc = subprocess.Popen(command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-            for line in iter(proc.stdout.readline, b''):
-                sys.stdout.write(line.decode('ascii'))
-                log.write(line)
-
-            command = ["Rscript",
-                       os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
-                       session['outdir'],
-                       treefile
-                       ]
-
-            proc = subprocess.Popen(command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-
-            proc.wait()
-
-            # Zip results.
-            command = ["zip",
-                       "-rv",
-                       os.path.split(session['tmpdir'])[-1]+"_out.zip",
-                       'out'
-                       ]
-
-            proc = subprocess.Popen(command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-
-            proc.wait()
-
+        
+        proc = subprocess.Popen(command,
+                                shell=False,
+                                )
+ 
         os.chdir(oldwd)
-        return redirect(url_for('results', run_id=os.path.basename(tmpdir)))
+        
+        return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
 
     return render_template(
                     'submit.html',
@@ -137,22 +129,40 @@ def results():
 
     args = request.args
     print(args)
-
+    
     results_form = AnalysisForm()
 
-    if 'run_id' in args.keys():
+    is_valid_run_id = False
+    is_java_finished = False
+    is_R_finished = False
+    is_zip_finished = False
 
+    if 'run_id' in args.keys():
+        
+        run_id = args['run_id']
+        # Check if this is a valid run id.
+
+        run_id_path = os.path.join(app.static_folder, "uploads", run_id)
+        is_valid_run_id = os.path.isdir(run_id_path)
+         
+        if is_valid_run_id:
+            # Check if the run has finished.
+            is_java_finished = ".java.stamp" in os.listdir(run_id_path)
+            is_R_finished = ".R.stamp" in os.listdir(run_id_path)
+            is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
+        
+        print(run_id, is_valid_run_id, is_java_finished, is_R_finished, is_zip_finished)                        
         return render_template('results.html',
                 title="Results",
                 results_form=results_form,
-                args=args,
+                run_id=run_id,
+                is_valid_run_id=is_valid_run_id,
+                is_java_finished=is_java_finished,
+                is_R_finished=is_R_finished,
+                is_zip_finished=is_zip_finished,
                 )
-    else:
-        return render_template('results_query.html',
-                title="Results",
-                results_form=results_form
-                )
-
+    return render_template("results_query.html",
+                           results_form=results_form)
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
