@@ -137,7 +137,6 @@ def submit():
 def results():
 
     args = request.args
-    print(args)
     
     results_form = AnalysisForm()
 
