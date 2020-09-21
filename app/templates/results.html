@@ -1,4 +1,13 @@
 {% extends "base.html" %}
+{% block head %}
+<head>
+    {% if is_valid_run_id %}
+    {% if not is_java_finished or not is_R_finished or not is_zip_finished %}
+        <meta http-equiv="refresh" content='30'></meta>
+        {% endif %}
+    {% endif %}
+</head>
+{% endblock %}
 {% block body %}
     <body>
         <form  method="get">
@@ -23,7 +32,7 @@
 					</p>
 				{% else %}
 				<p>
-				R script is processing, please wait and reload.
+				R script is processing, please wait for page to refresh.
 				</p>
 				{% endif %}
 				<h2> Browse data </h2>
@@ -36,12 +45,12 @@
 					<a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
 					</p>
 				<p>
-				Compressing files for download, please wait and reload page.
+				Compressing files for download.  Please wait for page to refresh.
 				</p>
 				{% endif %}
 			{% else %}
 				<p>
-				Run has not finished. Please wait and reload this page after a while.
+				Run has not finished. Please wait for page to refresh.
 				</p>
 			{% endif %}
 		{% else %}
