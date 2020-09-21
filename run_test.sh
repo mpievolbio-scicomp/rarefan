@@ -40,15 +40,15 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-TEST_DATA_DIR=data/testdata_${dataset}
-RUN_DATA_DIR=/tmp/testdata
+TEST_DATA_DIR=data/neisseria_${dataset}
+RUN_DATA_DIR=/tmp/rarefan_test
 RUN_OUT_DIR=$RUN_DATA_DIR/out
 
-cp -rv $TEST_DATA_DIR $RUN_DATA_DIR
-cp -v data/yafM_Ecoli.faa $RUN_DATA_DIR
+rsync -ruvL $TEST_DATA_DIR/ $RUN_DATA_DIR/
+rsync -uv data/yafM_Ecoli.faa $RUN_DATA_DIR
 
 status=1
-java -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+java -Xmx16g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
     $RUN_DATA_DIR\
     $RUN_OUT_DIR\
     Nmen_2594.fas\
