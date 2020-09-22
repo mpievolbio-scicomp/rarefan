@@ -1,0 +1,15 @@
+
+{% extends "base.html" %}
+{% block body %}
+<body>
+<ul>
+    {% for file in files %}
+    <li>
+        <a href="{{ (request.path + '/' if request.path != '/' else '') + file }}">
+            {{ (request.path + '/' if request.path != '/' else '') + file }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+</body>
+{% endblock %}

@@ -1,8 +1,15 @@
-from flask import render_template, request, session
-from app.views import SubmitForm, RunForm, ResultsForm
+from flask import render_template,\
+                  request,\
+                  session,\
+                  redirect,\
+                  url_for,\
+                  abort,\
+                  send_from_directory
+
+from app.views import SubmitForm, RunForm, AnalysisForm
 from app import app
 
-import os, shutil, sys
+import os, shutil, sys, stat
 import subprocess
 import tempfile
 #from werkzeug import secure_filename
@@ -58,15 +65,14 @@ def submit():
                                                              )
                                                 )
             shutil.copyfile(src, query_rayt_fname)
-
+        
         oldwd = os.getcwd()
-        os.chdir(app.config["UPLOAD_DIR"])
+        os.chdir(tmpdir)
 
-        command = ['java',
+        java_command = " ".join(['java',
                 '-jar',
                 os.path.abspath(
-                    os.path.join(os.path.dirname(__file__),
-                        '..',
+                    os.path.join(os.path.dirname(app.root_path),
                         'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
                         )
                     ),
@@ -79,37 +85,47 @@ def submit():
                 treefile,
                 '{0:s}'.format(session['e_value_cutoff']),
                 {"y": "true", None: "false"}[session['analyse_repins']],
-                ]
-        print(" ".join(command))
+                ])
 
-        # Open log stream.
-        with open(os.path.join(tmpdir, 'repinpop.log'), 'wb') as log:
-            # Start subprocess as context manager.
-            proc = subprocess.Popen(command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-            for line in iter(proc.stdout.readline, b''):
-                sys.stdout.write(line.decode('ascii'))
-                log.write(line)
+        java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
 
-            command = ["Rscript",
-                       os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
-                       session['outdir'],
-                       treefile
-                       ]
+        R_command = " ".join(["Rscript",
+                   os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
+                   session['outdir'],
+                   treefile
+                   ])
+        R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-            proc = subprocess.Popen(command,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT)
-            
-            proc.wait()
+        # Zip results.
+        zip_command = " ".join(["zip",
+                   "-rv",
+                   os.path.split(session['tmpdir'])[-1]+"_out.zip",
+                   'out'
+                   ])
 
-            os.chdir(oldwd) 
+        zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
+        
+        command_lines = [java_command+" && ",
+                        "touch {} && ".format(java_stamp),
+                        R_command+" && ",
+                        "touch {} && ".format(R_stamp),
+                        zip_command+" && ",
+                        "touch {}".format(zip_stamp)
+                        ]
+        
+        with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
+            fp.write(r"#! /bin/sh") 
+            fp.write('\n')
+            for line in command_lines:
+                fp.write(line)
+            fp.write('\n')
 
-        return render_template('results.html',
-                            title='Results',
-                            results_path=os.path.basename(tmpdir),
-                            )
+        os.chmod('job.sh', stat.S_IRWXU )
+        proc = subprocess.Popen(os.path.join(tmpdir, 'job.sh'))
+ 
+        os.chdir(oldwd)
+        
+        return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
 
     return render_template(
                     'submit.html',
@@ -117,6 +133,63 @@ def submit():
                     submit_form=submit_form, 
                     )
           
-@app.route('/results', methods=['GET'])
+@app.route('/results', methods=['GET', 'POST'])
 def results():
-    results_form = ResultsForm()
+
+    args = request.args
+    
+    results_form = AnalysisForm()
+
+    is_valid_run_id = False
+    is_java_finished = False
+    is_R_finished = False
+    is_zip_finished = False
+
+    if 'run_id' in args.keys():
+        
+        run_id = args['run_id']
+        # Check if this is a valid run id.
+
+        run_id_path = os.path.join(app.static_folder, "uploads", run_id)
+        is_valid_run_id = os.path.isdir(run_id_path)
+         
+        if is_valid_run_id:
+            # Check if the run has finished.
+            is_java_finished = ".java.stamp" in os.listdir(run_id_path)
+            is_R_finished = ".R.stamp" in os.listdir(run_id_path)
+            is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
+        
+        print(run_id, is_valid_run_id, is_java_finished, is_R_finished, is_zip_finished)                        
+        return render_template('results.html',
+                title="Results",
+                results_form=results_form,
+                run_id=run_id,
+                is_valid_run_id=is_valid_run_id,
+                is_java_finished=is_java_finished,
+                is_R_finished=is_R_finished,
+                is_zip_finished=is_zip_finished,
+                )
+    return render_template("results_query.html",
+                           results_form=results_form)
+
+@app.route('/files/<path:req_path>')
+def files(req_path):
+
+    base_dir = os.path.join(app.static_folder, 'uploads')
+    abs_path = os.path.join(base_dir, req_path)
+    print(base_dir, abs_path)
+
+    if not os.path.exists(abs_path):
+        print("{} not found".format(abs_path))
+        return abort(404)
+
+    if os.path.isfile(abs_path):
+        print("serving file")
+        return send_from_directory(base_dir, req_path)
+
+    fnames = os.listdir(abs_path)
+    print(fnames)
+
+    return render_template('files.html', files=fnames)
+
+ 

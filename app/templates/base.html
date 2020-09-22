@@ -3,6 +3,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+	  <meta charset='utf-8'>
+      </meta>
+      {% block head %}{% endblock %}
     <title>{% block title %}{% endblock %}</title>
     <!-- Bootstrap core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
@@ -15,6 +18,8 @@
         <nav>
           <ul class="nav nav-pills pull-right">
             <li role="presentation"><a href="/">Home</a></li>
+            <li role="presentation"><a href="/submit">Submit new run</a></li>
+            <li role="presentation"><a href="/results">Browse results</a></li>
             <!-- <li role="presentation"><a href="/about">About</a></li> -->
             <!-- <li role="presentation"><a href="http://flask.pocoo.org" target="_blank">More About Flask</a></li> -->
           </ul>

@@ -54,7 +54,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Font size
-fontsize=10
+fontsize=14
 
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
