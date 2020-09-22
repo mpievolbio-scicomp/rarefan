@@ -83,10 +83,15 @@ public class DeterminePopulationFrequencies {
 	}
 
 	private void generateTree(File treeFile) {
+			
+		System.out.println("Generating Tree.");
+
 		String filenames=generateFileNameString();
 		String treeID=treeFile.getName().split("\\.")[0];
 		File distFile=new File(outFolder+"/"+treeID+".dist");
+		System.out.println("Running andi.");
 		RunTreePrograms.runProgram("andi "+filenames, "", outFolder,distFile);
+		System.out.println("Running clustDist.");
 		RunTreePrograms.runProgram("clustDist "+distFile, "", outFolder, treeFile);
 	}
 
@@ -134,6 +139,9 @@ public class DeterminePopulationFrequencies {
 	}
 
 	private void calculateResults() {
+		System.out.println("Calculating Results.");
+		
+		
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
         // TODO: Can we parallelize this loop?
