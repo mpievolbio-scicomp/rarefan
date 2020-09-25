@@ -71,6 +71,7 @@ def submit():
 
         java_command = " ".join(['java',
                 '-jar',
+                '-Xmx14g',
                 os.path.abspath(
                     os.path.join(os.path.dirname(app.root_path),
                         'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
