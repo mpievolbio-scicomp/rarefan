@@ -6,17 +6,20 @@ from flask import render_template,\
                   abort,\
                   send_from_directory
 
-from app.views import SubmitForm, RunForm, AnalysisForm
+from app.views import SubmitForm, AnalysisForm
 from app import app
 
-import os, shutil, sys, stat
+import os
+import shutil
+import stat
 import subprocess
 import tempfile
-#from werkzeug import secure_filename
+
 
 @app.route('/')
 def index():
     return render_template("index.html")
+
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -36,14 +39,14 @@ def submit():
             rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "faa"]
             tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
             fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
-            [seq.save(fname) for seq,fname in zip(seqs,fnames)]
+            [seq.save(fname) for seq, fname in zip(seqs, fnames)]
             submit_form.reference_strain.choices = strain_names
             submit_form.query_rayt.choices += rayt_names
             submit_form.treefile.choices = ["None"] + tree_names
         
     if submit_form.go.data:
         tmpdir = session['tmpdir']
-        session['outdir'] = outdir = os.path.join(tmpdir, 'out')
+        session['outdir'] = os.path.join(tmpdir, 'out')
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
@@ -56,7 +59,7 @@ def submit():
         session['analyse_repins'] = request.form.get('analyse_repins')
 
         # copy query rayt to working dir
-        query_rayt_fname = os.path.join(session['tmpdir'],session['query_rayt']+".faa")
+        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
             src=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                              "..",
@@ -122,8 +125,10 @@ def submit():
             fp.write('\n')
 
         os.chmod('job.sh', stat.S_IRWXU )
-        proc = subprocess.Popen(os.path.join(tmpdir, 'job.sh'))
- 
+        shell_command = [os.path.join(tmpdir, 'job.sh'), '> {}'.format(os.path.join(tmpdir, 'rarefan.log')), '2>&1']
+        print(" ".join(shell_command))
+        proc = subprocess.Popen(shell_command)
+
         os.chdir(oldwd)
         
         return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
