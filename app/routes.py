@@ -68,6 +68,9 @@ def submit():
                                                              )
                                                 )
             shutil.copyfile(src, query_rayt_fname)
+
+        # Copy R script
+        shutil.copyfile(os.path.join(os.path.dirname(__file__), "..", "displayREPINsAndRAYTs.R"), session['outdir'])
         
         oldwd = os.getcwd()
         os.chdir(tmpdir)
@@ -94,7 +97,7 @@ def submit():
         java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
 
         R_command = " ".join(["Rscript",
-                   os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'displayREPINsAndRAYTs.R')),
+                   'displayREPINsAndRAYTs.R',
                    session['outdir'],
                    treefile
                    ])
@@ -110,15 +113,15 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
         command_lines = [java_command+" && ",
-                        "touch {} && ".format(java_stamp),
+                        "/usr/bin/touch {} && ".format(java_stamp),
                         R_command+" && ",
-                        "touch {} && ".format(R_stamp),
+                        "/usr/bin/touch {} && ".format(R_stamp),
                         zip_command+" && ",
-                        "touch {}".format(zip_stamp)
+                        "/usr/bin/touch {}".format(zip_stamp)
                         ]
         
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
-            fp.write(r"#! /bin/sh") 
+            fp.write(r"#! /bin/bash")
             fp.write('\n')
             for line in command_lines:
                 fp.write(line)
