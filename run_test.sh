@@ -48,7 +48,7 @@ rsync -ruvL $TEST_DATA_DIR/ $RUN_DATA_DIR/
 rsync -uv data/yafM_Ecoli.faa $RUN_DATA_DIR
 
 status=1
-java -Xmx14g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+java -Xmx15g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
     $RUN_DATA_DIR\
     $RUN_OUT_DIR\
     Nmen_2594.fas\
