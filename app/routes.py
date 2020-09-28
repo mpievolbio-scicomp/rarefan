@@ -119,11 +119,12 @@ def submit():
 
         andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
         distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+        distfile = os.path.join(session['outdir'], os.path.basename(distfile))
         andi_command = "andi {} > {}".format(" ".join(andi_inputs), distfile)
-        andi_stamp = os.path.join(session['tmpdir'], '.andi.zip')
+        andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-        clustdist_command = "clustDist {} > {}".format(distfile, treefile)
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.zip')
+        clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
