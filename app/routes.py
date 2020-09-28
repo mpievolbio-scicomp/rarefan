@@ -47,6 +47,7 @@ def submit():
     if submit_form.go.data:
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
+        os.mkdir(session['outdir'])
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
