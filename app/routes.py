@@ -122,7 +122,7 @@ def submit():
         andi_command = "andi {} > {}".format(" ".join(andi_inputs), distfile)
         andi_stamp = os.path.join(session['tmpdir'], '.andi.zip')
 
-        clustdist_command = "clustDist {} {}".format(distfile, treefile)
+        clustdist_command = "clustDist {} > {}".format(distfile, treefile)
         clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.zip')
 
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
