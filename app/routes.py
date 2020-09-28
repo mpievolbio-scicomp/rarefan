@@ -71,7 +71,13 @@ def submit():
             shutil.copyfile(src, query_rayt_fname)
 
         # Copy R script
-        shutil.copyfile(os.path.join(os.path.dirname(__file__), "..", "displayREPINsAndRAYTs.R"), session['tmpdir'])
+        shutil.copyfile(os.path.join(os.path.dirname(__file__),
+                                     "..", "displayREPINsAndRAYTs.R"
+                                     ),
+                        os.path.join(session['tmpdir'],
+                                     'displayREPINsAndRAYTs.R'
+                                     )
+                        )
         
         oldwd = os.getcwd()
         os.chdir(tmpdir)
