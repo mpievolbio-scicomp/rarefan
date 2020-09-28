@@ -79,7 +79,7 @@ public class DeterminePopulationFrequencies {
 // 		treeFile=new File(outFolder+"/"+treeFile);
 // 		if(!treeFile.exists()) {
 // 			generateTree(treeFile);
-		}
+// 		}
 	}
 
 	private void generateTree(File treeFile) {
