@@ -120,11 +120,11 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
         command_lines = [java_command+" && ",
-                        "/usr/bin/touch {} && ".format(java_stamp),
+                        "touch {} && ".format(java_stamp),
                         R_command+" && ",
-                        "/usr/bin/touch {} && ".format(R_stamp),
+                        "touch {} && ".format(R_stamp),
                         zip_command+" && ",
-                        "/usr/bin/touch {}".format(zip_stamp)
+                        "touch {}".format(zip_stamp)
                         ]
         
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
