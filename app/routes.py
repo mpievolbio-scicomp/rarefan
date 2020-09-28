@@ -117,10 +117,23 @@ def submit():
                    'out'
                    ])
 
+        andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
+        distfile = session['treefile'].split('.')[:-1]+'.dist'
+        andi_command = "andi {} > {}".format(" ".join(andi_inputs), distfile)
+        andi_stamp = os.path.join(session['tmpdir'], '.andi.zip')
+
+        clustdist_command = "clustDist {} {}".format(distfile, treefile)
+        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.zip')
+
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
-        command_lines = [java_command+" && ",
+        command_lines = [
+                        java_command+" && ",
                         "touch {} && ".format(java_stamp),
+                        andi_command+" && ",
+                        "touch {} && ".format(andi_stamp),
+                        clustdist_command+" && ",
+                        "touch {} && ".format(clustdist_stamp),
                         R_command+" && ",
                         "touch {} && ".format(R_stamp),
                         zip_command+" && ",
