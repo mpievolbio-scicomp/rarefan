@@ -36,7 +36,7 @@ public class DeterminePopulationFrequencies {
 		File treeFile=new File(args[6]);
 		String evalue=args[7];
 		boolean analyseREPIN=args[8].equalsIgnoreCase("true");
-		File out=new File(inFolder+"/results.txt");
+		File out=new File(outFolder+"/results.txt");
 		DeterminePopulationFrequencies dpf;
 		String program="tblastn";
 		if(args.length>9) {
@@ -166,11 +166,11 @@ public class DeterminePopulationFrequencies {
 		String genomeID=genome.getName().split("\\.")[0];
 		ArrayList<Info> RAYTLocations;
 		if(legacyBlastPerlLocation!="") {
-			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn",legacyBlastPerlLocation);
+			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn",legacyBlastPerlLocation);
 		}else {
-			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn");
+			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn");
 		}
-		WriteArtemis.write(RAYTLocations, new File(genomeFolder+"/rayt_"+genomeID+".tab"));
+		WriteArtemis.write(RAYTLocations, new File(outFolder+"/rayt_"+genomeID+".tab"));
 		return RAYTLocations;
 	}
 
@@ -194,8 +194,8 @@ public class DeterminePopulationFrequencies {
 		ArrayList<Info> pos=new ArrayList<Info>();
 		for(int i=1;i<split.length;i++) {
 			String[] split2=split[i].split("_");
-			int start=Integer.parseInt(split2[0]);
-			int end=Integer.parseInt(split2[1]);
+			int start=Integer.parseInt(split2[1]);
+			int end=Integer.parseInt(split2[2]);
 			pos.add(new Info(start,end,inf+" "+split[0]));
 		}
 		return pos;
