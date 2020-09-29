@@ -10,7 +10,7 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 project (repinpop)
 
 # Check and locate GSL
-set (GSL_ROOT_DIR ${CONDA_PREFIX})
+set (GSL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 find_package(GSL REQUIRED)
 
 # External codes
@@ -34,7 +34,7 @@ endif()
 ExternalProject_Add(andi
     URL https://github.com/EvolBioInf/andi/archive/v0.13.tar.gz
     DOWNLOAD_NAME andi-0.13.tar.gz
-    CONFIGURE_COMMAND autoreconf -fi -Im4 && ./configure CPPFLAGS=-I$ENV{CONDA_PREFIX}/include CFLAGS=-I$ENV{CONDA_PREFIX}/include LDFLAGS=-L$ENV{CONDA_PREFIX}/lib --prefix=$ENV{CONDA_PREFIX}
+    CONFIGURE_COMMAND autoreconf -fi -Im4 && ./configure CPPFLAGS=-I${CMAKE_INSTALL_PREFIX}/include CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib --prefix=${CMAKE_INSTALL_PREFIX}
     BUILD_IN_SOURCE true
     INSTALL_COMMAND ${MAKE_EXE} install
 )
@@ -44,11 +44,11 @@ ExternalProject_Add(clustdist
     GIT_REPOSITORY https://github.com/EvolBioInf/clustDist.git
     CONFIGURE_COMMAND ""
     BUILD_COMMAND cd ../clustdist && ${MAKE_EXE}
-    INSTALL_COMMAND cd ../clustdist && install build/clustDist $ENV{CONDA_PREFIX}/bin
+    INSTALL_COMMAND cd ../clustdist && install build/clustDist ${CMAKE_INSTALL_PREFIX}/bin
 )
 
 # legacy_blast patch
-execute_process(COMMAND "patch ${CONDA_PREFIX}/bin/legacy_blast.pl patch")
+execute_process(COMMAND "patch ${CMAKE_INSTALL_PREFIX}/bin/legacy_blast.pl ../patch")
 
 # provide libRlapack requested by r-ape.
-execute_process(COMMAND "ln -s ${CONDA_PREFIX}/lib/R/modules/lapack.so ${CONDA_PREFIX}/lib/libRlapack.so")
+execute_process(COMMAND "ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so")

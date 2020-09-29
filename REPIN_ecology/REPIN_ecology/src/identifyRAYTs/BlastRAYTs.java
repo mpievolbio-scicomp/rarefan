@@ -22,7 +22,8 @@ public class BlastRAYTs {
 	}
 	static int minClusterSize=10;
 	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs,boolean analyseREPIN) {
-		
+			
+		System.out.println("Running program" + program + ".");
 		for(int k=0;k<repType.length;k++) {
 			ArrayList<Fasta> seqs=new ArrayList<Fasta>();
 			File out=new File(outFolder+"/"+nameSeqs);
