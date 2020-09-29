@@ -1,5 +1,8 @@
 # RepinPop
 
+## Compilers and build system
+Make sure, a C++ compiler and the `autoconf` utility are installed on your system.
+
 ## Create the conda environment
 
 ```
@@ -15,20 +18,29 @@ Activate the new environment:
 ```
 $> conda activate repinpop
 ```
+Record the value of the `$CONDA_PREFIX` environment variable, e.g.
 
-
+```
+echo $CONDA_PREFIX > conda_prefix.txt
+```
 
 
 ## Install 3rd party libraries through cmake.
 Not all dependencies are available on the conda archives. `andi` [Efficient
 Estimation of Evolutionary Distances](https://github.com/EvolBioInf/andi.git),
-it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git), and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility:
-
+it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git), and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. But first, we have to deactivate the conda environment. Make sure you have GSL
+installed in your system or add the GSL libraries and header file locations to your environment.
+```
+conda deactivate
+```
 ```
 $> mkdir build
 $> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
-$> make
+$> cmake -DCMAKE_INSTALL_PREFIX=`cat conda_prefix.txt` ..
+```
+The last line instructs cmake to setup the `$CONDA_PREFIX` as the installation prefix for the third party libraries to be installed.
+```
+ $> make
 ```
 
 This will download the required source codes for all three dependencies, build,
@@ -36,6 +48,10 @@ and install the executables into the `conda` environment created in the first
 step.
 
 ## Build the java code:
+Activate the conda environment again:
+```
+conda activate repinpop
+```
 `RepinPop` requires at least java version 11. Building is done by
 [`gradle`](https://gradle.org).
 
@@ -59,14 +75,10 @@ form is implemented in a jupyter notebook and served with the `voila` framework.
 To launch the server, run
 
 ```
-$> voila --enable_nbextensions --port=<YOUR_FREE_PORT> --no-browser --Voila.ip=0.0.0.0
+$> flask run 
 ```
 
-NOTE: You have to specify the port on which to run the service. The last
-argument will make the server listen to requests coming from any IP. Restrict
-the range of IPs or leave out this argument if this behaviour is unwanted. For
-more advanced server configurations see the [`voila`
-documentation](https://voila.readthedocs.io/en/stable/deploy.html).
+And navigate your browser to localhost:5000 .
 
 
 

@@ -22,7 +22,8 @@ public class BlastRAYTs {
 	}
 	static int minClusterSize=10;
 	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs,boolean analyseREPIN) {
-		
+			
+		System.out.println("Running program" + program + ".");
 		for(int k=0;k<repType.length;k++) {
 			ArrayList<Fasta> seqs=new ArrayList<Fasta>();
 			File out=new File(outFolder+"/"+nameSeqs);
@@ -183,6 +184,7 @@ public class BlastRAYTs {
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
 			BufferedWriter bwMaxREPIN=new BufferedWriter(new FileWriter(maxREPINOut));
 			String[] keys=hm.keySet().toArray(new String[0]);
+			bw.write("strain\tnumRAYTs\tNumREPINs\tmasterSequence\tmastersequenceFreq\tallREP\\REPINFreq\tnumberOfRepinClusters\n");
 			for(int i=0;i<keys.length;i++) {
 				bw.write(keys[i]+"\t"+hm.get(keys[i])+"\n");
 				bwMaxREPIN.write(">"+keys[i]+"\n"+hm.get(keys[i]).split("\t")[2]+"\n");

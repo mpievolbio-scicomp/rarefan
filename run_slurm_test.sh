@@ -4,7 +4,7 @@ set -o errexit -o pipefail -o noclobber -o nounset
 ! getopt --test > /dev/null
 
 if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
-    echo 'I’m sorry, $(getopt --test) failed in this environment.'
+    echo 'I’m sorry, `getopt --test` failed in this environment.'
     exit 1
 fi
 
@@ -40,29 +40,45 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
+HPC_SUBMIT_NODE=gwdu101
 TEST_DATA_DIR=data/neisseria_${dataset}
-RUN_DATA_DIR=/tmp/rarefan_test
-RUN_OUT_DIR=${RUN_DATA_DIR}/out
+RUN_DATA_DIR=${HPC_SUBMIT_NODE}:/scratch/rarefan/rarefan_test
+RUN_OUT_DIR=$RUN_DATA_DIR/out
 
-rsync -ruvL ${TEST_DATA_DIR}/ ${RUN_DATA_DIR}/
-rsync -uv data/yafM_Ecoli.faa ${RUN_DATA_DIR}
+rsync -ruvL  $TEST_DATA_DIR/ $RUN_DATA_DIR/
+rsync -uv data/yafM_Ecoli.faa $RUN_DATA_DIR
 
-status=1
-java -Xmx15g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
-    ${RUN_DATA_DIR}\
-    ${RUN_OUT_DIR}\
+cat > script.sh << EOF
+#!/bin/bash
+
+#SBATCH --partition=medium
+#SBATCH --nodes=1
+#SBATCH --mem=20G
+#SBATCH --time=60:00
+#SBATCH --output=outfile-%J
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=c.fortmanngrote
+#SBATCH -C scratch
+
+module load conda/2019.03
+source activate repinpop
+source ~/Repositories/repinpop/setenv.sh
+
+
+SCRIPT="java -Xmx14g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+    $RUN_DATA_DIR\
+    $RUN_OUT_DIR\
     Nmen_2594.fas\
     55 21\
-    ${RUN_DATA_DIR}/yafM_Ecoli.faa\
+    $RUN_DATA_DIR/yafM_Ecoli.faa\
     tmptree.nwk\
     1e-30\
     false &&\
-andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/tmptree.dist &&\
-clustDist ${RUN_OUT_DIR}/tmptree.dist > ${RUN_OUT_DIR}/tmptree.nwk &&\
-Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
-display ${RUN_OUT_DIR}/repins.png &&\
-display ${RUN_OUT_DIR}/correlations.png &&\
-status=0
 
-# rm -rf $RUN_DATA_DIR
-exit ${status}
+Rscript ./displayREPINsAndRAYTs.R $RUN_OUT_DIR &&\
+
+EOF
+
+scp script.sh $RUN_DATA_DIR
+
+#ssh ${HPC_SUBMIT_NODE} sbatch /scratch/rarefan/rarefan_test/script.sh

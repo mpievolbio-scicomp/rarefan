@@ -76,17 +76,22 @@ public class DeterminePopulationFrequencies {
 		e=evalue;
 		calculateResults();
 		BlastRAYTs.runProgram(inFolder, queryRAYT, outFolder, e, program, getREPtype(), "yafM_relatives.fna",analyseREPIN);
-		treeFile=new File(outFolder+"/"+treeFile);
-		if(!treeFile.exists()) {
-			generateTree(treeFile);
-		}
+// 		treeFile=new File(outFolder+"/"+treeFile);
+// 		if(!treeFile.exists()) {
+// 			generateTree(treeFile);
+// 		}
 	}
 
 	private void generateTree(File treeFile) {
+			
+		System.out.println("Generating Tree.");
+
 		String filenames=generateFileNameString();
 		String treeID=treeFile.getName().split("\\.")[0];
 		File distFile=new File(outFolder+"/"+treeID+".dist");
+		System.out.println("Running andi.");
 		RunTreePrograms.runProgram("andi "+filenames, "", outFolder,distFile);
+		System.out.println("Running clustDist.");
 		RunTreePrograms.runProgram("clustDist "+distFile, "", outFolder, treeFile);
 	}
 
@@ -134,6 +139,9 @@ public class DeterminePopulationFrequencies {
 	}
 
 	private void calculateResults() {
+		System.out.println("Calculating Results.");
+		
+		
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
         // TODO: Can we parallelize this loop?
@@ -178,11 +186,11 @@ public class DeterminePopulationFrequencies {
 		String genomeID=genome.getName().split("\\.")[0];
 		ArrayList<Info> RAYTLocations;
 		if(legacyBlastPerlLocation!="") {
-			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn",legacyBlastPerlLocation);
+			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn",legacyBlastPerlLocation);
 		}else {
-			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, genomeFolder, e, "tblastn");
+			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn");
 		}
-		WriteArtemis.write(RAYTLocations, new File(genomeFolder+"/rayt_"+genomeID+".tab"));
+		WriteArtemis.write(RAYTLocations, new File(outFolder+"/rayt_"+genomeID+".tab"));
 		return RAYTLocations;
 	}
 
@@ -206,8 +214,8 @@ public class DeterminePopulationFrequencies {
 		ArrayList<Info> pos=new ArrayList<Info>();
 		for(int i=1;i<split.length;i++) {
 			String[] split2=split[i].split("_");
-			int start=Integer.parseInt(split2[0]);
-			int end=Integer.parseInt(split2[1]);
+			int start=Integer.parseInt(split2[1]);
+			int end=Integer.parseInt(split2[2]);
 			pos.add(new Info(start,end,inf+" "+split[0]));
 		}
 		return pos;

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block body %}
+    <p>
+    <h1>{{title}}</h1>
+    <h2>Query RareFan results</h2>
+    </p>
+    <body>
+        <form method="get">
+        {{ results_form.hidden_tag() }}
+        <p>
+            {{ results_form.run_id.label }}
+            {{ results_form.run_id() }}
+        </p>
+    </body>
+{% endblock %}
+
