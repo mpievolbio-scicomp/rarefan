@@ -70,7 +70,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
 
-  t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t")
+  t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t", skip=1)
   popSize=data.frame(name=t[,1],
                      rayts=t[,2],
                      repins=t[,3],
