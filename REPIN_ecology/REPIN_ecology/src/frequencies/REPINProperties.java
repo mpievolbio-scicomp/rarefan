@@ -54,6 +54,7 @@ public class REPINProperties {
 	String word=null;
 	int popsize;
 	boolean needsToContainWord=false;
+	int maxREPINDistance=130;
 	HashMap<String,ArrayList<REPINposition>> repinPositions=new HashMap<String,ArrayList<REPINposition>>();
 	HashMap<String,ArrayList<REPINposition>> largestClusterRepinPositions;
 
@@ -502,7 +503,7 @@ public class REPINProperties {
 		File seedSequenceREP=new File(seedSequence+".REP");
 		if(!seedSequenceREP.exists())WriteSeedSequences.writeSeedSequencesConnected(rawWords, fas,  numMuts, seedSequenceREP);
 		//if(!seedSequence.exists()) {//&& !ecoli){
-			ConvertToREPIN ctr=new ConvertToREPIN(seedSequenceREP,fas,130,maxWord.getMaxWord());
+			ConvertToREPIN ctr=new ConvertToREPIN(seedSequenceREP,fas,maxREPINDistance,maxWord.getMaxWord());
 			ctr.write(seedSequence);
 			repinPositions=ctr.getPositions();
 
