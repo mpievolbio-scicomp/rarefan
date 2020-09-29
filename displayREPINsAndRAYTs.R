@@ -71,20 +71,13 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   )
 
   t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t")
-#popSize=data.frame(
-#  )
-#
-
-
-  popSize=data.frame(
-                     name=t$strain,
-                     rayts=t$numRAYTs,
-                     repins=t$numREPINs,
-                     prop=(t$mastersequenceFreq/t$numREPINs),
-                     propAll=(t$numREPINs/t$"allREP\\REPINFreq"),
-                     numClus=t$numberOfRepinClusters,
-                     diffRAYTCluster=(t$numberOfRepinClusters-t$numRAYTs)
-  )
+  popSize=data.frame(name=t[,1],
+                     rayts=t[,2],
+                     repins=t[,3],
+                     prop=(t[,5]/t[,3]),
+                     propAll=(t[,3]/t[,6]),
+                     numClus=t[,7],
+                     diffRAYTCluster=t[,7]-t[,2])
 
 
   tree=read.tree(paste0(folder,"/",treeFile))
@@ -181,9 +174,9 @@ plotCorrelationSingle=function(folder,type,
                                repinThreshold=0,
                                name=F,
                                labelOdd){
-    t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t")
-    t$propMaster=(t$mastersequenceFreq/t$numREPINs)
-    t$numRepin=t$numREPINs
+    t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t", skip=1)
+    t$propMaster=t[,5]/t[,3]
+    t$numRepin=t[,3]
     p=ggplot(t,
              aes(x=propMaster,
                  y=numRepin))+
