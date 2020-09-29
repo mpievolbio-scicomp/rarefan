@@ -57,6 +57,8 @@ java -Xmx15g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
     tmptree.nwk\
     1e-30\
     false &&\
+andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/tmptree.dist &&\
+clustDist ${RUN_OUT_DIR}/tmptree.dist > ${RUN_OUT_DIR}/tmptree.nwk &&\
 Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
 display ${RUN_OUT_DIR}/repins.png &&\
 display ${RUN_OUT_DIR}/correlations.png &&\
