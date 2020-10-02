@@ -140,7 +140,31 @@ def submit():
                         zip_command+" && ",
                         "touch {}".format(zip_stamp)
                         ]
-        
+
+        if submit_form.email.data not in ["", None]:
+            email_recipient = submit_form.email.data
+            email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(tmpdir))
+            email_body = """Hallo,
+your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
+You can browse and download the results at this link:
+http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
+
+Thank you for using RAREFAN. We hope to see you soon again.
+
+Kind regards,
+
+RAREFAN.
+
+http://rarefan.evolbio.mpg.de
+""".format(os.path.basename(tmpdir))
+
+            email_command = '&& printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s}'.format(email_subject, email_body, email_recipient)
+
+            email_stamp_command = " && touch .email.stamp"
+
+            command_lines.append(email_command)
+            command_lines.append(email_stamp_command)
+
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
             fp.write('\n')
