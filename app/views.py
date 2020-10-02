@@ -3,12 +3,15 @@
 from flask import Flask, render_template, flash, request, session
 
 from flask_wtf import FlaskForm
-from wtforms import StringField,\
-                    PasswordField,\
-                    BooleanField,\
-                    SubmitField,\
-                    MultipleFileField,\
-                    SelectField
+from wtforms import BooleanField
+from wtforms import SelectField
+from wtforms import MultipleFileField
+from wtforms import StringField
+from wtforms import SubmitField
+from wtforms import IntegerField
+from wtforms import FloatField
+from wtforms import validators
+
 
 from wtforms.validators import DataRequired
 from flask_wtf.file import FileRequired
@@ -16,14 +19,6 @@ from flask_wtf.file import FileRequired
 import tempfile
 from app import app
 
-from wtforms import Form,\
-                    TextField,\
-                    TextAreaField,\
-                    StringField,\
-                    SubmitField,\
-                    IntegerField,\
-                    FloatField,\
-                    validators
 
 class SubmitForm(FlaskForm):
     sequences = MultipleFileField('Sequences',
@@ -68,6 +63,8 @@ class SubmitForm(FlaskForm):
                                   default=True,
                                   description="Leave unchecked to analyse REPs only."
                                   )
+
+    email = StringField("Optional: provide your email address to receive a notification once your job is done.")
 
     go = SubmitField("Go!")
 
