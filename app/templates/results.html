@@ -2,7 +2,7 @@
 {% block head %}
 <head>
     {% if is_valid_run_id %}
-    {% if not is_java_finished or not is_R_finished or not is_zip_finished %}
+    {% if not is_started or not is_java_finished or not is_R_finished or not is_zip_finished %}
         <meta http-equiv="refresh" content='30'></meta>
         {% endif %}
     {% endif %}
@@ -21,38 +21,44 @@
 		<h2>Run {{run_id}}</h2>
 		</p>
         {% if is_valid_run_id %}
-			{% if is_java_finished %}
-				<h2> Figures </h2>
-				{% if is_R_finished %}
-					<p>
-					<img src="/static/uploads/{{run_id}}/out/repins.png" alt="REPINs" width="400" height="400">
-					</p>
-					<p>
-					<img src="/static/uploads/{{run_id}}/out/correlations.png" alt="Correlations" width="400" height="400">
-					</p>
-				{% else %}
-				<p>
-				R script is processing, please wait for page to refresh.
-				</p>
-				{% endif %}
-				<h2> Browse data </h2>
-					<p>
-					<a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
-					</p>
-				<h2> Download data </h2>
-				{% if is_zip_finished %}
-					<p>
-					<a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
-					</p>
-				<p>
-				Compressing files for download.  Please wait for page to refresh.
-				</p>
-				{% endif %}
-			{% else %}
-				<p>
-				Run has not finished. Please wait for page to refresh.
-				</p>
-			{% endif %}
+            {% if not is_started %}
+                <p>
+                Your job {{ run_id }} is queued. Please wait for page to refresh or come back at a later time.
+                </p>
+            {%  else %}
+                {% if is_java_finished %}
+                    <h2> Figures </h2>
+                    {% if is_R_finished %}
+                        <p>
+                        <img src="/static/uploads/{{run_id}}/out/repins.png" alt="REPINs" width="400" height="400">
+                        </p>
+                        <p>
+                        <img src="/static/uploads/{{run_id}}/out/correlations.png" alt="Correlations" width="400" height="400">
+                        </p>
+                    {% else %}
+                    <p>
+                    R script is processing, please wait for page to refresh.
+                    </p>
+                    {% endif %}
+                    <h2> Browse data </h2>
+                        <p>
+                        <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
+                        </p>
+                    <h2> Download data </h2>
+                    {% if is_zip_finished %}
+                        <p>
+                        <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
+                        </p>
+                    <p>
+                    Compressing files for download.  Please wait for page to refresh.
+                    </p>
+                    {% endif %}
+                {% else %}
+                    <p>
+                    Job {{ run_id }} is running. Please wait for page to refresh or come back later.
+                    </p>
+                {% endif %}
+            {% endif %}
 		{% else %}
 			<p>
 			Not a valid run ID. Please enter a new run ID.
