@@ -10,6 +10,7 @@ from app.views import SubmitForm, AnalysisForm
 from app import app
 
 import os
+import shlex
 import shutil
 import stat
 import subprocess
@@ -82,6 +83,8 @@ def submit():
         oldwd = os.getcwd()
         os.chdir(tmpdir)
 
+        start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
+
         java_command = " ".join(['java',
                 '-jar',
                 '-Xmx14g',
@@ -115,7 +118,8 @@ def submit():
                    "-rv",
                    os.path.split(session['tmpdir'])[-1]+"_out.zip",
                    'out'
-                   ])
+                   ]
+                               )
 
         andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
         distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
@@ -129,6 +133,7 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         
         command_lines = [
+                        "touch {} &&".format(start_stamp),
                         java_command+" && ",
                         "touch {} && ".format(java_stamp),
                         andi_command+" && ",
@@ -168,14 +173,26 @@ http://rarefan.evolbio.mpg.de
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
             fp.write('\n')
+            fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
+            fp.write('\n')
             for line in command_lines:
                 fp.write(line)
+                fp.write('\\\n')
             fp.write('\n')
 
         os.chmod('job.sh', stat.S_IRWXU )
-        shell_command = [os.path.join(tmpdir, 'job.sh'), '> {}'.format(os.path.join(tmpdir, 'rarefan.log')), '2>&1']
-        print(" ".join(shell_command))
-        proc = subprocess.Popen(shell_command)
+
+        # Write batch script to submit the job.
+        with open(os.path.join(tmpdir,'batch.sh'), 'w') as fp:
+            fp.write(r"#! /bin/bash")
+            fp.write('\n')
+            fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
+            fp.write('\n')
+
+        os.chmod('batch.sh', stat.S_IRWXU )
+
+        shell_command = os.path.join(tmpdir, 'batch.sh')
+        proc = subprocess.Popen(shlex.split(shell_command), shell=False)
 
         os.chdir(oldwd)
         
@@ -209,6 +226,7 @@ def results():
          
         if is_valid_run_id:
             # Check if the run has finished.
+            is_started = ".start.stamp" in os.listdir(run_id_path)
             is_java_finished = ".java.stamp" in os.listdir(run_id_path)
             is_R_finished = ".R.stamp" in os.listdir(run_id_path)
             is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
@@ -219,6 +237,7 @@ def results():
                 results_form=results_form,
                 run_id=run_id,
                 is_valid_run_id=is_valid_run_id,
+                is_started=is_started,
                 is_java_finished=is_java_finished,
                 is_R_finished=is_R_finished,
                 is_zip_finished=is_zip_finished,
