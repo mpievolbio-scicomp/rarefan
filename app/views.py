@@ -1,7 +1,5 @@
 # views.py
 
-from flask import Flask, render_template, flash, request, session
-
 from flask_wtf import FlaskForm
 from wtforms import BooleanField
 from wtforms import SelectField
@@ -11,21 +9,26 @@ from wtforms import SubmitField
 from wtforms import IntegerField
 from wtforms import FloatField
 from wtforms import validators
-
-
-from wtforms.validators import DataRequired
 from flask_wtf.file import FileRequired
+class OptionalEmail(validators.Email):
+    def __call__(self, form, field):
+        if field.data is None or field.data == "":
+            return None
 
-import tempfile
-from app import app
+        super().__call__(form, field)
+
+class UploadForm(FlaskForm):
+    sequences = MultipleFileField('Sequences',
+                                   validators=[validators.DataRequired(),
+                                               # validators.regexp(u'^.*\.[fas, fasta, fna, fa]'),
+                                              ]
+                                  )
+
+    upload = SubmitField("Upload!")
 
 
 class SubmitForm(FlaskForm):
-    sequences = MultipleFileField('Sequences',
-            )
-    upload = SubmitField("Upload!")
 
-    
     reference_strain = SelectField(
             'Reference sequence',
             choices=[],
@@ -36,7 +39,7 @@ class SubmitForm(FlaskForm):
             choices = ['yafM_Ecoli',
                        'yafM_SBW25',
                        ], 
-            validators=[DataRequired(),]
+            validators=[validators.DataRequired()]
             )
 
     treefile = SelectField(
@@ -46,17 +49,17 @@ class SubmitForm(FlaskForm):
 
     min_nmer_occurence = IntegerField("Min. nmer occurence", 
                           default=55,
-                          validators=[DataRequired(),]
+                          validators=[validators.DataRequired(message="Please enter the minimal nmer occurence as an integer!")]
                           )
 
     nmer_length = IntegerField("Nmer length", 
                              default=21, 
-                             validators=[DataRequired(),]
+                             validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
                              )
 
     e_value_cutoff = FloatField("e value cutoff",
                                 default=1.0e-30,
-                                validators=[DataRequired(),]
+                                validators=[validators.DataRequired(message="Please enter the e value cutoff in scientific notation (e.g. 1e-30)")]
                                 )
 
     analyse_repins = BooleanField("Analyse REPINs",
@@ -64,9 +67,12 @@ class SubmitForm(FlaskForm):
                                   description="Leave unchecked to analyse REPs only."
                                   )
 
-    email = StringField("Optional: provide your email address to receive a notification once your job is done.")
+    email = StringField("Optional: provide your email address to receive a notification once your job is done.",
+                        validators=[OptionalEmail()]
+                        )
 
     go = SubmitField("Go!")
+
 
 class RunForm(FlaskForm):
     go = SubmitField("GoGo!")
