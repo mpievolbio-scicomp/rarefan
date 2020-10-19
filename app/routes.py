@@ -4,9 +4,10 @@ from flask import render_template,\
                   redirect,\
                   url_for,\
                   abort,\
-                  send_from_directory
+                  send_from_directory,\
+                  flash
 
-from app.views import SubmitForm, AnalysisForm
+from app.views import SubmitForm, AnalysisForm, UploadForm
 from app import app
 
 import os
@@ -21,187 +22,203 @@ import tempfile
 def index():
     return render_template("index.html")
 
+@app.route('/upload', methods=['GET', 'POST'])
+def upload():
+    upload_form = UploadForm()
+
+    if upload_form.validate_on_submit():
+        seqs = request.files.getlist(upload_form.sequences.name)
+
+        session['tmpdir'] = tempfile.mkdtemp(
+            suffix=None,
+            prefix="",
+            dir=app.config["UPLOAD_DIR"]
+        )
+
+        basenames = [seq.filename for seq in seqs]
+        fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
+        [seq.save(fname) for seq, fname in zip(seqs, fnames)]
+        strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "fas"]
+        rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "faa"]
+        tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
+
+        session['strain_names'] = strain_names
+        session['rayt_names'] = rayt_names
+        session['tree_names'] = tree_names
+
+        return redirect(url_for('submit'))
+
+    return render_template(
+        'upload.html',
+        title="Upload sequences",
+        upload_form=upload_form,
+    )
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
+
     submit_form = SubmitForm()
+    submit_form.reference_strain.choices.extend(session.get('strain_names'))
+    submit_form.query_rayt.choices.extend(session.get('rayt_names'))
+    submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
 
-    if submit_form.upload.data:
-        seqs = request.files.getlist(submit_form.sequences.name)
-        
-        session['tmpdir'] = tempfile.mkdtemp(
-                              suffix=None,
-                              prefix="",
-                              dir=app.config["UPLOAD_DIR"]
-                              )
-        if seqs:
-            basenames = [seq.filename for seq in seqs]
-            strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "fas"]
-            rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "faa"]
-            tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
-            fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
-            [seq.save(fname) for seq, fname in zip(seqs, fnames)]
-            submit_form.reference_strain.choices = strain_names
-            submit_form.query_rayt.choices += rayt_names
-            submit_form.treefile.choices = ["None"] + tree_names
-        
-    if submit_form.go.data:
-        tmpdir = session['tmpdir']
-        session['outdir'] = os.path.join(tmpdir, 'out')
-        os.mkdir(session['outdir'])
-        session['reference_strain'] = request.form.get('reference_strain')
-        session['query_rayt'] = request.form.get('query_rayt')
-        session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
-        treefile = request.form.get('treefile')
-        if treefile == "None":
-            treefile = "tmptree.nwk"
-        session['treefile'] = treefile
-        session['nmer_length'] = request.form.get('nmer_length')
-        session['e_value_cutoff'] = request.form.get('e_value_cutoff')
-        session['analyse_repins'] = request.form.get('analyse_repins')
+    if submit_form.validate_on_submit():
+            tmpdir = session['tmpdir']
+            session['outdir'] = os.path.join(tmpdir, 'out')
+            os.mkdir(session['outdir'])
+            session['reference_strain'] = request.form.get('reference_strain')
+            session['query_rayt'] = request.form.get('query_rayt')
+            session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
+            treefile = request.form.get('treefile')
+            if treefile == "None":
+                treefile = "tmptree.nwk"
+            session['treefile'] = treefile
+            session['nmer_length'] = request.form.get('nmer_length')
+            session['e_value_cutoff'] = request.form.get('e_value_cutoff')
+            session['analyse_repins'] = request.form.get('analyse_repins')
 
-        # copy query rayt to working dir
-        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
-        if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-            src=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                             "..",
-                                                             'data',
-                                                             session['query_rayt']+".faa"
-                                                             )
-                                                )
-            shutil.copyfile(src, query_rayt_fname)
+            # copy query rayt to working dir
+            query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
+            if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
+                                                                         src=os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                                                         "..",
+                                                                         'data',
+                                                                         session['query_rayt']+".faa"
+                                                                         )
+                                                                         )
+                                                                         shutil.copyfile(src, query_rayt_fname)
 
-        # Copy R script
-        shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "displayREPINsAndRAYTs.R"
-                                     ),
-                        os.path.join(session['tmpdir'],
-                                     'displayREPINsAndRAYTs.R'
-                                     )
-                        )
-        
-        oldwd = os.getcwd()
-        os.chdir(tmpdir)
+            # Copy R script
+            shutil.copyfile(os.path.join(os.path.dirname(__file__),
+                                         "..", "displayREPINsAndRAYTs.R"
+                                         ),
+                            os.path.join(session['tmpdir'],
+                                         'displayREPINsAndRAYTs.R'
+                                         )
+                            )
 
-        start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
+            oldwd = os.getcwd()
+            os.chdir(tmpdir)
 
-        java_command = " ".join(['java',
-                '-jar',
-                '-Xmx14g',
-                os.path.abspath(
-                    os.path.join(os.path.dirname(app.root_path),
-                        'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
-                        )
-                    ),
-                session['tmpdir'],
-                session['outdir'],
-                session['reference_strain']+".fas",
-                '{0:s}'.format(session['min_nmer_occurence']),
-                '{0:s}'.format(session['nmer_length']),
-                query_rayt_fname,
-                treefile,
-                '{0:s}'.format(session['e_value_cutoff']),
-                {"y": "true", None: "false"}[session['analyse_repins']],
-                ])
+            start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
-        java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
+            java_command = " ".join(['java',
+                                         '-jar',
+                                         '-Xmx14g',
+                                         os.path.abspath(
+                                         os.path.join(os.path.dirname(app.root_path),
+                                         'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
+                                         )
+                                         ),
+                                         session['tmpdir'],
+                                         session['outdir'],
+                                         session['reference_strain']+".fas",
+                                         '{0:s}'.format(session['min_nmer_occurence']),
+                                         '{0:s}'.format(session['nmer_length']),
+                                         query_rayt_fname,
+                                         treefile,
+                                         '{0:s}'.format(session['e_value_cutoff']),
+                                         {"y": "true", None: "false"}[session['analyse_repins']],
+                                            ])
 
-        R_command = " ".join(["Rscript",
-                   'displayREPINsAndRAYTs.R',
-                   session['outdir'],
-                   treefile
-                   ])
-        R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
+            java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
 
-        # Zip results.
-        zip_command = " ".join(["zip",
-                   "-rv",
-                   os.path.split(session['tmpdir'])[-1]+"_out.zip",
-                   'out'
-                   ]
-                               )
+            R_command = " ".join(["Rscript",
+                                      'displayREPINsAndRAYTs.R',
+                                      session['outdir'],
+                                      treefile
+                                         ])
+            R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-        andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
-        distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-        distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-        andi_command = "andi {} > {}".format(" ".join(andi_inputs), distfile)
-        andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+            # Zip results.
+            zip_command = " ".join(["zip",
+                                        "-rv",
+                                        os.path.split(session['tmpdir'])[-1]+"_out.zip",
+                                        'out'
+                                           ]
+                                   )
 
-        clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
+            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+            distfile = os.path.join(session['outdir'], os.path.basename(distfile))
+            andi_command = "andi {} > {}".format(" ".join(andi_inputs), distfile)
+            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-        zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
-        
-        command_lines = [
-                        "touch {} &&".format(start_stamp),
-                        java_command+" && ",
-                        "touch {} && ".format(java_stamp),
-                        andi_command+" && ",
-                        "touch {} && ".format(andi_stamp),
-                        clustdist_command+" && ",
-                        "touch {} && ".format(clustdist_stamp),
-                        R_command+" && ",
-                        "touch {} && ".format(R_stamp),
-                        zip_command+" && ",
-                        "touch {}".format(zip_stamp)
-                        ]
+            clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
-        if submit_form.email.data not in ["", None]:
-            email_recipient = submit_form.email.data
-            email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(tmpdir))
-            email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
-You can browse and download the results at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
+            zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
 
-Thank you for using RAREFAN. We hope to see you soon again.
+            command_lines = [
+                                 "touch {} &&".format(start_stamp),
+                                 java_command+" && ",
+                                 "touch {} && ".format(java_stamp),
+                                 andi_command+" && ",
+                                 "touch {} && ".format(andi_stamp),
+                                 clustdist_command+" && ",
+                                 "touch {} && ".format(clustdist_stamp),
+                                 R_command+" && ",
+                                 "touch {} && ".format(R_stamp),
+                                 zip_command+" && ",
+                                 "touch {}".format(zip_stamp)
+                                    ]
 
-Kind regards,
+            if submit_form.email.data not in ["", None]:
+                email_recipient = submit_form.email.data
+                email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(tmpdir))
+                email_body = """Hallo,
+                your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
+                You can browse and download the results at this link:
+                http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
+                
+                Thank you for using RAREFAN. We hope to see you soon again.
+                
+                Kind regards,
+                
+                RAREFAN.
+                
+                http://rarefan.evolbio.mpg.de
+                """.format(os.path.basename(tmpdir))
 
-RAREFAN.
+                email_command = '&& printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s}'.format(email_subject, email_body, email_recipient)
 
-http://rarefan.evolbio.mpg.de
-""".format(os.path.basename(tmpdir))
+                email_stamp_command = " && touch .email.stamp"
 
-            email_command = '&& printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s}'.format(email_subject, email_body, email_recipient)
+                command_lines.append(email_command)
+                command_lines.append(email_stamp_command)
 
-            email_stamp_command = " && touch .email.stamp"
+            with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
+                fp.write(r"#! /bin/bash")
+                fp.write('\n')
+                fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
+                fp.write('\n')
+                for line in command_lines:
+                    fp.write(line)
+                    fp.write('\\\n')
+                fp.write('\n')
 
-            command_lines.append(email_command)
-            command_lines.append(email_stamp_command)
+            os.chmod('job.sh', stat.S_IRWXU )
 
-        with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
-            fp.write('\n')
-            for line in command_lines:
-                fp.write(line)
-                fp.write('\\\n')
-            fp.write('\n')
+            # Write batch script to submit the job.
+            with open(os.path.join(tmpdir,'batch.sh'), 'w') as fp:
+                fp.write(r"#! /bin/bash")
+                fp.write('\n')
+                fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
+                fp.write('\n')
 
-        os.chmod('job.sh', stat.S_IRWXU )
+            os.chmod('batch.sh', stat.S_IRWXU )
 
-        # Write batch script to submit the job.
-        with open(os.path.join(tmpdir,'batch.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
-            fp.write('\n')
+            shell_command = os.path.join(tmpdir, 'batch.sh')
+            proc = subprocess.Popen(shlex.split(shell_command), shell=False)
 
-        os.chmod('batch.sh', stat.S_IRWXU )
+            os.chdir(oldwd)
 
-        shell_command = os.path.join(tmpdir, 'batch.sh')
-        proc = subprocess.Popen(shlex.split(shell_command), shell=False)
-
-        os.chdir(oldwd)
-        
-        return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
+            return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
 
     return render_template(
                     'submit.html',
                     title='Submit',
-                    submit_form=submit_form, 
+                    submit_form=submit_form,
                     )
           
 @app.route('/results', methods=['GET', 'POST'])
@@ -211,6 +228,7 @@ def results():
     
     results_form = AnalysisForm()
 
+    is_started = False
     is_valid_run_id = False
     is_java_finished = False
     is_R_finished = False
