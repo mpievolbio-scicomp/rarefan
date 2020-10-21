@@ -1,12 +1,16 @@
-from flask import render_template,\
-                  request,\
-                  session,\
-                  redirect,\
-                  url_for,\
-                  abort,\
-                  send_from_directory,\
-                  flash
+from flask import render_template
+from flask import request
+from flask import session
+from flask import redirect
+from flask import url_for
+from flask import abort
+from flask import send_from_directory
+from flask import flash
+from flask_autoindex import AutoIndex
 
+from werkzeug.utils import secure_filename
+import re
+from wtforms.validators import ValidationError
 from app.views import SubmitForm, AnalysisForm, UploadForm
 from app import app
 
@@ -16,6 +20,20 @@ import shutil
 import stat
 import subprocess
 import tempfile
+
+from Bio import SeqIO
+
+def validate_fasta(filename):
+    """ Validates input from passed file as fasta formatted sequence data.
+
+    :param filename: The filename of the file to validate.
+
+    """
+    with open(filename, 'r') as fp:
+        fasta = SeqIO.parse(fp, "fasta")
+        is_fasta = any(fasta)
+
+        return is_fasta
 
 
 @app.route('/')
@@ -28,6 +46,8 @@ def upload():
 
     if upload_form.validate_on_submit():
         seqs = request.files.getlist(upload_form.sequences.name)
+        print(seqs)
+
 
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -35,12 +55,26 @@ def upload():
             dir=app.config["UPLOAD_DIR"]
         )
 
-        basenames = [seq.filename for seq in seqs]
-        fnames = [os.path.join(session['tmpdir'], bn) for bn in basenames]
+        dna_extensions = ['fn', 'fastn', 'fas', 'fasta']
+        aa_extensions = ['fa', 'faa']
+        tree_extensions = ['nwk']
+        fnames = [os.path.join(session['tmpdir'], secure_filename(seq.filename)) for seq in seqs]
         [seq.save(fname) for seq, fname in zip(seqs, fnames)]
-        strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "fas"]
-        rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] == "faa"]
-        tree_names = [bn for bn in basenames if bn.split(".")[-1] == "nwk"]
+
+        # Check if valid fasta files.
+        for f in fnames:
+            if f.split('.')[-1] in tree_extensions:
+                continue
+            is_fasta = validate_fasta(f)
+            if not validate_fasta(f):
+                flash("{} is neither a valid fasta file nor a tree file and will be ignored.".format(os.path.basename(f)))
+                fnames.remove(f)
+                os.remove(f)
+
+        basenames = [os.path.basename(f) for f in fnames]
+        strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in dna_extensions]
+        rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in aa_extensions]
+        tree_names = [bn for bn in basenames if bn.split(".")[-1] in tree_extensions]
 
         session['strain_names'] = strain_names
         session['rayt_names'] = rayt_names
@@ -130,14 +164,6 @@ def submit():
                                          ])
             R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-            # Zip results.
-            zip_command = " ".join(["zip",
-                                        "-rv",
-                                        os.path.split(session['tmpdir'])[-1]+"_out.zip",
-                                        'out'
-                                           ]
-                                   )
-
             andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
             distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
             distfile = os.path.join(session['outdir'], os.path.basename(distfile))
@@ -147,6 +173,13 @@ def submit():
             clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
             clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
+            # Zip results.
+            zip_command = " ".join(["zip",
+                                    "-rv",
+                                    os.path.split(session['tmpdir'])[-1] + "_out.zip",
+                                    'out'
+                                    ]
+                                   )
             zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
 
             command_lines = [
@@ -265,22 +298,6 @@ def results():
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
-
-    base_dir = os.path.join(app.static_folder, 'uploads')
-    abs_path = os.path.join(base_dir, req_path)
-    print(base_dir, abs_path)
-
-    if not os.path.exists(abs_path):
-        print("{} not found".format(abs_path))
-        return abort(404)
-
-    if os.path.isfile(abs_path):
-        print("serving file")
-        return send_from_directory(base_dir, req_path)
-
-    fnames = os.listdir(abs_path)
-    print(fnames)
-
-    return render_template('files.html', files=fnames)
-
- 
+    """"""
+    """ Only a stub, file listing will be taken care of by AutoIndex."""
+    pass

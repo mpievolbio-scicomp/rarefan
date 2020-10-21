@@ -1,29 +1,45 @@
 {% extends "base.html" %}
 {% block body %}
-    <h1>REPINPop Job Submission Form</h1>
+    <h1>RAREFAN Job Submission Form</h1>
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ submit_form.hidden_tag() }}
         <p>
-            {{ submit_form.reference_strain.label }}
-            {{ submit_form.reference_strain() }}</br>
-            {{ submit_form.query_rayt.label }}
-            {{ submit_form.query_rayt() }}</br>
-            {{ submit_form.treefile.label }}
-            {{ submit_form.treefile() }}</br>
-            {{ submit_form.min_nmer_occurence.label }}
+            {{ submit_form.reference_strain.label }}</br>
+            {{ submit_form.reference_strain() }}</br></br>
+        </p>
+        <p>
+            {{ submit_form.query_rayt.label }}</br>
+            {{ submit_form.query_rayt() }}</br></br>
+        </p>
+        <p>
+            {{ submit_form.treefile.label }}</br>
+            {{ submit_form.treefile() }}</br></br>
+        </p>
+        <p>
+            {{ submit_form.min_nmer_occurence.label }}</br>
             {{ submit_form.min_nmer_occurence() }}</br>
             {% for error in submit_form.min_nmer_occurence.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
-            {{ submit_form.nmer_length.label }}
+        </p>
+        <p>
+            {{ submit_form.nmer_length.label }}</br>
             {{ submit_form.nmer_length() }}</br>
             {% for error in submit_form.nmer_length.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
-            {{ submit_form.e_value_cutoff.label }}
+        </p>
+        <p>
+            {{ submit_form.e_value_cutoff.label }}</br>
             {{ submit_form.e_value_cutoff() }}</br>
             {% for error in submit_form.e_value_cutoff.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
-            {{ submit_form.analyse_repins.label }}
+        </p>
+        <p>
+            {{ submit_form.analyse_repins.label }}</br>
             {{ submit_form.analyse_repins() }}</br>
-            {{ submit_form.email.label }}
+        </p>
+        <p>
+            {{ submit_form.email.label }}</br>
             {{ submit_form.email() }}</br>
             {% for error in submit_form.email.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
+        </p>
+        <p>
             {{ submit_form.go() }}
         </p>
     </form>
