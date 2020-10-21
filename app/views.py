@@ -1,6 +1,7 @@
 # views.py
 
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileRequired, FileAllowed
 from wtforms import BooleanField
 from wtforms import SelectField
 from wtforms import MultipleFileField
@@ -9,7 +10,12 @@ from wtforms import SubmitField
 from wtforms import IntegerField
 from wtforms import FloatField
 from wtforms import validators
-from flask_wtf.file import FileRequired
+from wtforms.validators import ValidationError
+
+# Needed to validate fasta files.
+# https://stackoverflow.com/questions/44293407/how-can-i-check-whether-a-given-file-is-fasta
+
+
 class OptionalEmail(validators.Email):
     def __call__(self, form, field):
         if field.data is None or field.data == "":
@@ -17,10 +23,21 @@ class OptionalEmail(validators.Email):
 
         super().__call__(form, field)
 
+class SequenceFilesValidator():
+    allowed_extensions = ['fasta', 'fastn', 'fa', 'fas', 'fna', 'fn', 'fan', 'faa', 'nwk']
+    def __call__(self, form, field):
+        extensions = [f.filename.split(".")[-1] for f in field.data]
+        if not all([ext in self.allowed_extensions for ext in extensions]):
+            raise ValidationError("Only files with these filename extensions are allowed: {}".format(["."+ext for ext in self.allowed_extensions]))
+
+        if len([True for ext in extensions if ext == 'nwk'] ) > 1:
+            raise ValidationError("At max 1 tree file can be uploaded.")
+
 class UploadForm(FlaskForm):
-    sequences = MultipleFileField('Sequences',
+    sequences = MultipleFileField('File upload',
                                    validators=[validators.DataRequired(),
-                                               # validators.regexp(u'^.*\.[fas, fasta, fna, fa]'),
+                                               validators.Length(min=2, message="Please select at least 2 sequence files (fasta format) and (optionally) one tree file."),
+                                               SequenceFilesValidator(),
                                               ]
                                   )
 
