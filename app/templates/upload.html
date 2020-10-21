@@ -1,11 +1,22 @@
 {% extends "base.html" %}
 {% block body %}
     <h1>Upload your sequences to RAREFAN</h1>
+    <p>
+    <b>
+        Note:
+    </b>
+    RAREFAN accepts the following filename extensions (the part after the "."): ".fasta", ".fastn", ".fan", ".fn", ".fas" for
+    DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newik formatted tree files.
+    </p>
     <form action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
         {{ upload_form.hidden_tag() }}
         <p>
             {{ upload_form.sequences.label }}
             {{ upload_form.sequences(size=32) }}
+            {%  for error in upload_form.sequences.errors %}
+            <span style="color: red;">[ {{ error }} ]</span>
+            {%  endfor %}
+            <br>
             {{ upload_form.upload() }}
         </p>
     </form>

@@ -42,7 +42,7 @@
                     {% endif %}
                     <h2> Browse data </h2>
                         <p>
-                        <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
+                        <a href={{url_for('files', req_path=run_id)}} target="_blank">{{run_id}}</a>
                         </p>
                     <h2> Download data </h2>
                     {% if is_zip_finished %}
