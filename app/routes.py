@@ -6,7 +6,6 @@ from flask import url_for
 from flask import abort
 from flask import send_from_directory
 from flask import flash
-from flask_autoindex import AutoIndex
 
 from werkzeug.utils import secure_filename
 import re
@@ -282,7 +281,10 @@ def results():
             is_R_finished = ".R.stamp" in os.listdir(run_id_path)
             is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
         
-        print(run_id, is_valid_run_id, is_java_finished, is_R_finished, is_zip_finished)                        
+        print(run_id, is_valid_run_id, is_java_finished, is_R_finished, is_zip_finished)
+
+        # Set top level file directory.
+
         return render_template('results.html',
                 title="Results",
                 results_form=results_form,
