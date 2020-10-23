@@ -1,0 +1,11 @@
+{%  extends 'base.html' %}
+{%  block body %}
+<div>
+    {% for dir in dirs %}
+        <p><a href="/files{{ req_path }}/{{ dir }}"><b>{{dir}}/</b></a></p>
+    {% endfor %}
+    {% for file in files %}
+        <p><a href="/files{{ req_path }}/{{ file }}"><b>{{ file }}</b></p>
+    {% endfor %}
+</div>
+{%  endblock %}

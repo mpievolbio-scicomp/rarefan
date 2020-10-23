@@ -302,4 +302,32 @@ def results():
 def files(req_path):
     """"""
     """ Only a stub, file listing will be taken care of by AutoIndex."""
-    pass
+    uploads_dir = os.path.join(app.static_folder, 'uploads')
+    nested_file_path = os.path.join(uploads_dir, req_path)
+    #
+    # if os.path.realpath(nestedFilePath) != nestedFilePath:
+    #     return "no directory traversal please."
+
+    if os.path.isdir(nested_file_path):
+        item_list = os.listdir(nested_file_path)
+
+        # Move directories to a separate list.
+        dirs = [item_list.pop(i) for (i,d) in enumerate(item_list) if os.path.isdir(os.path.join(nested_file_path, d))]
+
+        # Sort files and dirs.
+        item_list.sort()
+        dirs.sort()
+
+        # Concat dirs and files.
+        item_list = [i for i in item_list if not "stamp" in i]
+
+        # Prepend the parent dir.
+        dirs.insert(0, '..')
+        if not req_path.startswith("/"):
+            req_path = "/" + req_path
+        if req_path.endswith('/'):
+            req_path = req_path[:-1]
+        return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs)
+    else:
+        # Serve the file.
+        return send_from_directory(*os.path.split(nested_file_path))
