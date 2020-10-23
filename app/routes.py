@@ -182,18 +182,13 @@ def submit():
             zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
 
             command_lines = [
-                                 "touch {} &&".format(start_stamp),
-                                 java_command+" && ",
-                                 "touch {} && ".format(java_stamp),
-                                 andi_command+" && ",
-                                 "touch {} && ".format(andi_stamp),
-                                 clustdist_command+" && ",
-                                 "touch {} && ".format(clustdist_stamp),
-                                 R_command+" && ",
-                                 "touch {} && ".format(R_stamp),
-                                 zip_command+" && ",
-                                 "touch {}".format(zip_stamp)
-                                    ]
+                "touch {} &&".format(start_stamp),
+                "{} && touch {}".format(java_command, java_stamp),
+                "{} && touch {}".format(clustdist_command, clustdist_stamp),
+                "{} && touch {}".format(andi_command, andi_stamp),
+                "{} && touch {}".format(R_command, R_stamp),
+                "{} && touch {}".format(zip_command, zip_stamp)
+            ]
 
             if submit_form.email.data not in ["", None]:
                 email_recipient = submit_form.email.data
@@ -212,12 +207,10 @@ def submit():
                 http://rarefan.evolbio.mpg.de
                 """.format(os.path.basename(tmpdir))
 
-                email_command = '&& printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s}'.format(email_subject, email_body, email_recipient)
+                email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s}'.format(email_subject, email_body, email_recipient)
+                email_stamp_command = "touch .email.stamp"
 
-                email_stamp_command = " && touch .email.stamp"
-
-                command_lines.append(email_command)
-                command_lines.append(email_stamp_command)
+                command_lines.append("( {} && touch {})".format(email_command, email_stamp_command))
 
             with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
                 fp.write(r"#! /bin/bash")
@@ -226,7 +219,7 @@ def submit():
                 fp.write('\n')
                 for line in command_lines:
                     fp.write(line)
-                    fp.write('\\\n')
+                    fp.write('\n')
                 fp.write('\n')
 
             os.chmod('job.sh', stat.S_IRWXU )
@@ -260,12 +253,6 @@ def results():
     
     results_form = AnalysisForm()
 
-    is_started = False
-    is_valid_run_id = False
-    is_java_finished = False
-    is_R_finished = False
-    is_zip_finished = False
-
     if 'run_id' in args.keys():
         
         run_id = args['run_id']
@@ -280,23 +267,42 @@ def results():
             is_java_finished = ".java.stamp" in os.listdir(run_id_path)
             is_R_finished = ".R.stamp" in os.listdir(run_id_path)
             is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
-        
-        print(run_id, is_valid_run_id, is_java_finished, is_R_finished, is_zip_finished)
 
-        # Set top level file directory.
+            status = is_started*1 + is_java_finished*10 + is_R_finished*100 + is_zip_finished*1000
+            # flash("DEBUG: Status={}".format(status))
 
-        return render_template('results.html',
-                title="Results",
-                results_form=results_form,
-                run_id=run_id,
-                is_valid_run_id=is_valid_run_id,
-                is_started=is_started,
-                is_java_finished=is_java_finished,
-                is_R_finished=is_R_finished,
-                is_zip_finished=is_zip_finished,
-                )
+            if status < 1:
+                flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
+            elif status == 1:
+                flash("Your job {} is running, please wait for page to refresh.".format(run_id))
+            elif status == 11:
+                flash("Your job {} has finished, postprocessing.".format(run_id))
+            elif status == 111:
+                flash("Your job {} and postprocessing have finished. Preparing run files for download".format(run_id))
+            elif status == 101:
+                flash("Your job {} has failed. Preparing run files for download.".format(run_id))
+            elif status == 1111:
+                flash("Your job {} has finished. Results and download links below.".format(run_id))
+            elif status == 1011:
+                flash("Your job {} has finished but postprocessing failed. Download files below.".format(run_id))
+            elif status == 1001:
+                flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
+            else:
+                flash("Your job {} has failed with an unexpected failure.".format(run_id))
+
+            return render_template('results.html',
+                                   title="Run {} results".format(run_id),
+                                   results_form=results_form,
+                                   run_id=run_id,
+                                   status=status
+                                   )
+
+        else:
+            flash("Not a valid run ID.")
+
     return render_template("results_query.html",
-                           results_form=results_form)
+                       results_form=results_form,
+                           title="Results")
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
