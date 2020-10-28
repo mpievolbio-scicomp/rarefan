@@ -3,67 +3,92 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block body %}
-<div class="jumbotron">
-    <h1><b>RAREFAN: RAyt and REpin Finder and ANalyzer</b></h1>
-    <div id="divContainer" style="position: absolute;  border: solid 0 #000; margin-bottom:500px">
-    <div id="frameContainer" style="overflow:hidden;">
-<iframe
-        src="upload"
-        style="border: 0 none; height: 500px; margin-top: -30px; width: 600px; margin-bottom:-50px">
-</iframe>
+    <div class="jumbotron">
+        <h1><b>RAREFAN: RAyt and REpin Finder and ANalyzer</b></h1>
+        <div id="divContainer" style="position: absolute;  border: solid 0 #000; margin-bottom:500px">
+            <div id="frameContainer" style="overflow:hidden;">
+                <iframe
+                        src="upload"
+                        style="border: 0 none; height: 500px; margin-top: -30px; width: 600px; margin-bottom:-50px">
+                </iframe>
+            </div>
+        </div>
+        <div style="margin-top:500px">
+            <h2>Introduction</h2>
+            <p>
+                The RAREFAN webserver aims to identify and analyze RAYT transposases and
+                their associated REPINs in bacterial species. The input to the server
+                is a selection of closely related strains (&lt;5% divergence). There
+                are three example datasets from <i>Neisseria, E. coli</i>, and <i>Pseudomonas
+                chlororaphis</i>. <i>Neisseria
+            </i> and <i>E. coli</i> both contain Group 2 RAYTs (mainly
+                found in enterobacteria), whereas <i>P. chlororaphis</i> contains Group 3 RAYTs
+                (mainly found in <i>P. putida, P. fluorescens</i> and <i>P. syringae</i>).
+                For more explanation see
+                <a href="https://dx.doi.org/10.1093/gbe/evx146" target="_blank">Bertels, Gallie and Rainey (2017)</a>.
+                Our service provides an analysis of REPIN population size, how it relates to
+                REPIN replication rate and the presence and absence of RAYTs across all submitted genomes.
+            </p>
+            {#<p>#}
+            {#    If you use the webserver please cite#}
+            {#</p>#}
+            <h2>Third party tools</h2>
+            <p>
+                The webserver relies on the following tools for analysis:
+            </p>
+            <ul>
+                <li>
+                    <p>
+                        <b>andi</b> for tree building:
+                        <br>
+                        B Haubold, F Klötzl, and P Pfaffelhuber. andi: fast and accurate estimation of evolutionary distances between
+                        closely related genomes. Bioinformatics, 2015 vol. 31 (8) pp. 1169-1175.0
+                        Bioinformatics, 2015 vol. 31 (8) pp. 1169-1175. <a href=https://dx.doi.org/10.1093/bioinformatics/btu815 target="_blank">DOI:10.1093/bioinformatics/btu815</a>
+                    </p>
+                </li>
+                <li>
+                    <p>
+                        <b>MCL</b> for REPIN population clustering:
+                        <br>
+                        A J Enright, S Van Dongen, and C A Ouzounis. An efficient algorithm for large-scale detection of protein
+                        families. Nucleic Acids Research, 2002 vol. 30 (7) pp. 1575-158.
+                        <a href="https://dx.doi.org/10.1093/nar/30.7.1575" target="_blank">DOI:10.1093/nar/30.7.1575</a>
+                    </p>
+                </li>
+                <li><p>
+                    <b>BLAST+</b> for identifying RAYT relatives in the different genomes:<br>
+                    C Camacho, G Coulouris, V Avagyan, N Ma, J Papadopoulos, K Bealer, and T L Madden. BLAST+: architecture and
+                    applications. BMC Bioinformatics, 2009 vol. 10 (1) pp. 421-9.
+                    <a href="https://dx.doi.org/10.1186/1471-2105-10-421" target="_blank">DOI:10.1186/1471-2105-10-421</a>
+                    {#    <a href="https://dx.doi.org/" target="_blank"></a>#}
+                    {#    <a href="https://dx.doi.org/" target="_blank"></a>#}
+                </p>
+                </li>
+            </ul>
+            <h2>
+               Example datasets
+            </h2>
+            <p>
+            Three example datasets are publicly available from <a href="https://zenodo.org" target="_blank">zenodo</a>:
+            </p>
+                <li>
+                    <p>Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
+                        REPIN population analysis in 4 Dokdonia genomes (Version 1).
+                        Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4117577"
+                                        target="_blank">DOI:10.5281/zenodo.4117577</a>
+                    </p>
+                </li>
+                <li><p>
+                    Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
+                    REPIN population analysis in 130 Neisseria meningitidis and N. gonorrhoeae genomes (Version 1).
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4049438" target="_blank">DOI:10.5281/zenodo.4049438</a>.
+                </p></li>
+                <li><p>
+                    Frederic Bertels, Carsten Fortmann-Grote, & Paul B. Rainey.
+                    REPIN population analysis in 42 Pseudomonas chlororaphis genomes (Version 1).
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4043615" target="_blank">DOI:10.5281/zenodo.4043615</a>
+                </p></li>
+            </ul>
+        </div>
     </div>
-    </div>
-    <div style="margin-top:500px">
-    <h2>Introduction</h2>
-<p>
-    The RAREFAN webserver aims to identify and analyze RAYT transposases and
-their associated REPINs in bacterial species. The input to the server
-is a selection of closely related strains (&lt;5% divergence). There
-are three example datasets from <i>Neisseria, E. coli</i>, and <i>Pseudomonas
-chlororaphis</i>. <i>Neisseria
-</i> and <i>E. coli</i> both contain Group 2 RAYTs (mainly
-found in enterobacteria), whereas <i>P. chlororaphis</i> contains Group 3 RAYTs
-(mainly found in <i>P. putida, P. fluorescens</i> and <i>P. syringae</i>).
-    For more explanation see
-    <a href="https://dx.doi.org/10.1093/gbe/evx146" target="_blank">Bertels, Gallie and Rainey (2017)</a>.
-    Our service provides an analysis of REPIN population size, how it relates to
-REPIN replication rate and the presence and absence of RAYTs across all submitted genomes.
-</p>
-{#<p>#}
-{#    If you use the webserver please cite#}
-{#</p>#}
-    <h2>Third party tools</h2>
-    <p>
-The webserver relies on the following tools for analysis:
-    </p>
-    <ul>
-    <li>
-        <p>
-            <b>andi</b> for tree building:
-            <br>
-            B Haubold, F Klötzl, and P Pfaffelhuber. andi: fast and accurate estimation of evolutionary distances between
-            closely related genomes. Bioinformatics, 2015 vol. 31 (8) pp. 1169-1175.0
-            Bioinformatics, 2015 vol. 31 (8) pp. 1169-1175. DOI: <a href=https://dx.doi.org/10.1093/bioinformatics/btu815 target="_blank">10.1093/bioinformatics/btu815</a>
-        </p>
-    </li>
-    <li>
-        <p>
-        <b>MCL</b> for REPIN population clustering:
-        <br>
-        A J Enright, S Van Dongen, and C A Ouzounis. An efficient algorithm for large-scale detection of protein
-        families. Nucleic Acids Research, 2002 vol. 30 (7) pp. 1575-158.
-        DOI: <a href="https://dx.doi.org/10.1093/nar/30.7.1575" target="_blank">10.1093/nar/30.7.1575</a>
-    </p>
-    </li>
-    <li><p>
-        <b>BLAST+</b> for identifying RAYT relatives in the different genomes:<br>
-        C Camacho, G Coulouris, V Avagyan, N Ma, J Papadopoulos, K Bealer, and T L Madden. BLAST+: architecture and
-        applications. BMC Bioinformatics, 2009 vol. 10 (1) pp. 421-9.
-        DOI: <a href="https://dx.doi.org/10.1186/1471-2105-10-421" target="_blank">10.1186/1471-2105-10-421</a>
-        {#    <a href="https://dx.doi.org/" target="_blank"></a>#}
-        {#    <a href="https://dx.doi.org/" target="_blank"></a>#}
-    </p>
-    </li>
-    </ul>
-</div></div>
 {% endblock %}
