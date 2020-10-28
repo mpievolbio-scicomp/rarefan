@@ -184,8 +184,8 @@ def submit():
             command_lines = [
                 "touch {} &&".format(start_stamp),
                 "{} && touch {}".format(java_command, java_stamp),
-                "{} && touch {}".format(clustdist_command, clustdist_stamp),
                 "{} && touch {}".format(andi_command, andi_stamp),
+                "{} && touch {}".format(clustdist_command, clustdist_stamp),
                 "{} && touch {}".format(R_command, R_stamp),
                 "{} && touch {}".format(zip_command, zip_stamp)
             ]
