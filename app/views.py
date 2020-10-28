@@ -84,7 +84,7 @@ class SubmitForm(FlaskForm):
                                   description="Leave unchecked to analyse REPs only."
                                   )
 
-    email = StringField("Optional: provide your email address to receive a notification once your job is done.",
+    email = StringField("Optional: Your email address.",
                         validators=[OptionalEmail()]
                         )
 
