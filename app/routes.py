@@ -6,13 +6,11 @@ from flask import url_for
 from flask import abort
 from flask import send_from_directory
 from flask import flash
-from flask_mail import  Message
 
 from werkzeug.utils import secure_filename
 import re
 from wtforms.validators import ValidationError
 from app.views import SubmitForm, AnalysisForm, UploadForm
-from app import mail
 from app import app
 
 import os
