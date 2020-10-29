@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block body %}
     <h1>RAREFAN Job Submission Form</h1>
+    <p>
+        Please fill in the form below. Hover your cursor on the input field to view a tooltip.
+    </p>
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ submit_form.hidden_tag() }}
         <p>

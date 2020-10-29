@@ -289,7 +289,7 @@ http://rarefan.evolbio.mpg.de
 
     # Send mail to all recipients.
     for recipient in recipients:
-        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp -v {2:s} > {3:s}'.format(email_subject,
+        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} > {3:s}'.format(email_subject,
                                                                                 email_body, recipient, os.path.join(run_id_path, 'out', 'rarefan.log'))
         proc = subprocess.Popen(email_command, shell=True)
     #
