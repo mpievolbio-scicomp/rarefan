@@ -1,46 +1,54 @@
 {% extends "base.html" %}
 {% block body %}
     <h1>RAREFAN Job Submission Form</h1>
+    <p>
+        Please fill in the form below. Hover your cursor on the input field to view a tooltip.
+    </p>
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ submit_form.hidden_tag() }}
         <p>
             {{ submit_form.reference_strain.label }}</br>
-            {{ submit_form.reference_strain() }}</br></br>
+            {{ submit_form.reference_strain(title="Select the reference strain from your uploaded sequence files.") }}</br></br>
         </p>
         <p>
             {{ submit_form.query_rayt.label }}</br>
-            {{ submit_form.query_rayt() }}</br></br>
+            {{ submit_form.query_rayt(title="Select the RAYT to query. \
+'yafM_Ecoli' and 'yafM_SBW25' are provided by default; \
+ you can supply your own RAYTs in the 'Upload' step."
+                    ) }}</br></br>
         </p>
         <p>
             {{ submit_form.treefile.label }}</br>
-            {{ submit_form.treefile() }}</br></br>
+            {{ submit_form.treefile(title="Select the tree file. The tree file will be used in the postprocessing and to \
+generate the results figures. Select 'None' to calculate the tree from the submitted sequences or select a tree file (.nwk format) \
+supplied in the 'Upload' step.") }}</br></br>
         </p>
         <p>
             {{ submit_form.min_nmer_occurence.label }}</br>
-            {{ submit_form.min_nmer_occurence() }}</br>
+            {{ submit_form.min_nmer_occurence(title="Set the minimum number of nmer occurences (integer number).") }}</br>
             {% for error in submit_form.min_nmer_occurence.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
             {{ submit_form.nmer_length.label }}</br>
-            {{ submit_form.nmer_length() }}</br>
+            {{ submit_form.nmer_length(title="Set the nmer length (integer number).") }}</br>
             {% for error in submit_form.nmer_length.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
             {{ submit_form.e_value_cutoff.label }}</br>
-            {{ submit_form.e_value_cutoff() }}</br>
+            {{ submit_form.e_value_cutoff(title="Set the e-value cutoff for 'blastn' (scientific 'e' notation).") }}</br>
             {% for error in submit_form.e_value_cutoff.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
             {{ submit_form.analyse_repins.label }}</br>
-            {{ submit_form.analyse_repins() }}</br>
+            {{ submit_form.analyse_repins(title="Toggle REPIN analysis.") }}</br>
         </p>
         <p>
             {{ submit_form.email.label }}</br>
-            {{ submit_form.email() }}</br>
+            {{ submit_form.email(title="Provide your email address to receive a notification when the job is finished. Your email will be deleted after sending." ) }}</br>
             {% for error in submit_form.email.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
-            {{ submit_form.go() }}
+            {{ submit_form.go(title="Click here to submit the job.") }}
         </p>
     </form>
 {% endblock %}
