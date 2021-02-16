@@ -24,7 +24,7 @@ class OptionalEmail(validators.Email):
         super().__call__(form, field)
 
 class SequenceFilesValidator():
-    allowed_extensions = ['fasta', 'fastn', 'fa', 'fas', 'fna', 'fn', 'fan', 'faa', 'nwk']
+    allowed_extensions = ['fasta', 'fastn', 'fa', 'fas', 'fna', 'fn', 'faa', 'nwk']
     def __call__(self, form, field):
         extensions = [f.filename.split(".")[-1] for f in field.data]
         if not all([ext in self.allowed_extensions for ext in extensions]):
@@ -36,7 +36,7 @@ class SequenceFilesValidator():
 class UploadForm(FlaskForm):
     sequences = MultipleFileField('File upload',
                                    validators=[validators.DataRequired(),
-                                               validators.Length(min=2, message="Please select at least 2 sequence files (fasta format) and (optionally) one tree file."),
+                                               validators.Length(min=1, message="Please select at least 1 sequence files (fasta format) and (optionally) one tree file."),
                                                SequenceFilesValidator(),
                                               ]
                                   )
