@@ -23,7 +23,10 @@ dependencies:
   - r-cowplot
   - r-ggplot2
   - gradle
+  - biopython
+  - email_validator
   - pip
   - pip:
       - flask-pymongo
       - flask-wtf
+      - flask-autoindex
