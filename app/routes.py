@@ -335,7 +335,8 @@ def results():
             elif status == 1111:
                 flash("Your job {} has finished. Results and download links below.".format(run_id))
             elif status == 1011:
-                flash("Your job {} has finished but postprocessing failed. Download files below.".format(run_id))
+                flash("Your job {} has finished but postprocessing failed. In case only one sequence file was uploaded, \
+                 this is the expected behaviour. Download files below.".format(run_id))
             elif status == 1001:
                 flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
             else:
