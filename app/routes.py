@@ -55,7 +55,7 @@ def upload():
             dir=app.config["UPLOAD_DIR"]
         )
 
-        dna_extensions = ['fn', 'fastn', 'fas', 'fasta']
+        dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
         aa_extensions = ['fa', 'faa']
         tree_extensions = ['nwk']
         fnames = [os.path.join(session['tmpdir'], secure_filename(seq.filename)) for seq in seqs]
