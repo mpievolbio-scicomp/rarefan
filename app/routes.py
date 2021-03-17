@@ -162,6 +162,11 @@ def submit():
         start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
         java_command = " ".join(['java',
+                                     '-Dcom.sun.management.jmxremote',
+                                      '-Dcom.sun.management.jmxremote.port=9010',
+                                      '-Dcom.sun.management.jmxremote.local.only=false',
+                                      '-Dcom.sun.management.jmxremote.authenticate=false',
+                                      '-Dcom.sun.management.jmxremote.ssl=false',
                                      '-jar',
                                      '-Xmx14g',
                                      os.path.abspath(
