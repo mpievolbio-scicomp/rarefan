@@ -182,22 +182,22 @@ plotCorrelationSingle=function(folder,type,
                  y=numRepin))+
             geom_point()
 
-    p=p+geom_smooth(method=lm,
-                    se=FALSE,
-                    fullrange=TRUE,
-                    formula=y~x,
-                    show.legend=F
-    )
+ #   p=p+geom_smooth(method=lm,
+ #                   se=FALSE,
+ #                   fullrange=TRUE,
+ #                   formula=y~x,
+ #                   show.legend=F
+ #   )
 
-    p=p+stat_fit_glance(method = 'lm',
-                        method.args=list(formula=y~x),
-                        aes(label = paste("P-value = ",
-                                          signif(..p.value..,
-                                                 digits = 2),
-                                          sep = "")),
-                        label.x=pvLabelX,
-                        label.y=pvLabelY,
-                        size = fontsize/3)
+ #   p=p+stat_fit_glance(method = 'lm',
+ #                       method.args=list(formula=y~x),
+ #                       aes(label = paste("P-value = ",
+ #                                         signif(..p.value..,
+ #                                                digits = 2),
+ #                                         sep = "")),
+ #                       label.x=pvLabelX,
+ #                       label.y=pvLabelY,
+ #                       size = fontsize/3)
 
     p=p+xlim(xlim)+
         ylim(ylim)+
