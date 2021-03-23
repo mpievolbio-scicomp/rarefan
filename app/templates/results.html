@@ -25,7 +25,7 @@
         {% if status > 10 %}
             <h2> Browse data </h2>
             <p>
-                <a href={{url_for('files', req_path=run_id)}} target="_blank">{{run_id}}</a>
+                <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
             </p>
         {% endif %}
         {% if status > 1000     %}
