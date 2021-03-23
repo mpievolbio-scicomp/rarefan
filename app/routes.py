@@ -421,12 +421,23 @@ def files(req_path):
             req_path = req_path[:-1]
         logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
-        # Only insert link to parent dir if not at top level.
+        back_link = url_for('results',
+                            run_id=os.path.basename(session['tmpdir'])
+                            )
+
         link_to_parent = True
+        # Only insert link to parent dir if not at top level.
         if os.path.dirname(req_path) == "/":
             link_to_parent = False
 
-        return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs, link_to_parent=link_to_parent)
+        return render_template('files.html',
+                               req_path=req_path,
+                               files=item_list,
+                               dirs=dirs,
+                               link_to_parent=link_to_parent,
+                               back_link=back_link
+                               )
+
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))

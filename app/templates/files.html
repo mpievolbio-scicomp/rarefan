@@ -1,6 +1,10 @@
 {%  extends 'base.html' %}
 {%  block body %}
 <div>
+    <p>
+        <form action="{{ back_link }}" method="get" id="back_form"></form>
+        <button type="submit" form="back_form">Back to results</button>
+    </p>
     {% if link_to_parent %}
         <p>
             <a href="/files{{ req_path }}/..">Back to parent directory</a>
