@@ -18,11 +18,9 @@
     {{ dropzone.config()}}
     </p>
     <p>
-        {% if confirmation_form is not None %}
         <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
             {{ confirmation_form.hidden_tag() }}
             {{ confirmation_form.go(title="Confirm file uploads") }}
         </form>
-        {% endif %}
     </p>
 {%  endblock %}

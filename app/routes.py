@@ -63,7 +63,7 @@ def index():
 def upload():
 
     if request.method == 'POST': #upload_form.validate_on_submit():
-        form = RunForm()
+        enabled_form = RunForm()
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
             prefix="",
@@ -107,13 +107,16 @@ def upload():
         return render_template(
             'upload.html',
             title="Upload sequences",
-            confirmation_form=form,
+            confirmation_form=enabled_form,
         )
 
+
+    disabled_form = RunForm()
+    disabled_form.go.render_kw = {'disabled': 'disabled'}
     return render_template(
         'upload.html',
         title="Upload sequences",
-        confirmation_form=None
+        confirmation_form=disabled_form
     )
 
 @app.route('/submit', methods=['GET', 'POST'])
