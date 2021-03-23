@@ -337,8 +337,6 @@ http://rarefan.evolbio.mpg.de
 def results():
 
     args = request.args
-    flash("DEBUG: args={}".format(args))
-
     results_form = AnalysisForm()
 
     if 'run_id' in args.keys():
