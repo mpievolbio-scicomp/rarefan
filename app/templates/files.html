@@ -1,6 +1,7 @@
 {%  extends 'base.html' %}
 {%  block body %}
 <div>
+    <a href="/files{{ req_path }}/..">Back to parent directory</a>
     {% for dir in dirs %}
         <p><a href="/files{{ req_path }}/{{ dir }}"><b>{{dir}}/</b></a></p>
     {% endfor %}
