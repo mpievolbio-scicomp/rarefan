@@ -11,15 +11,147 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 import frequencies.REPINProperties;
+import identifyRAYTs.BlastRAYTs;
+import util.DNAmanipulations;
 import util.Fasta;
 import util.Info;
 
 public class REPIN_RAYT_prox {
-	int vicinity=200;
+	int vicinityDistance=200;
 	ArrayList<ProxStats> stats=new ArrayList<ProxStats>();
+	File outFolder;
+	ArrayList<Fasta> allRAYTs=new ArrayList<Fasta>();
+	ArrayList<Info> allRAYTsPos=new ArrayList<Info>();
+	ArrayList<Vicinity> allVicinity=new ArrayList<Vicinity>();
+	ArrayList<String> genomeIDs=new ArrayList<String>();
+	int repinGroups;
+	public class Vicinity{
+		ArrayList<Integer> REPINgroups=new ArrayList<Integer>();
+		public void add(int group) {
+			REPINgroups.add(group);
+		}
+		public String toString() {
+			StringBuffer sb=new StringBuffer();
+			if(REPINgroups.size()>0) {
+				sb.append(REPINgroups.get(0));
+			}
+			for(int i=1;i<REPINgroups.size();i++) {
+				sb.append(","+REPINgroups.get(i));
+			}
+			return sb.toString();
+		}
+		
+	}
 
+	public REPIN_RAYT_prox(File outFolder,int repinGroups) {
+		this.outFolder=outFolder;
+		this.repinGroups=repinGroups;
+	}
+	private void addRAYTs(ArrayList<Fasta> rayts,ArrayList<Info> pos,ArrayList<Vicinity> vicinity) {
+		allRAYTs.addAll(rayts);
+		allRAYTsPos.addAll(pos);
+		allVicinity.addAll(vicinity);
+	}
+
+	public void addRAYT(ArrayList<Info> raytPos,File genome,ArrayList<REPINGenomePositions> rgp) {
+		ArrayList<Fasta> rayts=makeRAYTFasta(raytPos,genome);
+		ArrayList<Vicinity> vicinity=getVicinityInformation(raytPos,rgp,DeterminePopulationFrequencies.getGenomeID(genome));
+		addRAYTs(rayts,raytPos,vicinity);
+	}
 	
+	public void write(File out) {
+		Fasta.write(allRAYTs, new File(out+".fas"));
+		try {
+			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
+			bw.write("Genome\tRAYT\tREPINgroups\n");
+			for(int i=0;i<allRAYTs.size();i++) {
+				String split[]=allRAYTs.get(i).getIdent().split("_");
+				String repinGroup=split[1];
+				String genome=split[0];
+				bw.write(genome+"\t"+repinGroup+"\t"+allVicinity.get(i).toString()+"\n");
+			}
+			bw.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
 	
+	private ArrayList<Vicinity> getVicinityInformation(ArrayList<Info> raytPos,ArrayList<REPINGenomePositions> rgp,String genomeID){
+		ArrayList<Vicinity> repinVicinity=new ArrayList<REPIN_RAYT_prox.Vicinity>();
+		for(int i=0;i<raytPos.size();i++) {
+			Vicinity vic=new Vicinity();
+			for(int j=0;j<repinGroups;j++) {
+				String gID=genomeID+"_"+j;
+				File localOutFolder=new File(outFolder+"/"+gID);
+				Info rayt=raytPos.get(i);
+				if(isInVicinityInformation(rayt, gID, localOutFolder, rgp.get(j))) {
+					vic.add(j);
+				}
+			}
+			repinVicinity.add(vic);
+		}
+		return repinVicinity;
+	}
+	
+	private boolean isInVicinityInformation(Info raytPos,String genomeID,File outFolder,REPINGenomePositions rgp){
+		File ss=new File(outFolder+"/"+genomeID+".ss");
+		if(ss.exists()) {
+			ArrayList<String> allREPINs=toArrayList(getAllREPINs(ss));
+			HashMap<String,ArrayList<REPINposition>> repinPos=rgp.get();
+			return(isNear(allREPINs,raytPos,repinPos));
+		}else {
+			return false;
+		}
+	}
+	
+	private static ArrayList<Fasta> makeRAYTFasta(ArrayList<Info> inf/*blast result*/,File in/*genome Fasta sequence*/) {
+		ArrayList<Fasta> seqs=new ArrayList<Fasta>();/*result sequences*/
+		String genomeID=DeterminePopulationFrequencies.getGenomeID(in);
+		for(int i=0;i<inf.size();i++) {
+
+			HashMap<String,String> fas=Fasta.fasToHash(Fasta.readFasta(in), false);
+			String fasIdent=inf.get(i).info.split("---")[0];
+
+			
+
+			String name=genomeID+"_"+i;
+			int start=inf.get(i).getStart();
+			int end=inf.get(i).getEnd();
+			boolean rev=false;
+			if(start>end) {
+				int temp=start;
+				start=start<end?start:end;
+				end=end>start?end:temp;
+				rev=true;
+			}
+			System.out.println(fasIdent+" "+in);
+			System.out.println(start+" "+end);
+			String seq=getSeq(fas.get(fasIdent),start,end,rev);
+		
+			seqs.add(new Fasta(name,seq));
+
+
+		}
+		return seqs;
+	}
+	private static String getSeq(String genomeSeq,int start,int end,boolean rev) {
+		String seq=genomeSeq.substring(start,end);
+
+		if(rev) {
+			seq=DNAmanipulations.reverse(seq);
+			if(seq.startsWith("T")) {
+				seq=genomeSeq.substring(start,end+1);
+				seq=DNAmanipulations.reverse(seq);
+			}
+		}else {
+			seq=genomeSeq.substring(start-1,end);
+
+		}
+		return seq;
+	}
+	
+//We may need to replace this function by a function that actually sorts RAYTs into groups depending on which REPINs they are associated with	
 	public void addRAYTREPINProximity(int focalSeedGroup,String genomeID,File outFolder,REPINProperties rp,ArrayList<Info> raytPos) {
 		File mcl=new File(outFolder+"/"+genomeID+".mcl");
 		File ss=new File(outFolder+"/"+genomeID+".ss");
@@ -85,7 +217,7 @@ public class REPIN_RAYT_prox {
 		}
 	}
 	
-	private HashSet<String> getAllREPINs(File in){
+	private static HashSet<String> getAllREPINs(File in){
 		ArrayList<Fasta> fas=Fasta.readFasta(in);
 		HashSet<String> allREPINs=new HashSet<String>();
 		for(int i=0;i<fas.size();i++) {
@@ -102,7 +234,7 @@ public class REPIN_RAYT_prox {
 		}
 	}
 	
-	private ArrayList<String> toArrayList(HashSet<String> rest){
+	private static ArrayList<String> toArrayList(HashSet<String> rest){
 		String[] list=rest.toArray(new String[0]);
 		ArrayList<String> al=new ArrayList<String>();
 		for(int i=0;i<list.length;i++) {
@@ -172,7 +304,7 @@ public class REPIN_RAYT_prox {
 				repinend=repinstart;
 				repinstart=swap;
 			}
-			Info bigREPIN=new Info(repinstart-vicinity,repinend+vicinity,"repin");
+			Info bigREPIN=new Info(repinstart-vicinityDistance,repinend+vicinityDistance,"repin");
 			if(raytPos.overlapsWith(bigREPIN)) {
 				return true;
 			}
