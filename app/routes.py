@@ -62,14 +62,13 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
 
-    if request.method == "GET":
+    if request.method == 'POST': #upload_form.validate_on_submit():
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
             prefix="",
             dir=app.config["UPLOAD_DIR"]
         )
 
-    if request.method == 'POST': #upload_form.validate_on_submit():
         # seqs = request.files.getlist('file')
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
@@ -104,8 +103,6 @@ def upload():
         session['strain_names'] = strain_names
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
-
-        return redirect(url_for('submit'))
 
     return render_template(
         'upload.html',
