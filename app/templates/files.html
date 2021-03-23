@@ -1,7 +1,11 @@
 {%  extends 'base.html' %}
 {%  block body %}
 <div>
-    <a href="/files{{ req_path }}/..">Back to parent directory</a>
+    {% if req_path != "/files" %}
+        <p>
+            <a href="/files{{ req_path }}/..">Back to parent directory</a>
+        </p>
+    {% endif %}
     {% for dir in dirs %}
         <p><a href="/files{{ req_path }}/{{ dir }}"><b>{{dir}}/</b></a></p>
     {% endfor %}
