@@ -15,7 +15,7 @@
     <p>
     {{ dropzone.create(action=url_for('upload')) }}
     {{ dropzone.load_js() }}
-    {{ dropzone.config(redirect_url=url_for('submit'), custom_options='addRemoveLinks: true, dictRemoveFileConfirmation: 0') }}
+    {{ dropzone.config(redirect_url=url_for('submit'), custom_options='addRemoveLinks: true, dictRemoveFileConfirmation: false') }}
     </p>
 <script type="text/javascript">
     $(document).ready(function () {
