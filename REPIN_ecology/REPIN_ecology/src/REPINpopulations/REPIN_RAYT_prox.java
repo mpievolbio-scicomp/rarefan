@@ -35,12 +35,19 @@ public class REPIN_RAYT_prox {
 			try {
 				File out=new File(outFolder+"/"+genomeID+"_rayt_repin_prox.txt");
 				BufferedWriter bw=new BufferedWriter(new FileWriter(out));
+				int firstREPINCluster=-1;
 				for(int j=0;j<clusters.size();j++) {
 					if(j<clusters.size()-1) {
-						bw.write("\t"+j+isREPIN(clusters.get(j).get(0)));
-						
+						String isREPINC=isREPIN(clusters.get(j).get(0));
+						bw.write("\t"+j+isREPINC);
+						if(isREPINC.equals("repin")&&firstREPINCluster==-1) {
+							firstREPINCluster=j;
+						}
 					}
 					else bw.write("\toutsideClusters");
+				}
+				if(firstREPINCluster==-1) {
+					firstREPINCluster=0;
 				}
 				bw.write("\n");
 				HashSet<Integer> clustermap=new HashSet<Integer>();
@@ -56,7 +63,7 @@ public class REPIN_RAYT_prox {
 							if(!present) {
 								present=true;
 								clustermap.add(j);
-								if(largestCluster.contains(clusters.get(j).get(0))) {
+								if(largestCluster.contains(clusters.get(j).get(firstREPINCluster))) {
 									lc++;
 								}
 							}else {

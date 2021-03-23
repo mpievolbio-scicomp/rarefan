@@ -26,7 +26,7 @@ public class DeterminePopulationFrequencies {
 	boolean analyseREPIN;
 	File outFolder;
 	HashMap<String/*genomes*/,HashMap<String/*focal seed*/,Integer/*pop size*/>> results=new HashMap<String,HashMap<String,Integer>>();
-
+	HashSet<String> fastaExtensions=new HashSet<String>(Arrays.asList("fas","fasta","fna","fastn","fn"));
     // Entry point.
 	public static void main(String args[]) {
 		// Handle wrong number of arguments.
@@ -220,12 +220,21 @@ public class DeterminePopulationFrequencies {
 		return pos;
 	}
 	
+	private boolean hasCorrectExtension(File f) {
+		String[] split=f.getAbsolutePath().split("\\.");
+		String ext=split[split.length-1];
+		if(fastaExtensions.contains(ext)) {
+	    	return true;
+	    }
+		return false;
+	}
 	
 	private ArrayList<File> getFiles() {
 		ArrayList<File> genomes=new ArrayList<File>();
 		File[] all=inFolder.listFiles();
 		for(int i=0;i<all.length;i++) {
-			if(all[i].getAbsolutePath().endsWith(".fas")||all[i].getAbsolutePath().endsWith(".fna")) {
+			  
+			if(hasCorrectExtension(all[i])) {
 				genomes.add(all[i].getAbsoluteFile());
 			}
 		}
