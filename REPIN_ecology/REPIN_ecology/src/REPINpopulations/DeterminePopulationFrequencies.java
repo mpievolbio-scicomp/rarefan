@@ -178,7 +178,6 @@ public class DeterminePopulationFrequencies {
 			}
 		}
 		rrp.writeStats(new File(this.outFolder+"/prox.stats"));
-
 	}
 
 

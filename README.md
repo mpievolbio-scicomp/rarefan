@@ -69,9 +69,6 @@ source setenv.sh
 ```
 
 ## Launch the server
-Our application is served as a web form where users can upload their sequence
-files, set the parameters, run the analysis and visualize the results. The web
-form is implemented in a jupyter notebook and served with the `voila` framework.
 To launch the server, run
 
 ```
