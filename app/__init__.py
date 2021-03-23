@@ -1,17 +1,17 @@
-# app/__init__.py
-
 from flask import Flask
+from .config import Config
 import os
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
+upload_dir = os.path.join(app.static_folder, 'uploads')
 
-# from werkzeug.debug import DebuggedApplication
-
-from app import views, routes 
-
-# app.wsgi_app = DebuggedApplication(app.wsgi_app, True)
 app.testing = False
 app.debug = False
 
-app.config['SECRET_KEY'] = 'meq348vyojdc9p42micniorq93eakg'
-app.config['UPLOAD_DIR'] = os.path.join(app.static_folder, 'uploads')
+# email
+app.config.from_object(Config)
+app.config['UPLOAD_DIR'] = upload_dir
+
+from app import views, routes

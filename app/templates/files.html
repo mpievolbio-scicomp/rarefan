@@ -1,15 +1,11 @@
-
-{% extends "base.html" %}
-{% block body %}
-<body>
-<ul>
-    {% for file in files %}
-    <li>
-        <a href="{{ (request.path + '/' if request.path != '/' else '') + file }}">
-            {{ (request.path + '/' if request.path != '/' else '') + file }}
-        </a>
-    </li>
+{%  extends 'base.html' %}
+{%  block body %}
+<div>
+    {% for dir in dirs %}
+        <p><a href="/files{{ req_path }}/{{ dir }}"><b>{{dir}}/</b></a></p>
     {% endfor %}
-</ul>
-</body>
-{% endblock %}
+    {% for file in files %}
+        <p><a href="/files{{ req_path }}/{{ file }}"><b>{{ file }}</b></a></p>
+    {% endfor %}
+</div>
+{%  endblock %}

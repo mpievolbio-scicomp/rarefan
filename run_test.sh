@@ -48,7 +48,7 @@ rsync -ruvL ${TEST_DATA_DIR}/ ${RUN_DATA_DIR}/
 rsync -uv data/yafM_Ecoli.faa ${RUN_DATA_DIR}
 
 status=1
-java -Xmx15g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+java_command="java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
     ${RUN_DATA_DIR}\
     ${RUN_OUT_DIR}\
     Nmen_2594.fas\
@@ -56,7 +56,13 @@ java -Xmx15g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
     ${RUN_DATA_DIR}/yafM_Ecoli.faa\
     tmptree.nwk\
     1e-30\
-    false &&\
+    true\
+    "
+echo $java_command
+
+exec $java_command &&\
+andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/tmptree.dist &&\
+clustDist ${RUN_OUT_DIR}/tmptree.dist > ${RUN_OUT_DIR}/tmptree.nwk &&\
 Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
 display ${RUN_OUT_DIR}/repins.png &&\
 display ${RUN_OUT_DIR}/correlations.png &&\

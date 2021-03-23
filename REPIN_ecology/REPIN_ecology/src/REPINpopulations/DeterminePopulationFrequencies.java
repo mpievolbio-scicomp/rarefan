@@ -183,6 +183,7 @@ public class DeterminePopulationFrequencies {
 			rrp.addRAYT(raytPos, genomes.get(i), rgp);
 		}
 		rrp.write(new File(outFolder+"/repin_rayt_association.txt"));
+
 	}
 
 

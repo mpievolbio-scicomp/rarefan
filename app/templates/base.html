@@ -2,6 +2,7 @@
 
 <!DOCTYPE html>
 <html lang="en">
+<base target="_parent">
   <head>
 	  <meta charset='utf-8'>
       </meta>
@@ -18,17 +19,31 @@
         <nav>
           <ul class="nav nav-pills pull-right">
             <li role="presentation"><a href="/">Home</a></li>
-            <li role="presentation"><a href="/submit">Submit new run</a></li>
-            <li role="presentation"><a href="/results">Browse results</a></li>
+            <li role="presentation"><a href={{ url_for('upload') }}>Submit new run</a></li>
+            <li role="presentation"><a href={{ url_for("results") }}>Browse results</a></li>
             <!-- <li role="presentation"><a href="/about">About</a></li> -->
             <!-- <li role="presentation"><a href="http://flask.pocoo.org" target="_blank">More About Flask</a></li> -->
           </ul>
         </nav>
       </div>
-      {% block body %}
-      {% endblock %}
+      <hr>
+      {%  with messages = get_flashed_messages() %}
+      {%  if messages %}
+          <h3>
+          Messages:
+          </h3>
+         <ul>
+             {%  for message in messages %}
+             <li>
+                 {{ message }}
+             </li>
+             {% endfor %}
+         </ul>
+      {%  endif %}
+      {%  endwith %}
+      {% block body %}{% endblock %}
       <footer class="footer">
-        <p>© 2020 Max-Planck-Institute for Evolutionary Biology</p>
+        <p>© 2020 - 2021 Max-Planck-Institute for Evolutionary Biology</p>
       </footer>
     </div> <!-- /container -->
   </body>
