@@ -94,6 +94,8 @@ class SubmitForm(FlaskForm):
 class RunForm(FlaskForm):
     go = SubmitField("GoGo!")
 
+class ReturnToResultsForm(FlaskForm):
+    back_button = SubmitField("Back to Results")
 
 class AnalysisForm(FlaskForm):
     run_id = StringField("Enter run ID")

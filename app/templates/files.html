@@ -2,9 +2,9 @@
 {%  block body %}
 <div>
     <p>
-        <form action="{{ back_link }}" method="get" id="back_form">
-            <button type="submit" form="back_form">Back to results</button>
-        </form>
+        <a href="{{back_link}}">
+            Back to results page
+        </a>
     </p>
     {% if link_to_parent %}
         <p>
