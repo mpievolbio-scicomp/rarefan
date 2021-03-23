@@ -438,3 +438,10 @@ def files(req_path):
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
+
+
+@app.route('/deletefile')
+def delete_file():
+    filename = request.form['filename']
+    file_path = os.path.join(session['tmpdir'], filename)
+    os.remove(file_path)
