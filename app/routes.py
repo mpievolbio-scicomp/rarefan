@@ -62,8 +62,8 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
 
+    form = RunForm()
     if request.method == 'POST': #upload_form.validate_on_submit():
-        enabled_form = RunForm()
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
             prefix="",
@@ -104,19 +104,10 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
-        return render_template(
-            'upload.html',
-            title="Upload sequences",
-            confirmation_form=enabled_form,
-        )
-
-
-    disabled_form = RunForm()
-    disabled_form.go.render_kw = {'disabled': 'disabled'}
     return render_template(
         'upload.html',
         title="Upload sequences",
-        confirmation_form=disabled_form
+        confirmation_form=form
     )
 
 @app.route('/submit', methods=['GET', 'POST'])
