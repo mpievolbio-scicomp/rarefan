@@ -1,7 +1,7 @@
 {%  extends 'base.html' %}
 {%  block body %}
 <div>
-    {% if req_path != "/" %}
+    {% if link_to_parent %}
         <p>
             <a href="/files{{ req_path }}/..">Back to parent directory</a>
         </p>

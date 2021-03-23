@@ -420,7 +420,9 @@ def files(req_path):
         if req_path.endswith('/'):
             req_path = req_path[:-1]
         logger.warning("Request dir is %s.", req_path)
-        return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs)
+        if os.path.dirname(req_path) == "/":
+            link_to_parent = False
+        return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs, link_to_parent=link_to_parent)
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
