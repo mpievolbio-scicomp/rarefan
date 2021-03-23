@@ -1,4 +1,6 @@
 from flask import Flask
+from flask_dropzone import Dropzone
+from flask_wtf import CSRFProtect
 from .config import Config
 import os
 import logging
@@ -14,4 +16,6 @@ app.debug = False
 app.config.from_object(Config)
 app.config['UPLOAD_DIR'] = upload_dir
 
+dropzone = Dropzone(app)
+csrf = CSRFProtect(app)
 from app import views, routes

@@ -63,8 +63,9 @@ def index():
 def upload():
     upload_form = UploadForm()
 
-    if upload_form.validate_on_submit():
-        seqs = request.files.getlist(upload_form.sequences.name)
+    if request.method == 'POST': #upload_form.validate_on_submit():
+        seqs = request.files.getlist('file')
+        seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
 
 
@@ -394,7 +395,6 @@ def results():
 @app.route('/files/<path:req_path>')
 def files(req_path):
     """"""
-    """ Only a stub, file listing will be taken care of by AutoIndex."""
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     nested_file_path = os.path.join(uploads_dir, req_path)
     #
