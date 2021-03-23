@@ -92,7 +92,7 @@ class SubmitForm(FlaskForm):
 
 
 class RunForm(FlaskForm):
-    go = SubmitField("GoGo!")
+    go = SubmitField("Proceed to run configuration")
 
 class ReturnToResultsForm(FlaskForm):
     back_button = SubmitField("Back to Results")

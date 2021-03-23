@@ -8,7 +8,7 @@ from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
-from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm
+from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app
 
 import os
@@ -62,6 +62,7 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
 
+    form = RunForm()
     if request.method == 'POST': #upload_form.validate_on_submit():
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -69,7 +70,6 @@ def upload():
             dir=app.config["UPLOAD_DIR"]
         )
 
-        # seqs = request.files.getlist('file')
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
 
@@ -107,6 +107,7 @@ def upload():
     return render_template(
         'upload.html',
         title="Upload sequences",
+        confirmation_form=form,
     )
 
 @app.route('/submit', methods=['GET', 'POST'])
