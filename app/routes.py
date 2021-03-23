@@ -113,6 +113,7 @@ def upload():
     return render_template(
         'upload.html',
         title="Upload sequences",
+        confirmation_form=None
     )
 
 @app.route('/submit', methods=['GET', 'POST'])
