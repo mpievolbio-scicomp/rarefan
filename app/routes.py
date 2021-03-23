@@ -8,8 +8,6 @@ from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
-import re
-from wtforms.validators import ValidationError
 from app.views import SubmitForm, AnalysisForm, UploadForm
 from app import app
 
@@ -19,9 +17,28 @@ import shutil
 import stat
 import subprocess
 import tempfile
-from threading import Thread
-
+import logging
 from Bio import SeqIO
+
+import datetime
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+def get_logger():
+    logger = logging.getLogger(__name__)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
+    timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
+    handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
+    handler.setFormatter(formatter)
+    handler.setLevel(logging.INFO)
+    logger.addHandler(handler)
+
+    return logger
+
+logger = get_logger()
+
+logger.warning("RAREFAN")
 
 def validate_fasta(filename):
     """ Validates input from passed file as fasta formatted sequence data.
@@ -29,12 +46,14 @@ def validate_fasta(filename):
     :param filename: The filename of the file to validate.
 
     """
+    logger.info("Validating fasta file %s.", filename)
     with open(filename, 'r') as fp:
         fasta = SeqIO.parse(fp, "fasta")
         is_fasta = any(fasta)
 
+        if not is_fasta:
+            logger.warning("%s is not a valid fasta file.", filename)
         return is_fasta
-
 
 @app.route('/')
 def index():
@@ -46,7 +65,7 @@ def upload():
 
     if upload_form.validate_on_submit():
         seqs = request.files.getlist(upload_form.sequences.name)
-        print(seqs)
+        logger.info("Uploading %s.", str(seqs))
 
 
         session['tmpdir'] = tempfile.mkdtemp(
@@ -66,7 +85,7 @@ def upload():
             if f.split('.')[-1] in tree_extensions:
                 continue
             is_fasta = validate_fasta(f)
-            if not validate_fasta(f):
+            if not is_fasta:
                 flash("{} is neither a valid fasta file nor a tree file and will be ignored.".format(os.path.basename(f)))
                 fnames.remove(f)
                 os.remove(f)
@@ -95,7 +114,6 @@ def submit():
     submit_form.reference_strain.choices.extend(session.get('strain_names'))
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
-
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
@@ -111,6 +129,12 @@ def submit():
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
         session['analyse_repins'] = request.form.get('analyse_repins')
         session['email'] = request.form.get('email', None)
+
+        logger.info("Session parameters:")
+        logger.info("tmpdir: %s", session['tmpdir'])
+        logger.info("outdir: %s", session['outdir'])
+        logger.info("reference_strain: %s", session['reference_strain'])
+        logger.info("treefile: %s", session['treefile'])
 
         # copy query rayt to working dir
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
@@ -138,8 +162,13 @@ def submit():
         start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
         java_command = " ".join(['java',
+                                     '-Dcom.sun.management.jmxremote',
+                                      '-Dcom.sun.management.jmxremote.port=9010',
+                                      '-Dcom.sun.management.jmxremote.local.only=true',
+                                      '-Dcom.sun.management.jmxremote.authenticate=false',
+                                      '-Dcom.sun.management.jmxremote.ssl=false',
                                      '-jar',
-                                     '-Xmx14g',
+                                     '-Xmx10g',
                                      os.path.abspath(
                                      os.path.join(os.path.dirname(app.root_path),
                                      'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
@@ -156,6 +185,7 @@ def submit():
                                      {"y": "true", None: "false"}[session['analyse_repins']],
                                         ])
 
+        logging.info("Java command: %s", java_command)
         java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
 
         R_command = " ".join(["Rscript",
@@ -163,15 +193,18 @@ def submit():
                                   session['outdir'],
                                   treefile
                                      ])
+        logging.info("R command: %s", R_command)
         R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
         andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
         distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
         distfile = os.path.join(session['outdir'], os.path.basename(distfile))
         andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
+        logging.info("andi command: %s", andi_command)
         andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
         clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+        logging.info("clustdist command: %s", clustdist_command)
         clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         # Zip results.
@@ -182,6 +215,7 @@ def submit():
                                 ]
                                )
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
+        logging.info("zip command: %s", zip_command)
 
         command_lines = [
             "touch {} &&".format(start_stamp),

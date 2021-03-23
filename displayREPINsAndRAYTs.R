@@ -85,8 +85,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
-      xlim_tree(0.045)
-
+      xlim_tree(0.045)+
+      geom_tiplab()
   p2=facet_plot(p,
                 panel='RAYTs',
                 data=popSize,
@@ -99,31 +99,31 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                 color=colorBars
   )
 
-  p3=facet_plot(p2,
-                panel='Number of \nREPIN clusters',
-                data=popSize,
-                geom=geom_segment,
-                aes(x=0,
-                    xend=numClus,
-                    y=y,
-                    yend=y),
-                size=bs,
-                color=colorBars
-  )
+#  p3=facet_plot(p2,
+#                panel='Number of \nREPIN clusters',
+#                data=popSize,
+#                geom=geom_segment,
+#                aes(x=0,
+#                    xend=numClus,
+#                    y=y,
+#                    yend=y),
+#                size=bs,
+#                color=colorBars
+#  )
 
-  p4=facet_plot(p3,
-                panel='Difference \nRAYTs-REPIN \nclusters',
-                data=popSize,
-                geom=geom_segment,
-                aes(x=0,
-                    xend=diffRAYTCluster,
-                    y=y,
-                    yend=y),
-                size=bs,
-                color=colorBars
-  )
+#  p4=facet_plot(p3,
+#                panel='Difference \nRAYTs-REPIN \nclusters',
+#                data=popSize,
+#                geom=geom_segment,
+#                aes(x=0,
+#                    xend=diffRAYTCluster,
+#                    y=y,
+#                    yend=y),
+#                size=bs,
+#                color=colorBars
+#  )
 
-  p5=facet_plot(p4,
+  p5=facet_plot(p2,
                 panel='REPIN\npopulation\nsize',
                 data=popSize,
                 geom=geom_segment,
@@ -182,22 +182,22 @@ plotCorrelationSingle=function(folder,type,
                  y=numRepin))+
             geom_point()
 
-    p=p+geom_smooth(method=lm,
-                    se=FALSE,
-                    fullrange=TRUE,
-                    formula=y~x,
-                    show.legend=F
-    )
+ #   p=p+geom_smooth(method=lm,
+ #                   se=FALSE,
+ #                   fullrange=TRUE,
+ #                   formula=y~x,
+ #                   show.legend=F
+ #   )
 
-    p=p+stat_fit_glance(method = 'lm',
-                        method.args=list(formula=y~x),
-                        aes(label = paste("P-value = ",
-                                          signif(..p.value..,
-                                                 digits = 2),
-                                          sep = "")),
-                        label.x=pvLabelX,
-                        label.y=pvLabelY,
-                        size = fontsize/3)
+ #   p=p+stat_fit_glance(method = 'lm',
+ #                       method.args=list(formula=y~x),
+ #                       aes(label = paste("P-value = ",
+ #                                         signif(..p.value..,
+ #                                                digits = 2),
+ #                                         sep = "")),
+ #                       label.x=pvLabelX,
+ #                       label.y=pvLabelY,
+ #                       size = fontsize/3)
 
     p=p+xlim(xlim)+
         ylim(ylim)+
