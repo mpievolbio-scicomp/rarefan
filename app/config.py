@@ -10,4 +10,5 @@ class Config(object):
     DROPZONE_UPLOAD_MULTIPLE = True
     DROPZONE_PARALLEL_UPLOADS = 10000
     DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_TIMEOUT = 3600000
     DROPZONE_ALLOWED_FILE_TYPE = '.faa, .fa, .fasta, .fas, .fasta, .fna, .fn, .nwk'

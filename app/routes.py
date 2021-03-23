@@ -61,13 +61,18 @@ def index():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    upload_form = UploadForm()
+
+    if request.method == "GET":
+        session['tmpdir'] = tempfile.mkdtemp(
+            suffix=None,
+            prefix="",
+            dir=app.config["UPLOAD_DIR"]
+        )
 
     if request.method == 'POST': #upload_form.validate_on_submit():
-        seqs = request.files.getlist('file')
+        # seqs = request.files.getlist('file')
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
-
 
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -105,7 +110,6 @@ def upload():
     return render_template(
         'upload.html',
         title="Upload sequences",
-        upload_form=upload_form,
     )
 
 @app.route('/submit', methods=['GET', 'POST'])
