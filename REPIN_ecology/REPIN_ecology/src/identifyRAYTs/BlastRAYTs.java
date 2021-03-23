@@ -9,6 +9,7 @@ import util.*;
 
 public class BlastRAYTs {
 	static int add=0;
+	static int masterDist=3;
 	public static void main (String args[]) {
 		File inFolder=new File(args[0]);
 		File query=new File(args[1]);
@@ -43,10 +44,12 @@ public class BlastRAYTs {
 						System.out.println(maxREPIN);
 						int maxREPINNum=Integer.parseInt(maxREPIN.split("_|\\s+")[1]);
 
-						int repins=Integer.parseInt(maxREPIN.split("_")[2]);
-						int allREPs=getREPNumbers(seqName, outFolder,repType[k]);
+						int masterSeqs=Integer.parseInt(maxREPIN.split("_")[2]);
+						int allREPs=getOnlyREPINNumbers(seqName, outFolder,repType[k],false);
+						int allREPINs=getOnlyREPINNumbers(seqName, outFolder,repType[k],true);
 						int numREPINClusters=getNumREPINClusters(seqName,outFolder,repType[k],analyseREPIN);
-						presAbsHash.put(seqName, bi.size()+"\t"+repins+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters);
+						int numREPINDist=getNumREPINDist(seqName, outFolder,repType[k],masterDist,maxREPIN.split("_")[0]);
+						presAbsHash.put(seqName, bi.size()+"\t"+masterSeqs+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters+"\t"+allREPINs+"\t"+numREPINDist);
 						print(bi,dbs[i],seqs);
 					}
 				}
@@ -98,7 +101,6 @@ public class BlastRAYTs {
 		}
 		return -1;
 	}
-
 	
 	public static String getMaxREPIN(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
@@ -156,7 +158,8 @@ public class BlastRAYTs {
 		return sb.toString();
 	}
 
-	public static int getREPNumbers(String name,File folder,String repType) {
+	
+	public static int getNumREPINDist(String name,File folder,String repType,int masterDist,String master) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".nodes");
 			//System.out.println(in);
@@ -165,7 +168,58 @@ public class BlastRAYTs {
 				String line="";
 				int reps=0;
 				while((line=br.readLine())!=null) {
-				  reps+=Integer.parseInt(line.split("\\s+")[1]);
+					String split[]=line.split("\\s+");
+					String curr=split[0];
+					String REPIN=curr.split("_")[0];
+					int occ=Integer.parseInt(split[1]);
+					if(isREPIN(REPIN) && maxDistMaster(REPIN,master,masterDist)) {
+						reps+=occ;
+					}
+				}
+				br.close();
+				return reps;
+			}else {
+				return -1;
+			}
+		}catch(IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return -1;
+	}
+	
+	private static boolean maxDistMaster(String REPIN,String master,int maxDist) {
+		String a=REPIN;
+		String b=master;
+		int differences=0;
+		if(a.length()!=b.length()) {
+			System.err.println("REPIN ("+REPIN+")is not the same length as master sequence ("+master+")");
+			System.exit(-1);
+		}
+		for(int i=0;i<a.length();i++){
+			if(a.charAt(i)!=b.charAt(i)){
+				differences++;
+			}
+		}
+		return differences<=maxDist;
+	}
+	
+	public static int getOnlyREPINNumbers(String name,File folder,String repType,boolean analyseOnlyREPINs) {
+		try {
+			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".nodes");
+			//System.out.println(in);
+			if(in.exists()) {
+				BufferedReader br=new BufferedReader(new FileReader(in));
+				String line="";
+				int reps=0;
+				while((line=br.readLine())!=null) {
+					String split[]=line.split("\\s+");
+					String curr=split[0];
+					String REPIN=curr.split("_")[0];
+					int occ=Integer.parseInt(split[1]);
+					if(isREPIN(REPIN)||!analyseOnlyREPINs) {
+						reps+=occ;
+					}
 				}
 				br.close();
 				return reps;
@@ -184,7 +238,7 @@ public class BlastRAYTs {
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
 			BufferedWriter bwMaxREPIN=new BufferedWriter(new FileWriter(maxREPINOut));
 			String[] keys=hm.keySet().toArray(new String[0]);
-			bw.write("strain\tnumRAYTs\tNumREPINs\tmasterSequence\tmastersequenceFreq\tallREP\\REPINFreq\tnumberOfRepinClusters\n");
+			bw.write("strain\tnumRAYTs\tNumREPINsLargestCluster\tmasterSequence\tmastersequenceFreq\tallREP\tnumberOfRepinClusters\tallREPINs\tREPINNumMasterDist_"+masterDist+"\n");
 			for(int i=0;i<keys.length;i++) {
 				bw.write(keys[i]+"\t"+hm.get(keys[i])+"\n");
 				bwMaxREPIN.write(">"+keys[i]+"\n"+hm.get(keys[i]).split("\t")[2]+"\n");

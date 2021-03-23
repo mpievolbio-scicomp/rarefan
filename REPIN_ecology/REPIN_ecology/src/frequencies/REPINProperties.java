@@ -204,7 +204,7 @@ public class REPINProperties {
 				seedSequence=newSeedSequences;
 
 			}
-			popsize=getNumREPINs(nodes);
+			if(nodes.exists())popsize=getNumREPINs(nodes);
 	}
 
 	public int getPopSize() {
