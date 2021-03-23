@@ -419,7 +419,7 @@ def files(req_path):
             req_path = "/" + req_path
         if req_path.endswith('/'):
             req_path = req_path[:-1]
-        logger.warning("Request dir is %s.", req_path)
+        logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
         if os.path.dirname(req_path) == "/":
             link_to_parent = False
         return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs, link_to_parent=link_to_parent)
