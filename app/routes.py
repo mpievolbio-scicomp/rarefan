@@ -104,6 +104,13 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
+        return render_template(
+            'upload.html',
+            title="Upload sequences",
+            confirmation_form=form,
+        )
+
+    form.go.render_kw = {'disabled': 'disabled'}
     return render_template(
         'upload.html',
         title="Upload sequences",

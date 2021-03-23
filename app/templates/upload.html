@@ -23,29 +23,4 @@
             {{ confirmation_form.go(title="Confirm file uploads") }}
         </form>
     </p>
-<script type="text/javascript">
-    $(document).ready(function () {
-
-        alert("success 1");
-        console.log("3");
-
-        Dropzone.options.myAwesomeDropzone = {
-
-            success: function(file, response) {
-                console.log("5");
-                file.serverFileName = response.file_name;  // pass filename
-            },
-            removedfile: function (file, data) {  // triggered when remove file button was clicked
-                $.ajax({  // send AJAX request to Flask to remove file
-                    type:'POST',
-                    url:'/deletefile',
-                    data : {"filename" : file.serverFileName},  // pass filename
-                    success : function (data) {
-                        alert('File removed from server.')
-                    }
-                });
-            }
-        };
-    });
-</script>
 {%  endblock %}
