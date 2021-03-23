@@ -104,7 +104,7 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
-        form.go.render_kw = {'enabled': 'enabled'}
+        form.go.render_kw = {'disabled': ''}
         return render_template(
             'upload.html',
             title="Upload sequences",
