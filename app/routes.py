@@ -415,8 +415,6 @@ def files(req_path):
         # Concat dirs and files.
         item_list = [i for i in item_list if not "stamp" in i]
 
-        # Prepend the parent dir.
-        dirs.insert(0, '..')
         if not req_path.startswith("/"):
             req_path = "/" + req_path
         if req_path.endswith('/'):
