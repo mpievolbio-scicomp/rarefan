@@ -15,13 +15,12 @@
     <p>
     {{ dropzone.create(action=url_for('upload')) }}
     {{ dropzone.load_js() }}
-    {{ dropzone.config(custom_init='dz = this;document.getElementById("upload-btn").addEventListener("click", function handler(e) {dz.processQueue();});',
-                       custom_options='addRemoveLinks: true, dictRemoveFileConfirmation: null') }}
+    {{ dropzone.config()}}
     </p>
     <p>
         <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
             {{ confirmation_form.hidden_tag() }}
-                {{ confirmation_form.go(title="Confirm file uploads") }}
+            {{ confirmation_form.go(title="Confirm file uploads") }}
         </form>
     </p>
 <script type="text/javascript">
