@@ -168,7 +168,7 @@ def submit():
                                       '-Dcom.sun.management.jmxremote.authenticate=false',
                                       '-Dcom.sun.management.jmxremote.ssl=false',
                                      '-jar',
-                                     '-Xmx14g',
+                                     '-Xmx10g',
                                      os.path.abspath(
                                      os.path.join(os.path.dirname(app.root_path),
                                      'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
