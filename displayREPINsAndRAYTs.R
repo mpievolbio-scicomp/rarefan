@@ -69,7 +69,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   panel.spacing=unit(2,"lines"),
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
-
+  association=read.table(paste0(folder,"/repin_rayt_association_byREPIN.txt"),header=TRUE)
   t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t", skip=1)
   popSize=data.frame(name=t[,1],
                      rayts=t[,2],
@@ -89,7 +89,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       geom_tiplab()
   p2=facet_plot(p,
                 panel='RAYTs',
-                data=popSize,
+                data=association[association$repintype==rayt_type,],
                 geom=geom_segment,
                 aes(x=0,
                     xend=rayts,
