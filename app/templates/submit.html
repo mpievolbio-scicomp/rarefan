@@ -48,7 +48,7 @@ supplied in the 'Upload' step.") }}</br></br>
             {% for error in submit_form.email.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
-            {{ submit_form.go(title="Click here to submit the job.") }}
+            {{ submit_form.submit(title="Click here to submit the job.") }}
         </p>
     </form>
 {% endblock %}

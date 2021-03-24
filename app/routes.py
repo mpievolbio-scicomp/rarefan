@@ -61,8 +61,7 @@ def index():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-
-    form = RunForm()
+    logging.debug("upload/%s", request.method)
     if request.method == 'POST': #upload_form.validate_on_submit():
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -104,15 +103,39 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
-    return render_template(
-        'upload.html',
-        title="Upload sequences",
-        confirmation_form=form
-    )
+        for k,v in session.items():
+            logging.debug("session[%s] = %s", k, str(v))
+
+        return redirect(url_for('submit', _method='GET'))
+
+        logging.error("How on earth did you get here?????")
+
+    else:
+        form = RunForm()
+        session['tmpdir'] = None
+        session['strain_names'] = None
+        session['rayt_names'] = None
+        session['tree_names'] = None
+        session['outdir'] = None
+        session['reference_strain'] = None
+        session['query_rayt'] = None
+        session['min_nmer_occurence'] = None
+        session['treefile'] = None
+        session['nmer_length'] = None
+        session['e_value_cutoff'] = None
+        session['analyse_repins'] = None
+        session['email'] = None
+
+        return render_template(
+            'upload.html',
+            title="Upload sequences",
+            confirmation_form=form
+        )
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
 
+    logging.debug("submit/%s", request.method)
     submit_form = SubmitForm()
     submit_form.reference_strain.choices.extend(session.get('strain_names'))
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
@@ -439,10 +462,3 @@ def files(req_path):
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
-
-
-@app.route('/deletefile')
-def delete_file():
-    filename = request.form['filename']
-    file_path = os.path.join(session['tmpdir'], filename)
-    os.remove(file_path)
