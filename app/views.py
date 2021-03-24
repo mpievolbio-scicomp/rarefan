@@ -23,6 +23,7 @@ class OptionalEmail(validators.Email):
 
         super().__call__(form, field)
 
+
 class SequenceFilesValidator():
     allowed_extensions = ['fasta', 'fastn', 'fa', 'fas', 'fna', 'fn', 'faa', 'nwk']
     def __call__(self, form, field):
@@ -32,6 +33,7 @@ class SequenceFilesValidator():
 
         if len([True for ext in extensions if ext == 'nwk'] ) > 1:
             raise ValidationError("At max 1 tree file can be uploaded.")
+
 
 class UploadForm(FlaskForm):
     sequences = MultipleFileField('File upload',
@@ -88,11 +90,16 @@ class SubmitForm(FlaskForm):
                         validators=[OptionalEmail()]
                         )
 
-    go = SubmitField("Go!")
+    submit = SubmitField("Go!")
 
 
 class RunForm(FlaskForm):
-    go = SubmitField("GoGo!")
+    confirm = SubmitField("Confirm file upload")
+    proceed = SubmitField("Proceed to run configuration")
+
+
+class ReturnToResultsForm(FlaskForm):
+    back_button = SubmitField("Back to Results")
 
 
 class AnalysisForm(FlaskForm):

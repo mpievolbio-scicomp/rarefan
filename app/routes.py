@@ -8,7 +8,7 @@ from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
-from app.views import SubmitForm, AnalysisForm, UploadForm
+from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app
 
 import os
@@ -61,12 +61,16 @@ def index():
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
-    upload_form = UploadForm()
+    logging.debug("upload/%s", request.method)
+    if request.method == 'POST': #upload_form.validate_on_submit():
+        session['tmpdir'] = tempfile.mkdtemp(
+            suffix=None,
+            prefix="",
+            dir=app.config["UPLOAD_DIR"]
+        )
 
-    if upload_form.validate_on_submit():
-        seqs = request.files.getlist(upload_form.sequences.name)
+        seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
-
 
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -99,17 +103,39 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
-        return redirect(url_for('submit'))
+        for k,v in session.items():
+            logging.debug("session[%s] = %s", k, str(v))
 
-    return render_template(
-        'upload.html',
-        title="Upload sequences",
-        upload_form=upload_form,
-    )
+        return redirect(url_for('submit', _method='GET'))
+
+        logging.error("How on earth did you get here?????")
+
+    else:
+        form = RunForm()
+        session['tmpdir'] = None
+        session['strain_names'] = None
+        session['rayt_names'] = None
+        session['tree_names'] = None
+        session['outdir'] = None
+        session['reference_strain'] = None
+        session['query_rayt'] = None
+        session['min_nmer_occurence'] = None
+        session['treefile'] = None
+        session['nmer_length'] = None
+        session['e_value_cutoff'] = None
+        session['analyse_repins'] = None
+        session['email'] = None
+
+        return render_template(
+            'upload.html',
+            title="Upload sequences",
+            confirmation_form=form
+        )
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
 
+    logging.debug("submit/%s", request.method)
     submit_form = SubmitForm()
     submit_form.reference_strain.choices.extend(session.get('strain_names'))
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
@@ -335,7 +361,6 @@ http://rarefan.evolbio.mpg.de
 def results():
 
     args = request.args
-    
     results_form = AnalysisForm()
 
     if 'run_id' in args.keys():
@@ -394,7 +419,6 @@ def results():
 @app.route('/files/<path:req_path>')
 def files(req_path):
     """"""
-    """ Only a stub, file listing will be taken care of by AutoIndex."""
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     nested_file_path = os.path.join(uploads_dir, req_path)
     #
@@ -414,13 +438,27 @@ def files(req_path):
         # Concat dirs and files.
         item_list = [i for i in item_list if not "stamp" in i]
 
-        # Prepend the parent dir.
-        dirs.insert(0, '..')
         if not req_path.startswith("/"):
             req_path = "/" + req_path
         if req_path.endswith('/'):
             req_path = req_path[:-1]
-        return render_template('files.html', req_path=req_path, files=item_list, dirs=dirs)
+        logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
+
+        back_link = url_for('results', run_id=os.path.basename(session['tmpdir']))
+
+        link_to_parent = True
+        # Only insert link to parent dir if not at top level.
+        if os.path.dirname(req_path) == "/":
+            link_to_parent = False
+
+        return render_template('files.html',
+                               req_path=req_path,
+                               files=item_list,
+                               dirs=dirs,
+                               link_to_parent=link_to_parent,
+                               back_link=back_link
+                               )
+
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
