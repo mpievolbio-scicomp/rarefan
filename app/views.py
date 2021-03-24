@@ -92,6 +92,7 @@ class SubmitForm(FlaskForm):
 
 
 class RunForm(FlaskForm):
+    confirm_upload = SubmitField("Confirm file upload")
     go = SubmitField("Proceed to run configuration")
 
 class ReturnToResultsForm(FlaskForm):

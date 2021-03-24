@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block head %}
-    {{ dropzone.load_css() }}
-    {{ dropzone.style('border: 2px dashed #0087F7; min-height: 100px; width: 66%') }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
+{% endblock %}
+{% block scripts %}
+
 {% endblock %}
 {% block body %}
     <h1>Upload your sequences to RAREFAN</h1>
@@ -12,15 +15,41 @@
     RAREFAN accepts the following filename extensions (the part after the "."): ".fasta", ".fastn", ".fn", ".fna", ".fas" for
     DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newik formatted tree files.
     </p>
-    <p>
-    {{ dropzone.create(action=url_for('upload')) }}
-    {{ dropzone.load_js() }}
-    {{ dropzone.config()}}
-    </p>
-    <p>
-        <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
-            {{ confirmation_form.hidden_tag() }}
-            {{ confirmation_form.go(title="Confirm file uploads") }}
-        </form>
-    </p>
+     <form action="{{ url_for('upload') }}" class="dropzone" id="my_dropzone" method="post" enctype="multipart/form-data">
+         {{ confirmation_form.hidden_tag() }}
+    </form>
+    <form method="post" enctype="multipart/form-data" id="confirm_upload">
+        {{ confirmation_form.hidden_tag() }}
+        {{ confirmation_form.confirm_upload(title="Confirm file uploads") }}
+    </form>
+    <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data" id="confirm_button">
+        {{ confirmation_form.hidden_tag() }}
+        {{ confirmation_form.go(title="Proceed to run configuration") }}
+    </form>
+    <script>
+        Dropzone.options.myDropzone = {
+            addRemoveLinks: true,
+            paramName: "file", // The name that will be used to transfer the file
+            maxFilesize: 10000, // MB
+            timeout: 60 * 60 * 1000, // 1 hr
+            acceptedFiles: '.fa, .fn, .fas, .fna, .faa, .fasta, .fastn, .nwk',
+            accept: function(file, done) {
+                 done();
+            },
+            autoProcessQueue: false,
+            parallelUploads: 10000,
+            uploadMultiple: true,
+
+            init: function() {
+                let mydz = this;
+                /* 'submit-dropzone-btn' is the ID of the form submit button */
+                document.getElementById('confirm_upload').addEventListener("click", function (e) {
+                  e.preventDefault();
+                  mydz.processQueue();
+                });
+                this.on("sendingmultiple", function(files) {mydz.addRemoveLinks=false;}
+                );
+            }
+        };
+    </script>
 {%  endblock %}
