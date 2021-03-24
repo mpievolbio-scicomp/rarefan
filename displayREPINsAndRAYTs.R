@@ -212,8 +212,8 @@ plotCorrelationSingle=function(folder,type,
 
 
 repins_plot=plotREPINs(data_dir,treefile,0,"#40e0d0",2,fontsize)
-ggsave(paste0(data_dir, '/', 'repins.png'), plot=repins_plot)
+ggsave(paste0(data_dir, '/', 'repins_',rayt_type,'.png'), plot=repins_plot)
 
 correlation_plot = plotCorrelationSingle(data_dir,0,c(0,1),c(0,320),theme,fontsize,"left","bottom")
-ggsave(paste0(data_dir, '/', 'correlations.png'), plot=correlation_plot)
+ggsave(paste0(data_dir, '/', 'correlations_',rayt_type,'.png'), plot=correlation_plot)
 
