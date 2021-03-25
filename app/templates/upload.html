@@ -53,12 +53,11 @@
                 });
 
                 document.getElementById('remove').addEventListener("click", function (e) {
-                    document.getElementById('cancel').disabled = false;
+                    document.getElementById('remove').disabled = true;
                     e.preventDefault();
                     e.stopPropagation();
                     alert("Do you really want to remove all files?");
                     mydz.removeAllFiles(true);
-                    document.getElementById('remove').disabled = true;
                 });
 
                 document.getElementById('cancel').addEventListener("click", function (e) {
@@ -70,8 +69,10 @@
                     document.getElementById('cancel').disabled = true;
                 });
                 this.on(
-                    "addedfiles", function(files) {
+                    "addedfile", function(file) {
                         document.getElementById('confirm').disabled = false;
+                        document.getElementById('remove').disabled = false;
+                        document.getElementById('cancel').disabled = true;
                     }
                 );
                 this.on(
@@ -108,15 +109,6 @@
                         mydz.removeFile(file);
                     }
                 );
-                // this.on(
-                //     'totaluploadprogress',
-                //     function (uploadProgress, totalBytes, totalBytesSent) {
-                //         if (uploadProgress == 100) {
-                //             mydz.disable();
-                //         }
-                //     }
-                // );
-
             }
         };
     </script>
