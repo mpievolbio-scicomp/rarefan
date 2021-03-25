@@ -56,6 +56,40 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 # Font size
 fontsize=14
 
+#determine color for all plots
+#returns a table with two columns repintype/rayt and color
+determineColor=function(associationFile){
+  ass=read.delim(associationFile,header=TRUE)
+  colors=c("blue","red","green","purple","teal","orange")
+  colorAss=c()
+  for(i in 1:length(ass[,1])){
+     rayt=paste0(ass[i,1],"_",ass[i,2])
+     c="NA"
+     if(nchar(ass[i,3])>0){
+        split0=str_split(ass[i,3],",")
+        c=colors[as.integer(split0[[1]][1])+1]
+     }else{
+        c="grey"
+     }
+     temp=data.frame(repRAYT=rayt,color=c)
+     colorAss=rbind(colorAss,temp)
+     
+  }
+  groups=unique(ass[,3])
+  for(i in groups){
+     if(nchar(i)>0){
+        split=str_split(i,",")
+        for(j in split[[1]]){
+           pos=as.integer(split[[1]][1])
+           j=as.integer(j)
+           temp=data.frame(repRAYT=j,color=colors[pos+1])
+           colorAss=rbind(colorAss,temp)
+        }
+     }
+  }
+
+}
+
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
@@ -69,7 +103,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   panel.spacing=unit(2,"lines"),
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
-
+  association=read.table(paste0(folder,"/repin_rayt_association_byREPIN.txt"),header=TRUE)
   t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t", skip=1)
   popSize=data.frame(name=t[,1],
                      rayts=t[,2],
@@ -89,7 +123,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       geom_tiplab()
   p2=facet_plot(p,
                 panel='RAYTs',
-                data=popSize,
+                data=association[association$repintype==rayt_type,],
                 geom=geom_segment,
                 aes(x=0,
                     xend=rayts,
@@ -212,8 +246,8 @@ plotCorrelationSingle=function(folder,type,
 
 
 repins_plot=plotREPINs(data_dir,treefile,0,"#40e0d0",2,fontsize)
-ggsave(paste0(data_dir, '/', 'repins.png'), plot=repins_plot)
+ggsave(paste0(data_dir, '/', 'repins_',rayt_type,'.png'), plot=repins_plot)
 
 correlation_plot = plotCorrelationSingle(data_dir,0,c(0,1),c(0,320),theme,fontsize,"left","bottom")
-ggsave(paste0(data_dir, '/', 'correlations.png'), plot=correlation_plot)
+ggsave(paste0(data_dir, '/', 'correlations_',rayt_type,'.png'), plot=correlation_plot)
 
