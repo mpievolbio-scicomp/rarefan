@@ -21,12 +21,8 @@
     <form method="post" enctype="multipart/form-data" id="confirm_upload">
         {{ confirmation_form.hidden_tag() }}
         {{ confirmation_form.confirm(title="Confirm file uploads") }}
-    </form>
-    </p>
-    <p style="margin: 10px">
-    <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data" id="confirm_button">
-        {{ confirmation_form.hidden_tag() }}
-        {{ confirmation_form.proceed(title="Proceed to run configuration") }}
+        <button type="button" id="cancel" class="btn btn-secondary">Cancel all uploads</button>
+        <button type="button" id="remove" class="btn btn-secondary">Remove all files</button>
     </form>
     </p>
     <script>
@@ -44,23 +40,83 @@
             uploadMultiple: true,
 
             init: function() {
-                var mydz = this;
+                let mydz = this;
 
                 document.getElementById('confirm').disabled = true;
-                document.getElementById('proceed').disabled = true;
-                this.on("addedfile", function(file) {document.getElementById('confirm').disabled = false;});
-                this.on("completemultiple", function(files) {document.getElementById('proceed').disabled = false;
-                                                             document.getElementById('confirm').disabled = true;
-                                                             this.removeAllFiles(true);
-                                                             this.options.dictDefaultMessage="Upload complete. Please proceed to run submission.";
-                                                             this.disable();
-                                                             });
-                /* 'submit-dropzone-btn' is the ID of the form submit button */
+                document.getElementById('cancel').disabled = true;
+                document.getElementById('remove').disabled = true;
+
                 document.getElementById('confirm').addEventListener("click", function (e) {
                   e.preventDefault();
                   e.stopPropagation();
                   mydz.processQueue();
                 });
+
+                document.getElementById('remove').addEventListener("click", function (e) {
+                    document.getElementById('cancel').disabled = false;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("Do you really want to remove all files?");
+                    mydz.removeAllFiles(true);
+                    document.getElementById('remove').disabled = true;
+                });
+
+                document.getElementById('cancel').addEventListener("click", function (e) {
+                    document.getElementById('remove').disabled = false;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert("Do you really want to cancel all uploads?");
+                    mydz.removeAllFiles(true);
+                    document.getElementById('cancel').disabled = true;
+                });
+                this.on(
+                    "addedfiles", function(files) {
+                        document.getElementById('confirm').disabled = false;
+                    }
+                );
+                this.on(
+                    "sendingmultiple", function() {
+                        document.getElementById('confirm').disabled = true;
+                        document.getElementById('cancel').disabled = false;
+                        document.getElementById('remove').disabled = true;
+                    }
+                );
+                this.on(
+                    "successmultiple",
+                    function(files, response) {
+                        alert("Upload complete. You will now be taken to the RAREFAN run submission form.");
+                        location.href = '/submit';
+                    }
+                );
+                this.on(
+                    "error",
+                    function(file, error) {
+                        alert(concat("Error occured during upload of file ", file.name));
+                        mydz.removeFile(file);
+                    }
+                )
+                this.on(
+                    "canceled",
+                    function(file) {
+                        alert(file.name);
+                        mydz.removeFile(file);
+                    }
+                )
+                this.on(
+                    "success",
+                    function(file) {
+                        mydz.removeFile(file);
+                    }
+                );
+                // this.on(
+                //     'totaluploadprogress',
+                //     function (uploadProgress, totalBytes, totalBytesSent) {
+                //         if (uploadProgress == 100) {
+                //             mydz.disable();
+                //         }
+                //     }
+                // );
+
             }
         };
     </script>
