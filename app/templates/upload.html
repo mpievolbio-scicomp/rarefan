@@ -47,6 +47,9 @@
                 document.getElementById('remove').disabled = true;
 
                 document.getElementById('confirm').addEventListener("click", function (e) {
+                  document.getElementById('remove').disabled = true;
+                  document.getElementById('confirm').disabled = true;
+                  document.getElementById('cancel').disabled = false;
                   e.preventDefault();
                   e.stopPropagation();
                   mydz.processQueue();
@@ -55,6 +58,7 @@
                 document.getElementById('remove').addEventListener("click", function (e) {
                     document.getElementById('remove').disabled = true;
                     document.getElementById('confirm').disabled = true;
+                    document.getElementById('cancel').disabled = true;
                     e.preventDefault();
                     e.stopPropagation();
                     alert("Do you really want to remove all files?");
@@ -63,11 +67,12 @@
 
                 document.getElementById('cancel').addEventListener("click", function (e) {
                     document.getElementById('remove').disabled = false;
+                    document.getElementById('cancel').disabled = true;
+                    document.getElementById('confirm').disabled = true;
                     e.preventDefault();
                     e.stopPropagation();
                     alert("Do you really want to cancel all uploads?");
                     mydz.removeAllFiles(true);
-                    document.getElementById('cancel').disabled = true;
                 });
                 this.on(
                     "addedfile", function(file) {
@@ -100,14 +105,19 @@
                 this.on(
                     "canceled",
                     function(file) {
-                        alert(file.name);
                         mydz.removeFile(file);
                     }
                 )
                 this.on(
-                    "success",
-                    function(file) {
-                        mydz.removeFile(file);
+                    "canceledmultiple",
+                    function(files) {
+                        mydz.removeAllFiles(true);
+                    }
+                )
+                this.on(
+                    "successmultiple",
+                    function(files) {
+                        mydz.removeAllFiles(true);
                     }
                 );
             }
