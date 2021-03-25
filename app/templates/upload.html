@@ -96,13 +96,6 @@
                     }
                 );
                 this.on(
-                    "error",
-                    function(file, error) {
-                        alert(concat("Error occured during upload of file ", file.name));
-                        mydz.removeFile(file);
-                    }
-                )
-                this.on(
                     "canceled",
                     function(file) {
                         mydz.removeFile(file);
@@ -114,12 +107,6 @@
                         mydz.removeAllFiles(true);
                     }
                 )
-                this.on(
-                    "successmultiple",
-                    function(files) {
-                        mydz.removeAllFiles(true);
-                    }
-                );
             }
         };
     </script>
