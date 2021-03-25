@@ -56,6 +56,40 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 # Font size
 fontsize=14
 
+#determine color for all plots
+#returns a table with two columns repintype/rayt and color
+determineColor=function(associationFile){
+  ass=read.delim(associationFile,header=TRUE)
+  colors=c("blue","red","green","purple","teal","orange")
+  colorAss=c()
+  for(i in 1:length(ass[,1])){
+     rayt=paste0(ass[i,1],"_",ass[i,2])
+     c="NA"
+     if(nchar(ass[i,3])>0){
+        split0=str_split(ass[i,3],",")
+        c=colors[as.integer(split0[[1]][1])+1]
+     }else{
+        c="grey"
+     }
+     temp=data.frame(repRAYT=rayt,color=c)
+     colorAss=rbind(colorAss,temp)
+     
+  }
+  groups=unique(ass[,3])
+  for(i in groups){
+     if(nchar(i)>0){
+        split=str_split(i,",")
+        for(j in split[[1]]){
+           pos=as.integer(split[[1]][1])
+           j=as.integer(j)
+           temp=data.frame(repRAYT=j,color=colors[pos+1])
+           colorAss=rbind(colorAss,temp)
+        }
+     }
+  }
+
+}
+
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
