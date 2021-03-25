@@ -291,7 +291,6 @@ def submit():
 
 def send_email(run_id, status_code, recipient):
 
-    logger.info("Sending RAREFAN report email.")
     # Aggregate the run path.
     run_id_path = os.path.join(app.static_folder, "uploads", run_id)
 
@@ -349,6 +348,7 @@ http://rarefan.evolbio.mpg.de
     else:
         return
 
+    logger.info("Sending RAREFAN report email.")
     # Send mail to all recipients.
     for recipient in recipients:
         email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
