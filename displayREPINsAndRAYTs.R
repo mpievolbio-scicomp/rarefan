@@ -1,12 +1,20 @@
 #!/usr/bin/env Rscript
 # Required libraries
+library(Biostrings)#needs installing
+library(ape)
+library(muscle)#needs installing
 library(ggpmisc)
 library(ggtree)
-library(ape)
 library(dplyr)
 library(stringr)
 library(ggplot2)
 library(cowplot)
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rayt_type is not used any more!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+#needs to be installed and set
+phymlPath="/Users/bertels/Programs/PhyML-3.1/PhyML-3.1_macOS-MountainLion"
 
 # Parse command line args
 args = commandArgs(trailingOnly=TRUE)
@@ -87,9 +95,10 @@ determineColor=function(associationFile){
         }
      }
   }
-
+  return(colorAss)
 }
-
+associationFile=paste0(data_dir,"/repin_rayt_association.txt")
+colorDF=determineColor(associationFile)
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
@@ -123,14 +132,14 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       geom_tiplab()
   p2=facet_plot(p,
                 panel='RAYTs',
-                data=association[association$repintype==rayt_type,],
+                data=association[association$repintype==type,],
                 geom=geom_segment,
                 aes(x=0,
                     xend=rayts,
                     y=y,
                     yend=y),
                 size=bs,
-                color=colorBars
+                color=colorDF[colorDF$repRAYT==type,2]
   )
 
 #  p3=facet_plot(p2,
@@ -166,7 +175,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     y=y,
                     yend=y),
                 size=bs,
-                color=colorBars
+                color=colorDF[colorDF$repRAYT==type,2]
   )
 
   p6=p5+theme_tree2()
@@ -209,11 +218,19 @@ plotCorrelationSingle=function(folder,type,
                                name=F,
                                labelOdd){
     t=read.table(paste0(folder,"/presAbs_",type,".txt"),sep="\t", skip=1)
-    t$propMaster=t[,5]/t[,3]
-    t$numRepin=t[,3]
+    t$propMaster=t[,5]/t[,9]
+    t$numRepin=t[,9]
+    association=read.table(paste0(folder,"/repin_rayt_association_byREPIN.txt"),header=TRUE)
+    association=association[association$repintype==type,]
+    t$color=association[match(t[,1],association[,1]),]$rayts
+    cols=t$color
+    names(cols)=cols
+    cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
+    cols[cols==0]="black"
     p=ggplot(t,
              aes(x=propMaster,
-                 y=numRepin))+
+                 y=numRepin,col=factor(color)))+
+            scale_color_manual(values=cols,guide=FALSE)+
             geom_point()
 
  #   p=p+geom_smooth(method=lm,
@@ -244,10 +261,32 @@ plotCorrelationSingle=function(folder,type,
     return(p)
 }
 
+drawRAYTphylogeny=function(data_dir){
+  raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
+  raytseqs=readDNAStringSet(raytseqFile,format="fasta")
+  aln=muscle(raytseqs)
+  raytAlnFile=paste0(data_dir,"/raytAln.phy")
+  write.phylip(aln,raytAlnFile)
+  system(paste0("/Users/bertels/Programs/PhyML-3.1/PhyML-3.1_macOS-MountainLion -i ",raytAlnFile," -m GTR"))
+  raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
+  nwk=read.tree(raytTreeFile)
+  onlyRAYTs=colorDF[colorDF[,1]%in%nwk$tip.label,]
+  p=ggtree(nwk)
+  p=p%<+%onlyRAYTs+geom_tiplab(aes(color=color))
+  cols=onlyRAYTs$color
+  names(cols)=onlyRAYTs$color
+  p=p+ scale_color_manual(values=cols,guide=FALSE)
 
-repins_plot=plotREPINs(data_dir,treefile,0,"#40e0d0",2,fontsize)
-ggsave(paste0(data_dir, '/', 'repins_',rayt_type,'.png'), plot=repins_plot)
+  p
+  ggsave(paste0(data_dir,"/raytTree.png"))
+  
+}
+drawRAYTphylogeny(data_dir)
 
-correlation_plot = plotCorrelationSingle(data_dir,0,c(0,1),c(0,320),theme,fontsize,"left","bottom")
-ggsave(paste0(data_dir, '/', 'correlations_',rayt_type,'.png'), plot=correlation_plot)
+for(i in 0:5){
+  repins_plot=plotREPINs(data_dir,treefile,i,"#40e0d0",2,fontsize)
+  ggsave(paste0(data_dir, '/', 'repins_',i,'.png'), plot=repins_plot)
 
+  correlation_plot = plotCorrelationSingle(data_dir,i,c(0,1),c(0,320),theme,fontsize,"left","bottom")
+  ggsave(paste0(data_dir, '/', 'correlations_',i,'.png'), plot=correlation_plot)
+}
