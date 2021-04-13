@@ -161,6 +161,7 @@ def submit():
         logger.info("outdir: %s", session['outdir'])
         logger.info("reference_strain: %s", session['reference_strain'])
         logger.info("treefile: %s", session['treefile'])
+        logger.info("email: %s", session['email'])
 
         # copy query rayt to working dir
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
@@ -347,10 +348,21 @@ http://rarefan.evolbio.mpg.de
     else:
         return
 
+    logger.info("Sending RAREFAN report email.")
     # Send mail to all recipients.
     for recipient in recipients:
-        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} > {3:s}'.format(email_subject,
-                                                                                email_body, recipient, os.path.join(run_id_path, 'out', 'rarefan.log'))
+        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
+            email_subject,
+            email_body,
+            recipient,
+            os.path.join(
+                run_id_path,
+                'out',
+                'rarefan.log'
+            )
+        )
+
+        logger.info("email_command = %s", email_command)
         proc = subprocess.Popen(email_command, shell=True)
     #
     # Generate email stamp.
