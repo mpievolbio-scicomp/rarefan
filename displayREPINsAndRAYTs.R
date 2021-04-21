@@ -1,20 +1,15 @@
 #!/usr/bin/env Rscript
 # Required libraries
-library(Biostrings)#needs installing
+library(Biostrings)
 library(ape)
-library(muscle)#needs installing
+library(muscle)
 library(ggpmisc)
 library(ggtree)
 library(dplyr)
 library(stringr)
 library(ggplot2)
 library(cowplot)
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!rayt_type is not used any more!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-#needs to be installed and set
-phymlPath="/Users/bertels/Programs/PhyML-3.1/PhyML-3.1_macOS-MountainLion"
+# NOTE: Requires phyml to be installed in system's PATH.
 
 # Parse command line args
 args = commandArgs(trailingOnly=TRUE)
@@ -267,7 +262,7 @@ drawRAYTphylogeny=function(data_dir){
   aln=muscle(raytseqs)
   raytAlnFile=paste0(data_dir,"/raytAln.phy")
   write.phylip(aln,raytAlnFile)
-  system(paste0("/Users/bertels/Programs/PhyML-3.1/PhyML-3.1_macOS-MountainLion -i ",raytAlnFile," -m GTR"))
+  system(paste0("phyml -i ",raytAlnFile," -m GTR"))
   raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
   nwk=read.tree(raytTreeFile)
   onlyRAYTs=colorDF[colorDF[,1]%in%nwk$tip.label,]
