@@ -10,6 +10,7 @@ suppressMessages(library(stringr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
+suppressMessages(library(plotly))
 
 library(shiny)
 # Define plot routine
@@ -286,15 +287,24 @@ ui <- fluidPage(
 		titlePanel("REPIN and RAYT analysis"),
 		sidebarLayout(
 				sidebarPanel(
-					sliderInput(inputId = 'bins',
-								label="Number of bins",
-								min = 1,
-								max = 50,
-								value = 25
-								)
-					),
+					selectInput(inputId = 'rayt',
+								label="Select RAYT",
+								choices = list(
+										"RAYT 1" = 0,
+										"RAYT 2" = 1,
+										"RAYT 3" = 2,
+										"RAYT 4" = 3,
+										"RAYT 5" = 4,
+										"RAYT 6" = 5
+								),
+								selected = 0)
+							),
 				mainPanel(
-					plotOutput(outputId = 'distPlot')
+					plotlyOutput(outputId = 'rayt_tree'),
+					hr(),
+					plotlyOutput(outputId = 'repin_tree'),
+					hr(),
+					plotlyOutput(outputId = 'correlations')
 				)
 		)
 )
@@ -366,7 +376,9 @@ colorDF=determineColor(associationFile)
 
 server <- function(input, output) {
 
-output$distPlot <- renderPlot({drawRAYTphylogeny(data_dir)})
+output$rayt_tree <- renderPlotly({drawRAYTphylogeny(data_dir)})
+output$repin_tree <- renderPlotly({plotREPINs(data_dir,treefile,input$rayt,"#40e0d0",2,fontsize)})
+output$correlations <- renderPlotly({plotCorrelationSingle(data_dir,input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
 
 #for(i in 0:5){
 #	logging::loginfo("Plotting REPINS [i=%d]", i)
