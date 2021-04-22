@@ -64,6 +64,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       geom_tiplab()
 
   logging::logdebug("Setting up facet plot p2.")
+  colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
   p2=facet_plot(p,
                 panel='RAYTs',
                 data=association[association$repintype==type,],
@@ -102,7 +103,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   logging::logdebug("Setting up facet plot p5.")
   p5=facet_plot(p2,
-                panel='REPIN\npopulation\nsize',
+                panel='REPIN population size',
                 data=popSize,
                 geom=geom_segment,
                 aes(x=0,
@@ -119,7 +120,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug("Setting up facet plot p7.")
   p7=facet_labeller(p6,
                     c(Tree="",
-                      RAYTs="Number of \nRAYTs")
+                      RAYTs="Number of RAYTs")
   )
 
   logging::logdebug("Setting up facet plot p8.")
@@ -171,7 +172,6 @@ determineColor=function(associationFile){
         }
      }
   }
-  print(colorAss)
   return(colorAss)
 }
 
@@ -214,6 +214,7 @@ plotCorrelationSingle=function(folder,type,
     t$color=association[match(t[,1],association[,1]),]$rayts
     cols=t$color
     names(cols)=cols
+	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
     cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
     cols[cols==0]="black"
 	
@@ -257,7 +258,7 @@ plotCorrelationSingle=function(folder,type,
 
 drawRAYTphylogeny=function(data_dir){
 	
-	logging::loginfo("Drawing RAYT phylogeny.")
+  logging::loginfo("Drawing RAYT phylogeny.")
 	
   raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
   raytseqs=readDNAStringSet(raytseqFile,format="fasta")
@@ -267,6 +268,7 @@ drawRAYTphylogeny=function(data_dir){
   system(paste0("phyml -i ",raytAlnFile," -m GTR"))
   raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
   nwk=read.tree(raytTreeFile)
+  colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
   onlyRAYTs=colorDF[colorDF[,1]%in%nwk$tip.label,]
   p=ggtree(nwk)
   p=p%<+%onlyRAYTs+geom_tiplab(aes(color=color))
@@ -287,6 +289,8 @@ ui <- fluidPage(
 		titlePanel("REPIN and RAYT analysis"),
 		sidebarLayout(
 				sidebarPanel(
+						textOutput("text"),
+					hr(),
 					selectInput(inputId = 'rayt',
 								label="Select RAYT",
 								choices = list(
@@ -300,10 +304,13 @@ ui <- fluidPage(
 								selected = 0)
 							),
 				mainPanel(
+					h4("RAYT tree"),
 					plotlyOutput(outputId = 'rayt_tree'),
 					hr(),
+					h4("REPINs"),
 					plotlyOutput(outputId = 'repin_tree'),
 					hr(),
+					h4("Correlation"),
 					plotlyOutput(outputId = 'correlations')
 				)
 		)
@@ -314,37 +321,12 @@ logging::basicConfig()
 logging::setLevel(10) # DEBUG
 # NOTE: Requires phyml to be installed in system's PATH.
 
-# Parse command line args
-#args = commandArgs(trailingOnly=TRUE)
-args = c("/home/grotec/Repositories/RepinPop/app/static/uploads/r69h1acp/out")
 #folder: folder that contains presAbs_* files
 #treeFile: name of newick tree file 
 #type: REPIN type that is supposed to be viewed (_*, * is the type)
 
 	
-max_number_of_expected_args = 3
-min_number_of_expected_args = 1
-if (length(args)<min_number_of_expected_args ) { 
-    stop("Usage: Rscript displayREPINsAndRAYTs.R DIR [TYPE [TREEFILE TYPE]]", call.=FALSE)
-}
-if (length(args)>max_number_of_expected_args ) { 
-    stop("Usage: Rscript displayREPINsAndRAYTs.R DIR [TYPE [TREEFILE TYPE]]", call.=FALSE)
-}
-if (length(args) == 1) {
-    data_dir=args[1]
-    treefile="tmptree.nwk"
-    rayt_type=0
-}
-if (length(args) == 2) {
-    data_dir=args[1]
-    treefile=args[2]
-    rayt_type=0
-}
-if (length(args) == 3) {
-    data_dir=args[1]
-    treefile=args[2]
-    rayt_type=args[3]
-}
+
 
 # Set theme for all plotse
 theme=theme(axis.line.x = element_line(colour = "black"),
@@ -364,35 +346,25 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 # Font size
 fontsize=14
 
-#determine color for all plots
-#returns a table with two columns repintype/rayt and color
+server <- function(input, output, session) {
+	output$text <- renderText({
+				query <- parseQueryString(session$clientData$url_search)
+				paste("Run ID ", query$run_id, sep=" ")
+			})
 
+treefile <- 'tmptree.nwk'
 
-
-associationFile=paste0(data_dir,"/repin_rayt_association.txt")
-logging::logdebug("Setting colors according to association file %s.", associationFile)
-colorDF=determineColor(associationFile)
-
-
-server <- function(input, output) {
-
-output$rayt_tree <- renderPlotly({drawRAYTphylogeny(data_dir)})
-output$repin_tree <- renderPlotly({plotREPINs(data_dir,treefile,input$rayt,"#40e0d0",2,fontsize)})
-output$correlations <- renderPlotly({plotCorrelationSingle(data_dir,input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
-
-#for(i in 0:5){
-#	logging::loginfo("Plotting REPINS [i=%d]", i)
-#    repins_plot=plotREPINs(data_dir,treefile,i,"#40e0d0",2,fontsize)
-#	logging::logdebug("Plotting done, saving.")
-#    ggsave(paste0(data_dir, '/', 'repins_',i,'.png'), plot=repins_plot)
-#	logging::logdebug("Saving done.")
-#
-#	logging::loginfo("Plotting correlations [i=%d]", i)
-#    
-#	correlation_plot = plotCorrelationSingle(data_dir,i,c(0,1),c(0,320),theme,fontsize,"left","bottom")
-#    ggsave(paste0(data_dir, '/', 'correlations_',i,'.png'), plot=correlation_plot)
-#}
- 
+output$rayt_tree <- renderPlotly({
+			query <- parseQueryString(session$clientData$url_search)
+			drawRAYTphylogeny(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out")
+			)
+		})
+output$repin_tree <- renderPlotly({
+			query <- parseQueryString(session$clientData$url_search)
+			plotREPINs(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out"),treefile,input$rayt,"#40e0d0",2,fontsize)})
+output$correlations <- renderPlotly({
+			query <- parseQueryString(session$clientData$url_search)
+			plotCorrelationSingle(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out"),input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
 }
 
 shinyApp(ui=ui, server=server)
