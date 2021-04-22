@@ -5,4 +5,4 @@
 
 
 library(shiny)
-shiny::runApp("analysis", launch.browser=FALSE, port=7238)
+shiny::runApp("analysis", launch.browser=FALSE, port=7238, host="0.0.0.0")
