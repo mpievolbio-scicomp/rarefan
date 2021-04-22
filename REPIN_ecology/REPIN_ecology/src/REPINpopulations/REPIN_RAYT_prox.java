@@ -23,7 +23,6 @@ public class REPIN_RAYT_prox {
 	ArrayList<Fasta> allRAYTs=new ArrayList<Fasta>();
 	ArrayList<Info> allRAYTsPos=new ArrayList<Info>();
 	ArrayList<Vicinity> allVicinity=new ArrayList<Vicinity>();
-	ArrayList<String> genomeIDs=new ArrayList<String>();
 	int repinGroups;
 	public class Vicinity{
 		ArrayList<Integer> REPINgroups=new ArrayList<Integer>();
@@ -40,7 +39,9 @@ public class REPIN_RAYT_prox {
 			}
 			return sb.toString();
 		}
-		
+		public ArrayList<Integer> get(){
+			return REPINgroups;
+		}
 	}
 
 	public REPIN_RAYT_prox(File outFolder,int repinGroups) {
@@ -66,9 +67,9 @@ public class REPIN_RAYT_prox {
 			bw.write("Genome\tRAYT\tREPINgroups\n");
 			for(int i=0;i<allRAYTs.size();i++) {
 				String split[]=allRAYTs.get(i).getIdent().split("_");
-				String repinGroup=split[1];
+				String raytNumber=split[1];
 				String genome=split[0];
-				bw.write(genome+"\t"+repinGroup+"\t"+allVicinity.get(i).toString()+"\n");
+				bw.write(genome+"\t"+raytNumber+"\t"+allVicinity.get(i).toString()+"\n");
 			}
 			bw.close();
 		}catch(IOException e) {
@@ -76,6 +77,62 @@ public class REPIN_RAYT_prox {
 			System.exit(-1);
 		}
 	}
+	
+	private HashMap<String,String> addRAYTsToREPINTypeDS(HashMap<String,String> repintypeDS){
+		for(int i=0;i<allRAYTs.size();i++) {
+			ArrayList<Integer> repintypes=allVicinity.get(i).get();
+			String genome=allRAYTs.get(i).getIdent().split("_")[0];
+			for(int j=0;j<repintypes.size();j++) {
+				String genomeRtype=genome+"\t"+repintypes.get(j);
+				String rayt=allRAYTs.get(i).getIdent();
+				if(repintypeDS.containsKey(genomeRtype) && repintypeDS.get(genomeRtype).length()>0) {
+					repintypeDS.put(genomeRtype, repintypeDS.get(genomeRtype)+","+rayt);
+				}else {
+					repintypeDS.put(genomeRtype,rayt);
+				}
+			}
+		}
+		return repintypeDS;
+	}
+	
+	private HashMap<String/*repintype\tgenome*/,/*rayt1,rayt2...*/String> initREPINTypes(ArrayList<String> genomeIDs,int maxTypes){
+		HashMap<String/*repintype\tgenome*/,/*rayt1,rayt2...*/String> rtypes=new HashMap<String, String>();
+		for(int i=0;i<genomeIDs.size();i++) {
+			for(int j=0;j<maxTypes;j++) {
+				rtypes.put(genomeIDs.get(i)+"\t"+j, "");
+			}
+		}
+		return rtypes;
+	}
+	
+	
+	public void writeREPINType(File out,ArrayList<String> genomeIDs,int maxTypes) {
+		try {
+			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
+			bw.write("genome\trepintype\trayts\traytIDs\n");
+			
+			HashMap<String/*genome\trepintype*/,/*rayt1,rayt2...*/String> repintypeDS=initREPINTypes(genomeIDs,maxTypes);
+			repintypeDS=addRAYTsToREPINTypeDS(repintypeDS);
+			String[] repintypes=repintypeDS.keySet().toArray(new String[0]);
+			for(int i=0;i<repintypes.length;i++) {
+				String rayts=repintypeDS.get(repintypes[i]);
+				int raytNumber=0;
+				if(rayts.length()>0) {
+					String split[]=rayts.split(",");
+					raytNumber=split.length;
+				}else {
+					rayts="NA";
+				}
+				bw.write(repintypes[i]+"\t"+raytNumber+"\t"+rayts+"\n");
+			}
+			bw.close();
+		}catch(IOException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
+	}
+	
 	
 	private ArrayList<Vicinity> getVicinityInformation(ArrayList<Info> raytPos,ArrayList<REPINGenomePositions> rgp,String genomeID){
 		ArrayList<Vicinity> repinVicinity=new ArrayList<REPIN_RAYT_prox.Vicinity>();
