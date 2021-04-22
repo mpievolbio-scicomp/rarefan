@@ -356,15 +356,15 @@ treefile <- 'tmptree.nwk'
 
 output$rayt_tree <- renderPlotly({
 			query <- parseQueryString(session$clientData$url_search)
-			drawRAYTphylogeny(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out")
+			drawRAYTphylogeny(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out")
 			)
 		})
 output$repin_tree <- renderPlotly({
 			query <- parseQueryString(session$clientData$url_search)
-			plotREPINs(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out"),treefile,input$rayt,"#40e0d0",2,fontsize)})
+			plotREPINs(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out"),treefile,input$rayt,"#40e0d0",2,fontsize)})
 output$correlations <- renderPlotly({
 			query <- parseQueryString(session$clientData$url_search)
-			plotCorrelationSingle(paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id, "/out"),input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
+			plotCorrelationSingle(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out"),input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
 }
 
 shinyApp(ui=ui, server=server)
