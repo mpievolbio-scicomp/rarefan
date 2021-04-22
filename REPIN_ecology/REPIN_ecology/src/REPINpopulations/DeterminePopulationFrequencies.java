@@ -144,12 +144,12 @@ public class DeterminePopulationFrequencies {
 		System.out.println("Calculating Results.");
 
 		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox(this.outFolder,focalSeeds.length);
-
+		ArrayList<String> genomeIDs=new ArrayList<String>();
         // TODO: Can we parallelize this loop?
 		for(int i=0;i<genomes.size();i++) {
 			String onlyGenome=getGenomeID(genomes.get(i));
             // parallelize?
-
+			genomeIDs.add(onlyGenome);
 			ArrayList<REPINGenomePositions> rgp=new ArrayList<REPINGenomePositions>();
 			ArrayList<Info> raytPos=writeRAYTLocation(genomes.get(i));
 
@@ -183,7 +183,7 @@ public class DeterminePopulationFrequencies {
 			rrp.addRAYT(raytPos, genomes.get(i), rgp);
 		}
 		rrp.write(new File(outFolder+"/repin_rayt_association.txt"));
-
+		rrp.writeREPINType(new File(outFolder+"/repin_rayt_association_byREPIN.txt"),genomeIDs,focalSeeds.length);
 	}
 
 
