@@ -72,12 +72,6 @@ def upload():
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
 
-        session['tmpdir'] = tempfile.mkdtemp(
-            suffix=None,
-            prefix="",
-            dir=app.config["UPLOAD_DIR"]
-        )
-
         dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
         aa_extensions = ['fa', 'faa']
         tree_extensions = ['nwk']
