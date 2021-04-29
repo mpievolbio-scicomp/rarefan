@@ -99,7 +99,7 @@ public class DeterminePopulationFrequencies {
 		StringBuffer sb=new StringBuffer();
 		File[] files=inFolder.listFiles();
 		for(int i=0;i<files.length;i++) {
-			if(files[i].getName().endsWith("fas")||files[i].getName().endsWith("fna")) {
+			if(hasCorrectExtension(files[i])) {
 				sb.append(" "+files[i]);
 			}
 		}
