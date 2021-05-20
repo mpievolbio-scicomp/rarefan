@@ -89,8 +89,8 @@ def upload():
                 os.remove(f)
 
         basenames = [os.path.basename(f) for f in fnames]
-        strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in dna_extensions]
-        rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in aa_extensions]
+        strain_names = [bn for bn in basenames if bn.split(".")[-1] in dna_extensions]
+        rayt_names = [bn for bn in basenames if bn.split(".")[-1] in aa_extensions]
         tree_names = [bn for bn in basenames if bn.split(".")[-1] in tree_extensions]
 
         session['strain_names'] = strain_names
@@ -158,12 +158,12 @@ def submit():
         logger.info("email: %s", session['email'])
 
         # copy query rayt to working dir
-        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
+        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
                                                                      src=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                                      "..",
                                                                      'data',
-                                                                     session['query_rayt']+".faa"
+                                                                     session['query_rayt']
                                                                      )
                                                                      )
                                                                      shutil.copyfile(src, query_rayt_fname)
@@ -197,7 +197,7 @@ def submit():
                                      ),
                                      session['tmpdir'],
                                      session['outdir'],
-                                     session['reference_strain']+".fas",
+                                     session['reference_strain'],
                                      '{0:s}'.format(session['min_nmer_occurence']),
                                      '{0:s}'.format(session['nmer_length']),
                                      query_rayt_fname,
