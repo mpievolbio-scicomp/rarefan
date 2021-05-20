@@ -163,7 +163,7 @@ def submit():
                                                                      src=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                                      "..",
                                                                      'data',
-                                                                     session['query_rayt']
+                                                                     session['query_rayt']+".faa"
                                                                      )
                                                                      )
                                                                      shutil.copyfile(src, query_rayt_fname)
