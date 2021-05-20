@@ -162,13 +162,15 @@ def submit():
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
             query_rayt_fname = query_rayt_fname+".faa"
-            src=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                                     "..",
-                                                                     'data',
-                                                                     session['query_rayt']+".faa"
-                                                                     )
-                                                                     )
-                                                                     shutil.copyfile(src, query_rayt_fname)
+            src=os.path.abspath(
+                os.path.join(
+                    os.path.dirname(__file__),
+                    "..",
+                    'data',
+                    session['query_rayt']+".faa"
+                )
+            )
+            shutil.copyfile(src, query_rayt_fname)
 
         # Copy R script
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
