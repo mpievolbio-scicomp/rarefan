@@ -22,9 +22,17 @@ dependencies:
   - r-stringr
   - r-cowplot
   - r-ggplot2
+  - bioconductor-muscle
+  - bioconductor-biostrings
+  - r-rlang>=0.4.10
+  - r-vctrs>=0.3.7
+  - r-lifecycle>=1.0.0
+  - r-shiny
+  - r-plotly
   - gradle
   - biopython
   - email_validator
+  - phyml
   - pip
   - pip:
       - flask-pymongo
