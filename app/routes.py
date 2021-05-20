@@ -157,10 +157,12 @@ def submit():
         logger.info("treefile: %s", session['treefile'])
         logger.info("email: %s", session['email'])
 
-        # copy query rayt to working dir
+        # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
+        # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-                                                                     src=os.path.abspath(os.path.join(os.path.dirname(__file__),
+            query_rayt_fname = query_rayt_fname+".faa"
+            src=os.path.abspath(os.path.join(os.path.dirname(__file__),
                                                                      "..",
                                                                      'data',
                                                                      session['query_rayt']+".faa"
