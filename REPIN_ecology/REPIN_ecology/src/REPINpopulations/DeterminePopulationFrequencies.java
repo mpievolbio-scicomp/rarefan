@@ -137,19 +137,24 @@ public class DeterminePopulationFrequencies {
 			System.exit(-1);
 		}
 	}
-
+	public static String getGenomeID(File in) {
+		return in.getName().split("\\.")[0];
+	}
 	private void calculateResults() {
 		System.out.println("Calculating Results.");
-		
-		
-		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox();
 
+		REPIN_RAYT_prox rrp=new REPIN_RAYT_prox(this.outFolder,focalSeeds.length);
+		ArrayList<String> genomeIDs=new ArrayList<String>();
         // TODO: Can we parallelize this loop?
 		for(int i=0;i<genomes.size();i++) {
-			String[] split=genomes.get(i).getAbsolutePath().split("\\/|\\.");
+			String onlyGenome=getGenomeID(genomes.get(i));
             // parallelize?
+			genomeIDs.add(onlyGenome);
+			ArrayList<REPINGenomePositions> rgp=new ArrayList<REPINGenomePositions>();
+			ArrayList<Info> raytPos=writeRAYTLocation(genomes.get(i));
+
 			for(int j=0;j<focalSeeds.length;j++) {
-				String genomeID=split[split.length-2]+"_"+j;
+				String genomeID=onlyGenome+"_"+j;
 
 				results.put(genomeID, new HashMap<String,Integer>());
 
@@ -170,19 +175,20 @@ public class DeterminePopulationFrequencies {
 				}
 				System.out.println("Write RAYT locations "+genomeID+"...");
 
-				ArrayList<Info> raytPos=writeRAYTLocation(genomes.get(i));
 				int popsize=rp.getPopSize();
 				results.get(genomeID).put(focalSeeds[j],popsize);
-				System.out.println("REPIN RAYT proximity calculation for "+genomeID+"...");
-				rrp.addRAYTREPINProximity(j, genomeID, outFolder, rp, raytPos);;
+				rgp.add(new REPINGenomePositions(rp.getREPINPositions()));
 			}
+			System.out.println("REPIN RAYT proximity calculation for "+onlyGenome+"...");
+			rrp.addRAYT(raytPos, genomes.get(i), rgp);
 		}
-		rrp.writeStats(new File(this.outFolder+"/prox.stats"));
+		rrp.write(new File(outFolder+"/repin_rayt_association.txt"));
+		rrp.writeREPINType(new File(outFolder+"/repin_rayt_association_byREPIN.txt"),genomeIDs,focalSeeds.length);
 	}
 
 
 	private ArrayList<Info> writeRAYTLocation(File genome) {
-		String genomeID=genome.getName().split("\\.")[0];
+		String genomeID=getGenomeID(genome);
 		ArrayList<Info> RAYTLocations;
 		if(legacyBlastPerlLocation!="") {
 			RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn",legacyBlastPerlLocation);
@@ -202,7 +208,7 @@ public class DeterminePopulationFrequencies {
 				String ident=fas.get(i).getIdent();
 				pos.addAll(getPos(ident,"Gr_"+group));
 			}
-			String genomeID=in.getName().split("\\.")[0];
+			String genomeID=getGenomeID(in);
 			WriteArtemis.write(pos, new File(in.getParent()+"/"+genomeID+".tab"));
 
 		}
