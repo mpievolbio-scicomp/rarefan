@@ -283,6 +283,9 @@ drawRAYTphylogeny=function(data_dir){
 }
 
 logging::basicConfig()
+logging::addHandler(writeToConsole)
+logging::logwarn("Starting up")
+
 #logging::setLevel(20) # INFO
 logging::setLevel(10) # DEBUG
 # NOTE: Requires phyml to be installed in system's PATH.
@@ -313,22 +316,33 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 fontsize=14
 
 function(input, output, session) {
+    query <- parseQueryString(session$clientData$url_search)
+#     run_dir <- paste0("/home/grotec/Repositories/repinpop/app/static/uploads", query$run_id)
+    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
+    out_dir <- paste0(run_dir, "/out")
 	output$text <- renderText({
-				query <- parseQueryString(session$clientData$url_search)
 				paste("Run ID ", query$run_id, sep=" ")
 			})
 
-treefile <- 'tmptree.nwk'
-
-output$rayt_tree <- renderPlotly({
+    treefile <- 'tmptree.nwk'
+    
+    output$rayt_tree <- renderPlotly({
 			query <- parseQueryString(session$clientData$url_search)
-			drawRAYTphylogeny(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out")
-			)
+			drawRAYTphylogeny(out_dir)
 		})
-output$repin_tree <- renderPlotly({
-			query <- parseQueryString(session$clientData$url_search)
-			plotREPINs(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out"),treefile,input$rayt,"#40e0d0",2,fontsize)})
-output$correlations <- renderPlotly({
-			query <- parseQueryString(session$clientData$url_search)
-			plotCorrelationSingle(paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id, "/out"),input$rayt,c(0,1),c(0,320),theme,fontsize,"left","bottom")})
+    output$repin_tree <- renderPlotly({
+			plotREPINs(out_dir,treefile,input$rayt,"#40e0d0",2,fontsize)})
+    output$correlations <- renderPlotly(
+        {
+            plotCorrelationSingle(out_dir,
+                              input$rayt,
+                              c(0,1),
+                              c(0,320),
+                              theme,
+                              fontsize,
+                              "left",
+                              "bottom"
+                             )
+        } 
+    ) 
 }
