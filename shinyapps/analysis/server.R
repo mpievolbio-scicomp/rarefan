@@ -319,43 +319,48 @@ fontsize=14
 
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
-    params <- reactiveValues()
-    params$query <- parseQueryString(session$clientData$url_search)
-    logging::logdebug("Still alive")
-    params$run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", params$query$run_id)
-    logging::logdebug(paste0("run_dir = ", params$run_dir))
-    params$out_dir <- paste0(params$run_dir, "/out")
-    logging::logdebug(paste0("out_dir = ", params$out_dir))
-	output$text <- renderText({
+    output$text <- renderText({
 				paste("Run ID ", params$query$run_id, sep=" ")
-			})
-
-    params$treefile <- 'tmptree.nwk'
-    
-    output$rayt_tree <- renderPlotly({
-			drawRAYTphylogeny(params$out_dir)
-		})
-    output$repin_tree <- renderPlotly({
-			plotREPINs(params$out_dir,
-                       params$treefile,
-                       input$rayt,
-                       "#40e0d0",
-                       2,
-                       fontsize
-            )
-    }
+			}
     )
-    output$correlations <- renderPlotly(
-        {
-            plotCorrelationSingle(out_dir,
-                              input$rayt,
-                              c(0,1),
-                              c(0,320),
-                              theme,
-                              fontsize,
-                              "left",
-                              "bottom"
-                             )
-        } 
-    ) 
+    # logging::logdebug(session$clientData$url_search)
+    # params <- reactiveValues()
+    # params$query <- parseQueryString(session$clientData$url_search)
+    # logging::logdebug("Still alive")
+    # params$run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", params$query$run_id)
+    # logging::logdebug(paste0("run_dir = ", params$run_dir))
+    # params$out_dir <- paste0(params$run_dir, "/out")
+    # logging::logdebug(paste0("out_dir = ", params$out_dir))
+	# output$text <- renderText({
+	# 			paste("Run ID ", params$query$run_id, sep=" ")
+	# 		})
+
+    # params$treefile <- 'tmptree.nwk'
+    #
+    # output$rayt_tree <- renderPlotly({
+	# 		drawRAYTphylogeny(params$out_dir)
+	# 	})
+    # output$repin_tree <- renderPlotly({
+	# 		plotREPINs(params$out_dir,
+    #                    params$treefile,
+    #                    input$rayt,
+    #                    "#40e0d0",
+    #                    2,
+    #                    fontsize
+    #         )
+    # }
+    # )
+    # output$correlations <- renderPlotly(
+    #     {
+    #         plotCorrelationSingle(out_dir,
+    #                           input$rayt,
+    #                           c(0,1),
+    #                           c(0,320),
+    #                           theme,
+    #                           fontsize,
+    #                           "left",
+    #                           "bottom"
+    #                          )
+    #     }
+    # )
 }
