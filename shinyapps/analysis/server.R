@@ -90,7 +90,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                 #color=colorDF[colorDF$repRAYT==type,2]
   )
 
-  return(p2)
+  # return(p2)
 
 #  p3=facet_plot(p2,
 #                panel='Number of \nREPIN clusters',
