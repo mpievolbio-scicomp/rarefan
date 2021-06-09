@@ -14,7 +14,14 @@ suppressMessages(library(plotly))
 suppressMessages(library(shiny))
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
-  logging::logdebug("Enter function 'plotREPINs'")
+  logging::logdebug("Enter function 'plotREPINs' with ")
+  logging::logdebug(paste0("    folder = ", folder))
+  logging::logdebug(paste0("    treeFile = ", treeFile))
+  logging::logdebug(paste0("    type = ", type))
+  logging::logdebug(paste0("    colorBars = ", colorBars))
+  logging::logdebug(paste0("    bs = ", bs))
+  logging::logdebug(paste0("    fontsize = ", fontsize))
+
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
                   legend.key = element_rect(fill = "white"),
                   axis.line.y = element_line(colour = "black"),
@@ -30,7 +37,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug("Read association data fom %s.", assoc_file)
   association=read.table(assoc_file,header=TRUE)
 
-  logging::logdebug(association)
+  logging::logdebug(colnames(association))
   
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
@@ -69,9 +76,11 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   logging::logdebug("Setting up facet plot p2.")
   # colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
+  d <- association[association$repintype==type,]
+  logging::logdebug(d)
   p2=facet_plot(p,
                 panel='RAYTs',
-                data=association[association$repintype==type,],
+                data=d,
                 geom=geom_segment,
                 aes(x=0,
                     xend=rayts,
