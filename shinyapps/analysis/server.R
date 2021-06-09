@@ -328,7 +328,7 @@ function(input, output, session) {
     )
     logging::logdebug(session$clientData$url_search)
     logging::logdebug("Still alive")
-    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
+    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)
     logging::logdebug(paste0("run_dir = ", run_dir))
     out_dir <- paste0(run_dir, "/out")
     logging::logdebug(paste0("out_dir = ", out_dir))
