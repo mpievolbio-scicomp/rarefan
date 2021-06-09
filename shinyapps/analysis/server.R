@@ -318,6 +318,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 fontsize=14
 
 function(input, output, session) {
+    logging::logdebug("Entering shiny app main()")
     query <- parseQueryString(session$clientData$url_search)
     run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
     logging::logdebug(paste0("run_dir = ", run_dir))
