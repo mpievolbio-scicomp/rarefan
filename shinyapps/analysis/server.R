@@ -14,7 +14,7 @@ suppressMessages(library(plotly))
 suppressMessages(library(shiny))
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
-	logging::logdebug("Setting theme.")
+  logging::logdebug("Enter function 'plotREPINs'")
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
                   legend.key = element_rect(fill = "white"),
                   axis.line.y = element_line(colour = "black"),
@@ -299,6 +299,7 @@ logging::setLevel(10) # DEBUG
 
 
 # Set theme for all plotse
+logging::logdebug("defining theme")
 theme=theme(axis.line.x = element_line(colour = "black"),
             legend.key = element_rect(fill = "white"),
             axis.line.y = element_line(colour = "black"),
@@ -318,9 +319,10 @@ fontsize=14
 
 function(input, output, session) {
     query <- parseQueryString(session$clientData$url_search)
-#     run_dir <- paste0("/home/grotec/Repositories/repinpop/app/static/uploads", query$run_id)
     run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
+    logging::logdebug(paste0("run_dir = ", run_dir))
     out_dir <- paste0(run_dir, "/out")
+    logging::logdebug(paste0("out_dir = ", out_dir))
 	output$text <- renderText({
 				paste("Run ID ", query$run_id, sep=" ")
 			})
