@@ -320,6 +320,7 @@ fontsize=14
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
     query <- parseQueryString(session$clientData$url_search)
+    logging::logdebug(query$run_id)
     run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
     logging::logdebug(paste0("run_dir = ", run_dir))
     out_dir <- paste0(run_dir, "/out")
