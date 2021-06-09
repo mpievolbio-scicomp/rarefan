@@ -320,10 +320,13 @@ fontsize=14
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
     # params <- reactiveValues(outer_query = parseQueryString(session$clientData$url_search))
+    observe({
+    query <- parseQueryString(session$clientData$url_search)
     output$text <- renderText({
-                query <- parseQueryString(session$clientData$url_search)
 				paste("Run ID ", query$run_id, sep=" ")
 			}
+    )
+    }
     )
     # logging::logdebug(session$clientData$url_search)
     # params$query <- parseQueryString(session$clientData$url_search)
