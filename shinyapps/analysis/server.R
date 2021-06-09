@@ -319,24 +319,32 @@ fontsize=14
 
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
-    query <- parseQueryString(session$clientData$url_search)
+    params <- reactiveValues()
+    params$query <- parseQueryString(session$clientData$url_search)
     logging::logdebug("Still alive")
-    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
-    logging::logdebug(paste0("run_dir = ", run_dir))
-    out_dir <- paste0(run_dir, "/out")
-    logging::logdebug(paste0("out_dir = ", out_dir))
+    params$run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", params$query$run_id)
+    logging::logdebug(paste0("run_dir = ", params$run_dir))
+    params$out_dir <- paste0(params$run_dir, "/out")
+    logging::logdebug(paste0("out_dir = ", params$out_dir))
 	output$text <- renderText({
-				paste("Run ID ", query$run_id, sep=" ")
+				paste("Run ID ", params$query$run_id, sep=" ")
 			})
 
-    treefile <- 'tmptree.nwk'
+    params$treefile <- 'tmptree.nwk'
     
     output$rayt_tree <- renderPlotly({
-			query <- parseQueryString(session$clientData$url_search)
-			drawRAYTphylogeny(out_dir)
+			drawRAYTphylogeny(params$out_dir)
 		})
     output$repin_tree <- renderPlotly({
-			plotREPINs(out_dir,treefile,input$rayt,"#40e0d0",2,fontsize)})
+			plotREPINs(params$out_dir,
+                       params$treefile,
+                       input$rayt,
+                       "#40e0d0",
+                       2,
+                       fontsize
+            )
+    }
+    )
     output$correlations <- renderPlotly(
         {
             plotCorrelationSingle(out_dir,
