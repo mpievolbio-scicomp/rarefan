@@ -35,9 +35,12 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)	
 		  logging::logwarn("File %s is empty.", data_file)
-)
-  
+          )
+
+  logging::logdebug(typeof(t))
+  logging::logdebug(t)
 	if(typeof(t) == "logical") {
+        logging::logdebug("Returning empty plot.")
 		return(ggplot())
 	}
 
@@ -63,7 +66,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       geom_tiplab()
 
   logging::logdebug("Setting up facet plot p2.")
-  colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
+  # colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
   p2=facet_plot(p,
                 panel='RAYTs',
                 data=association[association$repintype==type,],
@@ -75,6 +78,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                 size=bs#,
                 #color=colorDF[colorDF$repRAYT==type,2]
   )
+
+  return(p2)
 
 #  p3=facet_plot(p2,
 #                panel='Number of \nREPIN clusters',
@@ -287,16 +292,7 @@ logging::addHandler(writeToConsole)
 logging::addHandler(writeToFile, file="/tmp/shiny.log", level='DEBUG')
 logging::logwarn("Starting up")
 
-#logging::setLevel(20) # INFO
 logging::setLevel(10) # DEBUG
-# NOTE: Requires phyml to be installed in system's PATH.
-
-#folder: folder that contains presAbs_* files
-#treeFile: name of newick tree file 
-#type: REPIN type that is supposed to be viewed (_*, * is the type)
-
-	
-
 
 # Set theme for all plotse
 logging::logdebug("defining theme")
@@ -320,46 +316,48 @@ fontsize=14
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
     # params <- reactiveValues(outer_query = parseQueryString(session$clientData$url_search))
-    observe({
-    query <- parseQueryString(session$clientData$url_search)
-    output$text <- renderText({
-				paste("Run ID ", query$run_id, sep=" ")
-			}
-    )
-    logging::logdebug(session$clientData$url_search)
-    logging::logdebug("Still alive")
-    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)
-    logging::logdebug(paste0("run_dir = ", run_dir))
-    out_dir <- paste0(run_dir, "/out")
-    logging::logdebug(paste0("out_dir = ", out_dir))
-    treefile <- 'tmptree.nwk'
-    logging::logdebug(paste0("treefile = ", treefile))
+    observe(
+            {
+              query <- parseQueryString(session$clientData$url_search)
+              output$text <- renderText({
+          				paste("Run ID ", query$run_id, sep=" ")
+          			}
+              )
+              logging::logdebug(session$clientData$url_search)
+              logging::logdebug("Still alive")
+              run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)
+              logging::logdebug(paste0("run_dir = ", run_dir))
+              out_dir <- paste0(run_dir, "/out")
+              logging::logdebug(paste0("out_dir = ", out_dir))
+              treefile <- 'tmptree.nwk'
+              logging::logdebug(paste0("treefile = ", treefile))
 
-    output$rayt_tree <- renderPlotly({
-			drawRAYTphylogeny(out_dir)
-		})
-    output$repin_tree <- renderPlotly({
-			plotREPINs(out_dir,
-                       treefile,
-                       input$rayt,
-                       "#40e0d0",
-                       2,
-                       fontsize
-            )
-    }
-    )
-    output$correlations <- renderPlotly(
-        {
-            plotCorrelationSingle(out_dir,
-                              input$rayt,
-                              c(0,1),
-                              c(0,320),
-                              theme,
-                              fontsize,
-                              "left",
-                              "bottom"
-                             )
-        }
-    )
-    })
+              output$rayt_tree <- renderPlotly({
+          			drawRAYTphylogeny(out_dir)
+          		})
+              output$repin_tree <- renderPlotly({
+          			plotREPINs(out_dir,
+                                 treefile,
+                                 input$rayt,
+                                 "#40e0d0",
+                                 2,
+                                 fontsize
+                      )
+              }
+              )
+              output$correlations <- renderPlotly(
+                  {
+                      plotCorrelationSingle(out_dir,
+                                        input$rayt,
+                                        c(0,1),
+                                        c(0,320),
+                                        theme,
+                                        fontsize,
+                                        "left",
+                                        "bottom"
+                                       )
+                  }
+              )
+              }
+              )
 }
