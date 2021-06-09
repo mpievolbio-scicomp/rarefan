@@ -319,13 +319,13 @@ fontsize=14
 
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
+    params <- reactiveValues()
     output$text <- renderText({
                 query <- parseQueryString(session$clientData$url_search)
 				paste("Run ID ", query$run_id, sep=" ")
 			}
     )
     # logging::logdebug(session$clientData$url_search)
-    # params <- reactiveValues()
     # params$query <- parseQueryString(session$clientData$url_search)
     # logging::logdebug("Still alive")
     # params$run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", params$query$run_id)
