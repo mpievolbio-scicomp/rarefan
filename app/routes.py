@@ -141,9 +141,13 @@ def submit():
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
-        treefile = request.form.get('treefile')
+        treefile = request.form.get('treefile', None)
         if treefile == "None":
+            run_andi_clustdist = True
             treefile = "tmptree.nwk"
+        else:
+            run_andi_clustdist = False
+
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
@@ -221,16 +225,31 @@ def submit():
         logging.info("R command: %s", R_command)
         R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-        andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
-        distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-        distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-        andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
-        logging.info("andi command: %s", andi_command)
-        andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+        if run_andi_clustdist:
+            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
+            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+            distfile = os.path.join(session['outdir'], os.path.basename(distfile))
+            andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
+            logging.info("andi command: %s", andi_command)
+            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-        clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-        logging.info("clustdist command: %s", clustdist_command)
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+            clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+            logging.info("clustdist command: %s", clustdist_command)
+            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+
+        else:
+            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+            andi_command = "ln -s {} {}".format(os.path.join(session['outdir'], distfile),
+                                                os.path.join(session['outdir'], 'tmptree.dist'))
+            logging.info("andi command: %s", andi_command)
+            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+
+            clustdist_command = "ln -s {} {}".format(os.path.join(session['outdir'], treefile),
+                                                     os.path.join(session['outdir'], 'tmptree.nwk'))
+            logging.info("clustdist command: %s", clustdist_command)
+
+            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+
 
         # Zip results.
         zip_command = " ".join(["zip",
@@ -249,8 +268,6 @@ def submit():
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
             "{} && touch {}".format(zip_command, zip_stamp)
         ]
-
-
 
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
