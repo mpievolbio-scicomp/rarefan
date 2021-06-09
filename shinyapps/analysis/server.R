@@ -326,45 +326,40 @@ function(input, output, session) {
 				paste("Run ID ", query$run_id, sep=" ")
 			}
     )
+    logging::logdebug(session$clientData$url_search)
+    logging::logdebug("Still alive")
+    run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", query$run_id)
+    logging::logdebug(paste0("run_dir = ", run_dir))
+    out_dir <- paste0(run_dir, "/out")
+    logging::logdebug(paste0("out_dir = ", out_dir))
+    treefile <- 'tmptree.nwk'
+    logging::logdebug(paste0("treefile = ", treefile))
+
+    output$rayt_tree <- renderPlotly({
+			drawRAYTphylogeny(out_dir)
+		})
+    output$repin_tree <- renderPlotly({
+			plotREPINs(out_dir,
+                       treefile,
+                       input$rayt,
+                       "#40e0d0",
+                       2,
+                       fontsize
+            )
     }
     )
-    # logging::logdebug(session$clientData$url_search)
-    # params$query <- parseQueryString(session$clientData$url_search)
-    # logging::logdebug("Still alive")
-    # params$run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads", params$query$run_id)
-    # logging::logdebug(paste0("run_dir = ", params$run_dir))
-    # params$out_dir <- paste0(params$run_dir, "/out")
-    # logging::logdebug(paste0("out_dir = ", params$out_dir))
-	# output$text <- renderText({
-	# 			paste("Run ID ", params$query$run_id, sep=" ")
-	# 		})
-
-    # params$treefile <- 'tmptree.nwk'
-    #
-    # output$rayt_tree <- renderPlotly({
-	# 		drawRAYTphylogeny(params$out_dir)
-	# 	})
-    # output$repin_tree <- renderPlotly({
-	# 		plotREPINs(params$out_dir,
-    #                    params$treefile,
-    #                    input$rayt,
-    #                    "#40e0d0",
-    #                    2,
-    #                    fontsize
-    #         )
-    # }
-    # )
-    # output$correlations <- renderPlotly(
-    #     {
-    #         plotCorrelationSingle(out_dir,
-    #                           input$rayt,
-    #                           c(0,1),
-    #                           c(0,320),
-    #                           theme,
-    #                           fontsize,
-    #                           "left",
-    #                           "bottom"
-    #                          )
-    #     }
-    # )
+    output$correlations <- renderPlotly(
+        {
+            plotCorrelationSingle(out_dir,
+                              input$rayt,
+                              c(0,1),
+                              c(0,320),
+                              theme,
+                              fontsize,
+                              "left",
+                              "bottom"
+                             )
+        }
+    )
+    })
 }
