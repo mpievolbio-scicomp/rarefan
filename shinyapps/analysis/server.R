@@ -29,6 +29,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
   association=read.table(assoc_file,header=TRUE)
+
+  logging::logdebug(association)
   
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
