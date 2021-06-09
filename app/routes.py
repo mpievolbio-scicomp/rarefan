@@ -447,7 +447,11 @@ def files(req_path):
             req_path = req_path[:-1]
         logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
-        back_link = url_for('results', run_id=os.path.basename(session['tmpdir']))
+        tmp_dir = session.get('tmpdir', None)
+        if tmp_dir is not None:
+            back_link = url_for('results', run_id=os.path.basename(tmp_dir))
+        else:
+            back_link = url_for('results')
 
         link_to_parent = True
         # Only insert link to parent dir if not at top level.
