@@ -177,7 +177,7 @@ plotCorrelationSingle=function(folder,type,
                                to=F,
                                repinThreshold=0,
                                name=F,
-                               labelOdd){
+                               labelOdd=""){
 
 	logging::logdebug("Plotting correlation.")
 
@@ -322,5 +322,6 @@ function(input, output, session) {
                                         "left",
                                         "bottom"
                                        )
-              })
+              }
+            )
 }
