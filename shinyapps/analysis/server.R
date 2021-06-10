@@ -92,7 +92,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   )
 
   logging::logdebug("Plotting REPIN population size.")
-  p=facet_plot(p2,
+  p5=facet_plot(p2,
                 panel='REPIN population size',
                 data=popSize,
                 geom=geom_segment,
