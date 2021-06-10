@@ -12,6 +12,7 @@ suppressMessages(library(cowplot))
 suppressMessages(library(logging))
 suppressMessages(library(plotly))
 suppressMessages(library(shiny))
+
 # Define plot routine
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug("Enter function 'plotREPINs' with ")
@@ -74,11 +75,11 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
       xlim_tree(0.045)+
       geom_tiplab()
 
-  logging::logdebug("Setting up facet plot p2.")
-  # colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
+  logging::logdebug("Plotting RAYTs.")
+  colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
   d <- association[association$repintype==type,]
   logging::logdebug(d)
-  p2=facet_plot(p,
+  p <- facet_plot(p,
                 panel='RAYTs',
                 data=d,
                 geom=geom_segment,
@@ -86,38 +87,12 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     xend=rayts,
                     y=y,
                     yend=y),
-                size=bs#,
-                #color=colorDF[colorDF$repRAYT==type,2]
+                size=bs,
+                color=colorDF[colorDF$repRAYT==type,2]
   )
 
-  # return(p2)
-
-#  p3=facet_plot(p2,
-#                panel='Number of \nREPIN clusters',
-#                data=popSize,
-#                geom=geom_segment,
-#                aes(x=0,
-#                    xend=numClus,
-#                    y=y,
-#                    yend=y),
-#                size=bs,
-#                color=colorBars
-#  )
-
-#  p4=facet_plot(p3,
-#                panel='Difference \nRAYTs-REPIN \nclusters',
-#                data=popSize,
-#                geom=geom_segment,
-#                aes(x=0,
-#                    xend=diffRAYTCluster,
-#                    y=y,
-#                    yend=y),
-#                size=bs,
-#                color=colorBars
-#  )
-
-  logging::logdebug("Setting up facet plot p5.")
-  p5=facet_plot(p2,
+  logging::logdebug("Plotting REPIN population size.")
+  p=facet_plot(p2,
                 panel='REPIN population size',
                 data=popSize,
                 geom=geom_segment,
@@ -125,20 +100,20 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     xend=repins,
                     y=y,
                     yend=y),
-                size=bs#,
-                #color=colorDF[colorDF$repRAYT==type,2]
+                size=bs,
+                color=colorDF[colorDF$repRAYT==type,2]
   )
 
-  logging::logdebug("Setting up facet plot p6.")
+  logging::logdebug("Adding theme.")
   p6=p5+theme_tree2()
 
-  logging::logdebug("Setting up facet plot p7.")
+  logging::logdebug("Adding labels.")
   p7=facet_labeller(p6,
                     c(Tree="",
                       RAYTs="Number of RAYTs")
   )
 
-  logging::logdebug("Setting up facet plot p8.")
+  logging::logdebug("Customizing theme.")
   p8 = p7+
         theme(strip.text.x=element_text(hjust=0),
               strip.background = element_rect(color="black",
@@ -147,10 +122,11 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
               )
         )
 
-  logging::logdebug("Finalizing facet plot p8.")
+  logging::logdebug("Setting font size.")
   p8 = p8 +
           theme(text=element_text(size=fontsize)) +
           themeCurr
+
   logging::logdebug("Done, returning from function 'plotREPIN'")
   return(p8)
 }
