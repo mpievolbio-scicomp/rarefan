@@ -305,8 +305,10 @@ function(input, output, session) {
               treefile <- 'tmptree.nwk'
               logging::logdebug(paste0("treefile = ", treefile))
 
+              logging::logdebug("Calling 'drawRAYTphylogeny'.")
               output$rayt_tree <-  drawRAYTphylogeny(out_dir)
 
+              logging::logdebug("Calling 'plotREPINs'.")
               output$repin_tree <-  plotREPINs(out_dir,
                                  treefile,
                                  input$rayt,
@@ -314,6 +316,7 @@ function(input, output, session) {
                                  2,
                                  fontsize
                       )
+              logging::logdebug("Calling 'plotCorrelationSingle'.")
               output$correlations <-  plotCorrelationSingle(out_dir,
                                         input$rayt,
                                         c(0,1),
