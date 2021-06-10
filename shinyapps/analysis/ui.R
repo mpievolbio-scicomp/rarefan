@@ -22,13 +22,13 @@ fluidPage(
 							),
 				mainPanel(
 					h4("RAYT tree"),
-					plotOutput(outputId = 'rayt_tree'),
+					plotOutput(outputId = 'rayt_tree', width="60%", height="300px" ),
 					hr(),
 					h4("REPINs"),
-					plotOutput(outputId = 'repin_tree'),
+					plotOutput(outputId = 'repin_tree', width="60%", height="300px" ),
 					hr(),
 					h4("Correlation"),
-					plotOutput(outputId = 'correlations')
+					plotOutput(outputId = 'correlations', width="60%", height="300px" )
 				)
 		)
 )

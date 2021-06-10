@@ -287,7 +287,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Font size
-fontsize=14
+fontsize=16
 
 function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
