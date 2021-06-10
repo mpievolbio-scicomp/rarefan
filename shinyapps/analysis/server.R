@@ -87,8 +87,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     xend=rayts,
                     y=y,
                     yend=y),
-                size=bs,
-                color=colorDF[colorDF$repRAYT==type,2]
+                size=bs#,
+                # color=colorDF[colorDF$repRAYT==type,2]
   )
 
   logging::logdebug("Plotting REPIN population size.")
@@ -100,8 +100,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     xend=repins,
                     y=y,
                     yend=y),
-                size=bs,
-                color=colorDF[colorDF$repRAYT==type,2]
+                size=bs#,
+                # color=colorDF[colorDF$repRAYT==type,2]
   )
 
   logging::logdebug("Adding theme.")
