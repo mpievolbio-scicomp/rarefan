@@ -239,12 +239,11 @@ def submit():
 
         else:
             distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-            andi_command = "ln -s {} {}".format(os.path.join(session['outdir'], distfile),
-                                                os.path.join(session['outdir'], 'tmptree.dist'))
+            andi_command = "echo 'Not running andi, tree file was uploaded.'")
             logging.info("andi command: %s", andi_command)
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            clustdist_command = "ln -s {} {}".format(os.path.join(session['outdir'], treefile),
+            clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
                                                      os.path.join(session['outdir'], 'tmptree.nwk'))
             logging.info("clustdist command: %s", clustdist_command)
 
