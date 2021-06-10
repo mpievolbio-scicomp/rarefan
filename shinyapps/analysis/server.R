@@ -214,14 +214,17 @@ plotCorrelationSingle=function(folder,type,
 	logging::logdebug("Setting up ggplots.")
     p=ggplot(t,
              aes(x=propMaster,
-                 y=numRepin,col=factor(color)))+
-            scale_color_manual(values=cols,guide=FALSE)+
-            geom_point()
+                 y=numRepin,
+                 col=factor(color)
+             )
+    ) +
+      scale_color_manual(values=cols,guide=FALSE) +
+      geom_point() +
 
 	logging::logdebug("Adding limits, theme, and axis labels.")
     p=p+xlim(xlim)+
         ylim(ylim)+
-        theme+
+        theme(legend.position="left") +
         xlab("Proportion master sequence (~Replication rate)")+
         ylab("REPIN population size")
 
