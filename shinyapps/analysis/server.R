@@ -79,7 +79,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
   d <- association[association$repintype==type,]
   logging::logdebug(d)
-  p <- facet_plot(p,
+  p2 <- facet_plot(p,
                 panel='RAYTs',
                 data=d,
                 geom=geom_segment,
