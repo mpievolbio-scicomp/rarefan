@@ -253,8 +253,8 @@ drawRAYTphylogeny=function(data_dir){
   p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
-  # p <-  p + scale_color_manual(values=cols,guide=FALSE)
-
+  logging::logdebug(cols)
+  p <-  p + scale_color_manual(values=cols,guide=FALSE)
   return(p)
 }
 
