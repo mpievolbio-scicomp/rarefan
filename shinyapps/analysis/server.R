@@ -134,7 +134,10 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 #type: REPIN type that is supposed to be viewed (_*, * is the type)
 determineColor=function(associationFile){
   ass=read.delim(associationFile,header=TRUE)
-  colors=c("blue","red","green","purple","teal","orange")
+  # colors=c("blue","red","green","purple","teal","orange")
+  colors=c("#45BA55", "#5545BA", "#BA5545",
+           "#B6BD42", "#42B6BD", "#BD42B6")
+
   colorAss=c()
   for(i in 1:length(ass[,1])){
      rayt=paste0(ass[i,1],"_",ass[i,2])
