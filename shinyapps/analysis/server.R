@@ -333,5 +333,5 @@ function(input, output, session) {
                                       "bottom"
                 )
               })
-            )
+            })
 }
