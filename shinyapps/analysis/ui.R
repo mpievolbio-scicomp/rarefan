@@ -1,5 +1,4 @@
 suppressMessages(library(shiny))
-suppressMessages(library(plotly))
 
 fluidPage(
 		
@@ -23,13 +22,13 @@ fluidPage(
 							),
 				mainPanel(
 					h4("RAYT tree"),
-					plotlyOutput(outputId = 'rayt_tree'),
+					plotOutput(outputId = 'rayt_tree'),
 					hr(),
 					h4("REPINs"),
-					plotlyOutput(outputId = 'repin_tree'),
+					plotOutput(outputId = 'repin_tree'),
 					hr(),
 					h4("Correlation"),
-					plotlyOutput(outputId = 'correlations')
+					plotOutput(outputId = 'correlations')
 				)
 		)
 )

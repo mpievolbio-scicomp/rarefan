@@ -10,7 +10,6 @@ suppressMessages(library(stringr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
-suppressMessages(library(plotly))
 suppressMessages(library(shiny))
 
 # Define plot routine
@@ -39,11 +38,11 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   association=read.table(assoc_file,header=TRUE)
 
   logging::logdebug(colnames(association))
-  
+
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
-		  error=function(e)	
+		  error=function(e)
 		  logging::logwarn("File %s is empty.", data_file)
           )
 
@@ -179,27 +178,27 @@ plotCorrelationSingle=function(folder,type,
                                repinThreshold=0,
                                name=F,
                                labelOdd){
-						  
+
 	logging::logdebug("Plotting correlation.")
 
 	data_file = paste0(folder,"/presAbs_",type,".txt")
 	logging::logdebug("Reading data from %s.", data_file)
 	t=tryCatch(read.table(data_file,sep="\t", skip=1),
-		  error=function(e)	
+		  error=function(e)
 		  logging::logwarn("File %s is empty.", data_file)
 	)
-  
+
 	if(typeof(t) == "logical") {
 		return(ggplot())
 	}
 
     t$propMaster=t[,5]/t[,9]
     t$numRepin=t[,9]
-	
+
 	assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
 	logging::logdebug("Reading association data from %s.", assoc_file)
     association=read.table(assoc_file,header=TRUE)
-	
+
 	logging::logdebug("Preparing data structures and colors.")
     association=association[association$repintype==type,]
     t$color=association[match(t[,1],association[,1]),]$rayts
@@ -208,7 +207,7 @@ plotCorrelationSingle=function(folder,type,
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
     cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
     cols[cols==0]="black"
-	
+
 	logging::logdebug("Setting up ggplots.")
     p=ggplot(t,
              aes(x=propMaster,
@@ -222,18 +221,18 @@ plotCorrelationSingle=function(folder,type,
         theme+
         xlab("Proportion master sequence (~Replication rate)")+
         ylab("REPIN population size")
-	
+
 	logging::logdebug("Adding theme.")
     p=p+theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
-	
+
 	logging::logdebug("Done, return from 'plotCorrelations'.")
     return(p)
 }
 
 drawRAYTphylogeny=function(data_dir){
-	
+
   logging::loginfo("Drawing RAYT phylogeny.")
-	
+
   raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
   raytseqs=readDNAStringSet(raytseqFile,format="fasta")
   aln=muscle(raytseqs)
@@ -252,7 +251,7 @@ drawRAYTphylogeny=function(data_dir){
   p <- ggtree(nwk)
   tree_data <- p$data
   logging::logdebug(tree_data)
-  p <- p %<+% onlyRAYTs + geom_tiplab(aes(colour=color))
+  p <- p %<+% onlyRAYTs + geom_tiplab(aes(colour=color, ))
   # cols <- onlyRAYTs$color
   # names(cols) <- onlyRAYTs$color
   # logging::logdebug(cols)
@@ -305,22 +304,16 @@ function(input, output, session) {
               treefile <- 'tmptree.nwk'
               logging::logdebug(paste0("treefile = ", treefile))
 
-              output$rayt_tree <- renderPlotly({
-          			drawRAYTphylogeny(out_dir)
-          		})
-              output$repin_tree <- renderPlotly({
-          			plotREPINs(out_dir,
+              output$rayt_tree <-  drawRAYTphylogeny(out_dir)
+
+              output$repin_tree <-  plotREPINs(out_dir,
                                  treefile,
                                  input$rayt,
                                  "#40e0d0",
                                  2,
                                  fontsize
                       )
-              }
-              )
-              output$correlations <- renderPlotly(
-                  {
-                      plotCorrelationSingle(out_dir,
+              output$correlations <-  plotCorrelationSingle(out_dir,
                                         input$rayt,
                                         c(0,1),
                                         c(0,320),
@@ -329,8 +322,5 @@ function(input, output, session) {
                                         "left",
                                         "bottom"
                                        )
-                  }
-              )
-              }
-              )
+              })
 }
