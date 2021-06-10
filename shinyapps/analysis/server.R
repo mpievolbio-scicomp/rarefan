@@ -216,23 +216,6 @@ plotCorrelationSingle=function(folder,type,
             scale_color_manual(values=cols,guide=FALSE)+
             geom_point()
 
- #   p=p+geom_smooth(method=lm,
- #                   se=FALSE,
- #                   fullrange=TRUE,
- #                   formula=y~x,
- #                   show.legend=F
- #   )
-
- #   p=p+stat_fit_glance(method = 'lm',
- #                       method.args=list(formula=y~x),
- #                       aes(label = paste("P-value = ",
- #                                         signif(..p.value..,
- #                                                digits = 2),
- #                                         sep = "")),
- #                       label.x=pvLabelX,
- #                       label.y=pvLabelY,
- #                       size = fontsize/3)
-
 	logging::logdebug("Adding limits, theme, and axis labels.")
     p=p+xlim(xlim)+
         ylim(ylim)+
@@ -259,8 +242,14 @@ drawRAYTphylogeny=function(data_dir){
   system(paste0("phyml -i ",raytAlnFile," -m GTR"))
   raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
   nwk=read.tree(raytTreeFile)
+  logging::logdebug(colnames(nwk))
+  logging::logdebug(nwk)
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
+  logging::logdebug(colnames(colorDF))
+  logging::logdebug(colorDF)
   onlyRAYTs=colorDF[colorDF[,1]%in%nwk$tip.label,]
+  logging::logdebug(colnames(onlyRAYTs))
+  logging::logdebug(onlyRAYTs)
   p=ggtree(nwk)
   p=p%<+%onlyRAYTs+geom_tiplab(aes(color=color))
   cols=onlyRAYTs$color
@@ -271,7 +260,6 @@ drawRAYTphylogeny=function(data_dir){
   # ggsave(paste0(data_dir,"/raytTree.png"))
 
   return(p)
-  
 }
 
 logging::basicConfig()
