@@ -87,8 +87,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     xend=rayts,
                     y=y,
                     yend=y),
-                size=bs#,
-                # color=colorDF[colorDF$repRAYT==type,2]
+                size=bs,
+                color=colorDF[colorDF$repRAYT==type,2]
   )
 
   logging::logdebug("Plotting REPIN population size.")
@@ -149,7 +149,7 @@ determineColor=function(associationFile){
      }
      temp=data.frame(repRAYT=rayt,color=c)
      colorAss=rbind(colorAss,temp)
-     
+
   }
   groups=unique(ass[,3])
   for(i in groups){
