@@ -306,26 +306,32 @@ function(input, output, session) {
               logging::logdebug(paste0("treefile = ", treefile))
 
               logging::logdebug("Calling 'drawRAYTphylogeny'.")
-              output$rayt_tree <-  drawRAYTphylogeny(out_dir)
+              output$rayt_tree <-  renderPlot({
+                drawRAYTphylogeny(out_dir)
+              })
 
               logging::logdebug("Calling 'plotREPINs'.")
-              output$repin_tree <-  plotREPINs(out_dir,
-                                 treefile,
-                                 input$rayt,
-                                 "#40e0d0",
-                                 2,
-                                 fontsize
-                      )
+              output$repin_tree <-  renderPlot({
+                plotREPINs(out_dir,
+                           treefile,
+                           input$rayt,
+                           "#40e0d0",
+                           2,
+                           fontsize
+                )
+              })
+
               logging::logdebug("Calling 'plotCorrelationSingle'.")
-              output$correlations <-  plotCorrelationSingle(out_dir,
-                                        input$rayt,
-                                        c(0,1),
-                                        c(0,320),
-                                        theme,
-                                        fontsize,
-                                        "left",
-                                        "bottom"
-                                       )
-              }
+              output$correlations <-  renderPlot({
+                plotCorrelationSingle(out_dir,
+                                      input$rayt,
+                                      c(0,1),
+                                      c(0,320),
+                                      theme,
+                                      fontsize,
+                                      "left",
+                                      "bottom"
+                )
+              })
             )
 }
