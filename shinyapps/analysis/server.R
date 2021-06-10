@@ -242,22 +242,18 @@ drawRAYTphylogeny=function(data_dir){
   system(paste0("phyml -i ",raytAlnFile," -m GTR"))
   raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
   nwk=read.tree(raytTreeFile)
-  logging::logdebug(colnames(nwk))
   logging::logdebug(nwk)
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
   logging::logdebug(colnames(colorDF))
   logging::logdebug(colorDF)
-  onlyRAYTs=colorDF[colorDF[,1]%in%nwk$tip.label,]
+  onlyRAYTs <- colorDF[colorDF[,1] %in% nwk$tip.label, ]
   logging::logdebug(colnames(onlyRAYTs))
   logging::logdebug(onlyRAYTs)
-  p=ggtree(nwk)
-  p=p%<+%onlyRAYTs+geom_tiplab(aes(color=color))
-  cols=onlyRAYTs$color
-  names(cols)=onlyRAYTs$color
-  p = p + scale_color_manual(values=cols,guide=FALSE)
-
-  logging::loginfo("Saving RAYT phylogeny plots.")
-  # ggsave(paste0(data_dir,"/raytTree.png"))
+  p <- ggtree(nwk)
+  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
+  cols <- onlyRAYTs$color
+  names(cols) <- onlyRAYTs$color
+  # p <-  p + scale_color_manual(values=cols,guide=FALSE)
 
   return(p)
 }
