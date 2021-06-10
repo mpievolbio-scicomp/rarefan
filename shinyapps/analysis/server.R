@@ -252,8 +252,6 @@ drawRAYTphylogeny=function(data_dir){
   p <- ggtree(nwk)
   tree_data <- p$data
   logging::logdebug(tree_data)
-  tree_data <- cbind(tree_data, onlyRAYTs)
-  logging::logdebug(tree_data)
   p <- p %<+% onlyRAYTs + geom_tiplab(aes(colour=color))
   # cols <- onlyRAYTs$color
   # names(cols) <- onlyRAYTs$color
