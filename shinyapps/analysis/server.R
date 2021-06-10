@@ -250,11 +250,11 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug(colnames(onlyRAYTs))
   logging::logdebug(onlyRAYTs)
   p <- ggtree(nwk)
-  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
-  cols <- onlyRAYTs$color
-  names(cols) <- onlyRAYTs$color
-  logging::logdebug(cols)
-  p <-  p + scale_color_manual(values=cols,guide=FALSE)
+  # p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
+  # cols <- onlyRAYTs$color
+  # names(cols) <- onlyRAYTs$color
+  # logging::logdebug(cols)
+  # p <-  p + scale_color_manual(values=cols,guide=FALSE)
   return(p)
 }
 
