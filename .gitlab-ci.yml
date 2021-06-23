@@ -11,7 +11,7 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - apt-get update -y
   - apt-get install git -y
-  - apt-get install cmake gcc make build-essential -y
+  - apt-get install gcc make build-essential -y
 
 build:
   stage: build
@@ -23,9 +23,9 @@ build:
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
+    - CC=/usr/bin/gcc cmake -D-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - conda deactivate
     - conda deactivate
-    - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - make
     - make install
     - conda activate repinpop
