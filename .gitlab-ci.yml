@@ -8,7 +8,6 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 before_script:
-  - apt install cmake
   - export GRADLE_USER_HOME=`pwd`/.gradle
 
 build:
@@ -16,15 +15,14 @@ build:
   script:
     - conda env create --file environment.yml
     - conda activate repinpop
+    - conda install cmake
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
-    - conda deactivate
     - mkdir build
     - cd build
     - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX
     - make
     - make install
     - cd ..
-    - conda activate repinpop
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
   cache:
