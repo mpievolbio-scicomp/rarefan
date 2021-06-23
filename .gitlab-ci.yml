@@ -12,7 +12,7 @@ before_script:
   - source ~/.bashrc
   - conda activate repinpop
   - lscpu
-  - free -h
+  - lsmem
 
 cache:
     key: "$CI_COMMIT_REF_NAME"
