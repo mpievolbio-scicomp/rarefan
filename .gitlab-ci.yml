@@ -16,7 +16,7 @@ before_script:
 build:
   stage: build
   script:
-    - conda env create --file=environment.yml
+    - conda env update --file=environment.yml
     - conda init bash
     - source ~/.bashrc
     - conda activate repinpop
@@ -36,6 +36,7 @@ build:
     key: "$CI_COMMIT_REF_NAME"
     policy: push
     paths:
+      - /usr/local/envs/repinpop
       - REPIN_ecology/REPIN_ecology/build
       - .gradle
 
