@@ -9,7 +9,6 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - apt-get install git
 
 build:
   stage: build
@@ -18,6 +17,7 @@ build:
     - conda init bash
     - source ~/.bashrc
     - conda activate repinpop
+    - conda install git -c conda-forge
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
