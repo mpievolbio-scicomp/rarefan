@@ -8,7 +8,8 @@ variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
 before_script:
-  - export GRADLE_USER_HOME=`pwd`/.gradle
+  - conda init bash
+  - source ~/.bashrc
   - conda activate repinpop
 
 # cache:
@@ -38,5 +39,4 @@ build:
 test:
   stage: test
   script: 
-    - conda activate repinpop
     - ./run_test.sh -d neisseria_small
