@@ -13,7 +13,7 @@ before_script:
 build:
   stage: build
   script:
-    - conda install --file environment.yml
+    - conda env update --file=environment.yml
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
