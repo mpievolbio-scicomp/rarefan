@@ -77,12 +77,12 @@ if [[ $dataset == *"chlororaphis"* ]]; then
 fi
 echo $java_command
 
-exec $java_command &&\
-andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${treename}.dist &&\
-clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk &&\
-Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
-display ${RUN_OUT_DIR}/repins.png &&\
-display ${RUN_OUT_DIR}/correlations.png &&\
+exec $java_command 2>&1 &&\
+# andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${treename}.dist &&\
+# clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk &&\
+# Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
+# display ${RUN_OUT_DIR}/repins.png &&\
+#display ${RUN_OUT_DIR}/correlations.png &&\
 status=0
 
 # rm -rf $RUN_DATA_DIR

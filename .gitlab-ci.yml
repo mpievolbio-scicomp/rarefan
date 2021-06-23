@@ -38,4 +38,4 @@ build:
 test:
   stage: test
   script: 
-    - ./run_test.sh -d neisseria_small
+    - ./run_test.sh -d neisseria_mini
