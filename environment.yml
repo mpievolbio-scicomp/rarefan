@@ -7,9 +7,7 @@ channels:
 dependencies:
   - libstdcxx-ng
   - ipywidgets>=7.5
-  - openjdk=11.0.8
-  - jupyter=1.0.0
-  - voila=0.1.21
+  - openjdk>=11.0.8
   - cmake>=3.12
   - blast=2.10
   - mcl=14.137
@@ -28,7 +26,6 @@ dependencies:
   - r-vctrs>=0.3.7
   - r-lifecycle>=1.0.0
   - r-shiny
-  - r-plotly
   - gradle
   - biopython
   - email_validator
