@@ -10,7 +10,7 @@ variables:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - apt-get update -y
-  - apt-get install git gcc make build-essential autoconf libgsl-dev gsl-bin libgslcblas0 -y
+  - apt-get install git gcc make build-essential autoconf libgsl-dev gsl-bin -y
 
 build:
   stage: build
