@@ -10,8 +10,7 @@ variables:
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - apt-get update -y
-  - apt-get install git -y
-  - apt-get install gcc make build-essential -y
+  - apt-get install git gcc make build-essential autoconf -y
 
 build:
   stage: build
