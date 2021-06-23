@@ -9,6 +9,7 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
+  - apt update -y
   - apt install git
   - apt install git cmake gcc make build-essential
 
