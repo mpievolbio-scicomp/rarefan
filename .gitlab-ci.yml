@@ -19,7 +19,7 @@ build:
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX
+    - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - make
     - make install
     - cd ..
