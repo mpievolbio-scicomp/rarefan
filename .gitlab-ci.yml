@@ -11,21 +11,22 @@ before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
   - apt-get update -y
   - apt-get install git gcc make build-essential autoconf libgsl-dev gsl-bin andi -y
+  - conda env update --file=environment.yml
+  - conda init bash
+  - source ~/.bashrc
+  - conda activate repinpop
 
 cache:
     key: "$CI_COMMIT_REF_NAME"
-    policy: pull
     paths:
+      - ~/.bashrc
       - /usr/local/envs/repinpop
       - build
       - REPIN_ecology/REPIN_ecology/build
+
 build:
   stage: build
   script:
-    - conda env update --file=environment.yml
-    - conda init bash
-    - source ~/.bashrc
-    - conda activate repinpop
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
