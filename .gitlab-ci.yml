@@ -1,0 +1,45 @@
+image: conda/miniconda3
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+before_script:
+  - apt install cmake
+  - export GRADLE_USER_HOME=`pwd`/.gradle
+
+build:
+  stage: build
+  script:
+    - conda env create --file environment.yml
+    - conda activate repinpop
+    - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
+    - conda deactivate
+    - mkdir build
+    - cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX
+    - make
+    - make install
+    - cd ..
+    - conda activate repinpop
+    - cd REPIN_ecology/REPIN_ecology 
+    - gradle build
+  cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: push
+    paths:
+      - REPIN_ecology/REPIN_ecology/build
+      - .gradle
+
+# test:
+#   stage: test
+#   script: gradle check
+#   cache:
+#     key: "$CI_COMMIT_REF_NAME"
+#     policy: pull
+#     paths:
+#       - build
+#       - .gradle
