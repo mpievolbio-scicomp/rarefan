@@ -11,6 +11,8 @@ before_script:
   - conda init bash
   - source ~/.bashrc
   - conda activate repinpop
+  - lscpu
+  - free -h
 
 cache:
     key: "$CI_COMMIT_REF_NAME"
