@@ -1,4 +1,4 @@
-image: conda/miniconda3
+image: debian:buster
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -9,6 +9,8 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
+  - apt install git
+  - apt install git cmake gcc make build-essential
 
 build:
   stage: build
@@ -17,13 +19,15 @@ build:
     - conda init bash
     - source ~/.bashrc
     - conda activate repinpop
-    - conda install git -c conda-forge
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
+    - conda deactivate
+    - conda deactivate
     - cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - make
     - make install
+    - conda activate repinpop
     - cd ..
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
