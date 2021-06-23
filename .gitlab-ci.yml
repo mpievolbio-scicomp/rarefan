@@ -13,7 +13,10 @@ before_script:
 build:
   stage: build
   script:
-    - conda env update --file=environment.yml
+    - conda env create --file=environment.yml
+    - conda init bash
+    - source ~/.bashrc
+    - conda activate repinpop
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
