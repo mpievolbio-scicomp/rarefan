@@ -1,4 +1,4 @@
-image: miniconda3:latest
+image: miniconda3
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
@@ -9,9 +9,9 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - apt update -y
-  - apt install git -y
-  - apt install cmake gcc make build-essential -y
+  - apt-get update -y
+  - apt-get install git -y
+  - apt-get install cmake gcc make build-essential -y
 
 build:
   stage: build
