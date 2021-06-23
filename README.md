@@ -1,7 +1,11 @@
 # RepinPop
 
 ## Compilers and build system
-Make sure, a C++ compiler and the `autoconf` utility are installed on your system.
+The following packages (linux, debian based distro) are required:
+* gcc (or alternativ C compiler)
+* libgsl-dev 
+* andi
+* build-essential
 
 ## Create the conda environment
 
@@ -28,7 +32,8 @@ echo $CONDA_PREFIX > conda_prefix.txt
 ## Install 3rd party libraries through cmake.
 Not all dependencies are available on the conda archives. `andi` [Efficient
 Estimation of Evolutionary Distances](https://github.com/EvolBioInf/andi.git),
-it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git), and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. But first, we have to deactivate the conda environment. Make sure you have GSL
+it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git),
+and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. But first, we have to deactivate the conda environment. Make sure you have GSL
 installed in your system or add the GSL libraries and header file locations to your environment.
 ```
 conda deactivate

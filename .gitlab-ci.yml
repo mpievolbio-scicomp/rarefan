@@ -26,7 +26,6 @@ build:
     - conda deactivate
     - conda deactivate
     - make
-    - make install
     - conda activate repinpop
     - cd ..
     - cd REPIN_ecology/REPIN_ecology 
