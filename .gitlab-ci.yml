@@ -12,6 +12,13 @@ before_script:
   - apt-get update -y
   - apt-get install git gcc make build-essential autoconf libgsl-dev gsl-bin andi -y
 
+cache:
+    key: "$CI_COMMIT_REF_NAME"
+    policy: pull
+    paths:
+      - /usr/local/envs/repinpop
+      - build
+      - REPIN_ecology/REPIN_ecology/build
 build:
   stage: build
   script:
@@ -31,23 +38,9 @@ build:
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
     - cd ../..
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: push
-    paths:
-      - /usr/local/envs/repinpop
-      - REPIN_ecology/REPIN_ecology/build
-      - .gradle
 
 test:
   stage: test
   script: 
     - conda activate repinpop
     - ./run_test.sh -d neisseria_small
-  cache:
-    key: "$CI_COMMIT_REF_NAME"
-    policy: pull
-    paths:
-      - /usr/local/envs/repinpop
-      - build
-      - .gradle
