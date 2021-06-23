@@ -9,7 +9,7 @@ variables:
 
 before_script:
   - export GRADLE_USER_HOME=`pwd`/.gradle
-  - sudo apt-get install git
+  - apt-get install git
 
 build:
   stage: build
