@@ -1,10 +1,10 @@
 #! /bin/bash
-set -o errexit -o pipefail -o noclobber -o nounset
+set -e
 
 ! getopt --test > /dev/null
 
 if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
-    echo 'I’m sorry, $(getopt --test) failed in this environment.'
+    echo 'I am sorry, $(getopt --test) failed in this environment.'
     exit 1
 fi
 
@@ -49,41 +49,22 @@ rsync -uv test/data/yafM_Ecoli.faa ${RUN_DATA_DIR}
 rsync -uv test/data/yafM_SBW25.faa ${RUN_DATA_DIR}
 
 status=1
+if [[ ! $dataset == *"chlororaphis"* ]]; then
 treename="tmptree"
-java_command="java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
-    ${RUN_DATA_DIR}\
-    ${RUN_OUT_DIR}\
-    Nmen_2594.fas\
-    55 21\
-    ${RUN_DATA_DIR}/yafM_Ecoli.faa\
-    ${treename}.nwk\
-    1e-30\
-    true\
-    "
-
+java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} Nmen_2594.fas 55 21 ${RUN_DATA_DIR}/yafM_Ecoli.faa ${treename}.nwk 1e-30 true
+fi
 if [[ $dataset == *"chlororaphis"* ]]; then
     treename="chlororaphis"
     RUN_OUT_DIR=${RUN_DATA_DIR}/test_out
-    java_command="java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
-        ${RUN_DATA_DIR}/in\
-        ${RUN_OUT_DIR}\
-        chlTAMOak81.fas\
-        55 21\
-        ${RUN_DATA_DIR}/yafM_SBW25.faa\
-        ${treename}.nwk\
-        1e-30\
-        true\
-    "
+    java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR}/in ${RUN_OUT_DIR} chlTAMOak81.fas 55 21 ${RUN_DATA_DIR}/yafM_SBW25.faa ${treename}.nwk 1e-30 true
 fi
-echo $java_command
 
-exec $java_command 2>&1 &&\
-# andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${treename}.dist &&\
-# clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk &&\
+andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${treename}.dist
+clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk
+
 # Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
 # display ${RUN_OUT_DIR}/repins.png &&\
 #display ${RUN_OUT_DIR}/correlations.png &&\
-status=0
 
 # rm -rf $RUN_DATA_DIR
 exit ${status}
