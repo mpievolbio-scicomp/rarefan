@@ -1,4 +1,4 @@
-image: mpievolbioscicomp/repinpop
+image: mpievolbioscicomp/repinpop_base
 
 # Disable the Gradle daemon for Continuous Integration servers as correctness
 # is usually a priority over speed in CI environments. Using a fresh
