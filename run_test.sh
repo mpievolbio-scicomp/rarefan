@@ -48,10 +48,9 @@ rsync -ruvL ${TEST_DATA_DIR}/ ${RUN_DATA_DIR}/
 rsync -uv test/data/yafM_Ecoli.faa ${RUN_DATA_DIR}
 rsync -uv test/data/yafM_SBW25.faa ${RUN_DATA_DIR}
 
-status=1
 if [[ ! $dataset == *"chlororaphis"* ]]; then
-treename="tmptree"
-java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} Nmen_2594.fas 55 21 ${RUN_DATA_DIR}/yafM_Ecoli.faa ${treename}.nwk 1e-30 true
+	treename="tmptree"
+	java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} Nmen_2594.fas 55 21 ${RUN_DATA_DIR}/yafM_Ecoli.faa ${treename}.nwk 1e-30 true
 fi
 if [[ $dataset == *"chlororaphis"* ]]; then
     treename="chlororaphis"
@@ -67,4 +66,3 @@ clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk
 #display ${RUN_OUT_DIR}/correlations.png &&\
 
 # rm -rf $RUN_DATA_DIR
-exit ${status}
