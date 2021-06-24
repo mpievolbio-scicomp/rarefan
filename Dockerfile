@@ -7,6 +7,7 @@ RUN apt-get install git make gcc build-essential libgsl-dev gsl-bin andi -y
 
 RUN conda init bash
 
+COPY environment.yml .
 RUN conda env create -f environment.yml
 
 SHELL ["conda", "run", "-n", "repinpop", "/bin/bash", "-c"]

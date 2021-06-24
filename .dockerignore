@@ -1,9 +1,9 @@
-app
+app/
 memon.sh
 notebooks
-profiling
+profiling/
 project.ini
-__pycache__
+__pycache__/
 README.md
 Rplots.pdf
 Session.vim
