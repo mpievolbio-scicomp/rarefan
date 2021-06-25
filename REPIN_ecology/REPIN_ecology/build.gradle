@@ -36,12 +36,11 @@ sourceSets {
 jar {
     manifest {
         attributes (
-            'Class-Path': configurations.compile.collect { it.getName() }.join(' '),
+            'Class-Path': '.',
             'Main-Class': 'REPINpopulations.DeterminePopulationFrequencies'
                     )
             }
         }
 
 // Set minimum java version. (11 at time of writing.)
-apply plugin: 'java'
-sourceCompatibility = 1.11
+//sourceCompatibility = 1.11

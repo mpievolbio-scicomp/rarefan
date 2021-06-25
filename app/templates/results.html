@@ -13,26 +13,20 @@
 		<p>
 		<h1>{{title}}</h1>
 		</p>
-        {% if status in [111, 1111] %}
-            <h2> Figures </h2>
-            <p>
-                <img src="/static/uploads/{{run_id}}/out/repins.png" alt="REPINs" width="400" height="400">
-            </p>
-            <p>
-                <img src="/static/uploads/{{run_id}}/out/correlations.png" alt="Correlations" width="400" height="400">
-            </p>
-        {% endif %}
         {% if status > 10 %}
-            <h2> Browse data </h2>
+            <h2 topmargin=800px> Browse data </h2>
             <p>
                 <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
             </p>
         {% endif %}
-        {% if status > 1000     %}
+        {% if status > 100     %}
             <h2> Download data </h2>
             <p>
                 <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
             </p>
+        {% endif %}
+        {% if status in [11, 111] %}
+        	<a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a> 
         {% endif %}
     </body>
 {% endblock %}

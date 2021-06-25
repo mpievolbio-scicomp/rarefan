@@ -72,12 +72,6 @@ def upload():
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
 
-        session['tmpdir'] = tempfile.mkdtemp(
-            suffix=None,
-            prefix="",
-            dir=app.config["UPLOAD_DIR"]
-        )
-
         dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
         aa_extensions = ['fa', 'faa']
         tree_extensions = ['nwk']
@@ -161,6 +155,7 @@ def submit():
         logger.info("outdir: %s", session['outdir'])
         logger.info("reference_strain: %s", session['reference_strain'])
         logger.info("treefile: %s", session['treefile'])
+        logger.info("email: %s", session['email'])
 
         # copy query rayt to working dir
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
@@ -248,7 +243,6 @@ def submit():
             "{} && touch {}".format(java_command, java_stamp),
             "{} && touch {}".format(andi_command, andi_stamp),
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
-            "{} && touch {}".format(R_command, R_stamp),
             "{} && touch {}".format(zip_command, zip_stamp)
         ]
 
@@ -304,7 +298,7 @@ def send_email(run_id, status_code, recipient):
     recipients = [recipient]
 
     # Job failed.
-    if status_code in [101, 1011, 1001]:
+    if status_code in [101, 10, 100]:
         email_subject = "Your RAREFAN run {0:s} has failed.".format(os.path.basename(run_id_path))
         email_body = """Hallo,
 your job on rarefan.evolbio.mpg.de with ID {0:s} has failed.
@@ -327,7 +321,7 @@ http://rarefan.evolbio.mpg.de
         recipients.append('computing@evolbio.mpg.de')
 
     # Job success.
-    elif status_code == 1111:
+    elif status_code == 111:
         email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(run_id_path))
         email_body = """Hallo,
 your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
@@ -347,10 +341,21 @@ http://rarefan.evolbio.mpg.de
     else:
         return
 
+    logger.info("Sending RAREFAN report email.")
     # Send mail to all recipients.
     for recipient in recipients:
-        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} > {3:s}'.format(email_subject,
-                                                                                email_body, recipient, os.path.join(run_id_path, 'out', 'rarefan.log'))
+        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
+            email_subject,
+            email_body,
+            recipient,
+            os.path.join(
+                run_id_path,
+                'out',
+                'rarefan.log'
+            )
+        )
+
+        logger.info("email_command = %s", email_command)
         proc = subprocess.Popen(email_command, shell=True)
     #
     # Generate email stamp.
@@ -375,10 +380,9 @@ def results():
             # Check if the run has finished.
             is_started = ".start.stamp" in os.listdir(run_id_path)
             is_java_finished = ".java.stamp" in os.listdir(run_id_path)
-            is_R_finished = ".R.stamp" in os.listdir(run_id_path)
             is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
 
-            status = is_started*1 + is_java_finished*10 + is_R_finished*100 + is_zip_finished*1000
+            status = is_started*1 + is_java_finished*10 + is_zip_finished*100
             # flash("DEBUG: Status={}".format(status))
 
             if status < 1:
@@ -386,17 +390,12 @@ def results():
             elif status == 1:
                 flash("Your job {} is running, please wait for page to refresh.".format(run_id))
             elif status == 11:
-                flash("Your job {} has finished, postprocessing.".format(run_id))
-            elif status == 111:
-                flash("Your job {} and postprocessing have finished. Preparing run files for download".format(run_id))
+                flash("Your job {} is finished. Preparing run files for download".format(run_id))
             elif status == 101:
                 flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-            elif status == 1111:
+            elif status == 111:
                 flash("Your job {} has finished. Results and download links below.".format(run_id))
-            elif status == 1011:
-                flash("Your job {} has finished but postprocessing failed. In case only one sequence file was uploaded, \
-                 this is the expected behaviour. Download files below.".format(run_id))
-            elif status == 1001:
+            elif status in [10, 100]:
                 flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
             else:
                 flash("Your job {} has failed with an unexpected failure.".format(run_id))
