@@ -27,7 +27,8 @@ public class DeterminePopulationFrequencies {
 	File outFolder;
 	HashMap<String/*genomes*/,HashMap<String/*focal seed*/,Integer/*pop size*/>> results=new HashMap<String,HashMap<String,Integer>>();
 	HashSet<String> fastaExtensions=new HashSet<String>(Arrays.asList("fas","fasta","fna","fastn","fn"));
-    // Entry point.
+    int MCLThreads=1;
+	// Entry point.
 	public static void main(String args[]) {
 		// Handle wrong number of arguments.
         if(args.length<9) {
@@ -48,24 +49,25 @@ public class DeterminePopulationFrequencies {
 		File out=new File(outFolder+"/results.txt");
 		DeterminePopulationFrequencies dpf;
 		String program="tblastn";
-        
+        int MCLThreads=Integer.parseInt(args[9]);
         // legacy_blast path not given.
-		if(args.length==9) {
-			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN);
+		if(args.length==10) {
+			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN,MCLThreads);
 		    dpf.print(out);
 		}
         // legacy_blast path given.
-        else if(args.length==10) {
+        else if(args.length==11) {
 			String legacyBlastPerlLocation=args[9];
-			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN);
+			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads);
 		    dpf.print(out);
         }
     }
 	
     // Workhorse function.
-	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN){
+	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads){
 		this.inFolder=inFolder;
 		this.outFolder=outFolder;
+		this.MCLThreads=MCLThreads;
 		outFolder.mkdirs();
 		genomes=getFiles();
 		this.legacyBlastPerlLocation=legacyBlastPerlLocation;
@@ -162,7 +164,7 @@ public class DeterminePopulationFrequencies {
 				outFolder.mkdir();
 				int wl=focalSeeds[j].length();
 				
-				REPINProperties rp=new REPINProperties(outFolder,genomeID,genomes.get(i),wl,numMuts,minFrac,null,focalSeeds[j],false,analyseREPIN);
+				REPINProperties rp=new REPINProperties(outFolder,genomeID,genomes.get(i),wl,numMuts,minFrac,null,focalSeeds[j],false,analyseREPIN,MCLThreads);
 				System.out.println("Write REPINs as artemis files for "+genomeID+"...");
 
 				writeREPINArtemis(new File(outFolder+"/"+genomeID+"_largestCluster.ss"),j);
