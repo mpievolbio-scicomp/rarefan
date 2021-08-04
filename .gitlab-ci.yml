@@ -14,7 +14,7 @@ stages:
 build:
   stage: build
   script:
-    - lsmem
+    - cat /proc/meminfo
     - conda init bash
     - source ~/.bashrc
     - conda activate repinpop
