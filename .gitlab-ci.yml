@@ -34,7 +34,7 @@ build:
 test:
   stage: test
   script: 
-    - source ~/.bashrc
+    - source /root/.bashrc
     - conda activate repinpop
     - source setenv.sh
     - ./run_test.sh -d neisseria_small
