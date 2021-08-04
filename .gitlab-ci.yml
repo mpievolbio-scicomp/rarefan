@@ -7,6 +7,9 @@ image: mpievolbioscicomp/repinpop_base
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
+stages:
+  - build
+  - test
 
 build:
   stage: build
@@ -23,10 +26,16 @@ build:
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
     - cd ../..
+  artifacts:
+    paths:
+      - ~/.bashrc
+      - ${CONDA_PREFIX}/
+      - REPIN_ecology/REPIN_ecology/build/REPIN_ecology.jar
 
 test:
   stage: test
   script: 
+    - source ~/.bashrc
     - conda activate repinpop
     - source setenv.sh
     - ./run_test.sh -d neisseria_small
