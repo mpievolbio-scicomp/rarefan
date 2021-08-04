@@ -7,6 +7,11 @@ The following packages (linux, debian based distro) are required:
 * andi
 * build-essential
 
+### Install dependencies on debian based linux distros (debian, *ubuntu, mint, ...)
+```
+sudo apt install gcc libgsl-dev andi build-essential
+```
+
 ## Create the conda environment
 
 ```
@@ -30,11 +35,8 @@ echo $CONDA_PREFIX > conda_prefix.txt
 
 
 ## Install 3rd party libraries through cmake.
-Not all dependencies are available on the conda archives. `andi` [Efficient
-Estimation of Evolutionary Distances](https://github.com/EvolBioInf/andi.git),
-it's dependency `divsufsort` [A lightweight suffix-sorting library](https://github.com/y-256/libdivsufsort.git),
-and `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) are handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. But first, we have to deactivate the conda environment. Make sure you have GSL
-installed in your system or add the GSL libraries and header file locations to your environment.
+Not all dependencies are available on the conda archives. `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git)
+is handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. 
 ```
 conda deactivate
 ```
@@ -81,6 +83,21 @@ $> flask run
 ```
 
 And navigate your browser to localhost:5000 .
+
+## Testing
+### Docker
+We provide a docker container that packs all dependencies of the java backengine (java code).
+
+### Pull the container
+To pull the most recent docker container, run (in a terminal)
+```
+docker pull mpievolbioscicomp/repinpop_base
+```
+
+### Build the application in the docker container Run the test
+```
+docker run -i -t
+
 
 
 
