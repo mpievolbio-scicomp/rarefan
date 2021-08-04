@@ -29,8 +29,8 @@ build:
     - cd ../..
   artifacts:
     paths:
-      - ~/.bashrc
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+      - build/
 
 test:
   stage: test
