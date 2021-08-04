@@ -14,16 +14,3 @@ COPY environment.yml .
 
 # Create conda env in docker container.
 RUN conda env create -f environment.yml
-RUN conda activate repinpop
-
-# Build the cmake target
-RUN mkdir build
-RUN cd build
-RUN cmake -DCMAKE_INSTALL_PREFIX ${CONDA_PREFIX} ..
-RUN make
-
-# Build java
-RUN cd ../REPIN_ecology/REPIN_ecology
-RUN gradle build
-RUN cd ../../
-# SHELL ["conda", "run", "-n", "repinpop", "/bin/bash", "-c"]

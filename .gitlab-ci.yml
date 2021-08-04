@@ -7,38 +7,26 @@ image: mpievolbioscicomp/repinpop_base
 variables:
   GRADLE_OPTS: "-Dorg.gradle.daemon=false"
 
-before_script:
-  - conda init bash
-  - source ~/.bashrc
-  - conda activate repinpop
-  - lscpu
-
-cache:
-    key: "$CI_COMMIT_REF_NAME"
-    paths:
-      - /usr/local/envs/repinpop
-      - REPIN_ecology/REPIN_ecology/build
 
 build:
   stage: build
   script:
+    - conda init bash
+    - source ~/.bashrc
+    - conda activate repinpop
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
-    - CC=/usr/bin/gcc cmake -D-DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
-    - conda deactivate
-    - conda deactivate
+    - CC=/usr/bin/gcc cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - make
-    - conda activate repinpop
     - cd ..
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
     - cd ../..
-    - patch $CONDA_PREFIX/bin/legacy_blast.pl patch
-    
 
 test:
   stage: test
   script: 
+    - conda activate repinpop
     - source setenv.sh
     - ./run_test.sh -d neisseria_small
