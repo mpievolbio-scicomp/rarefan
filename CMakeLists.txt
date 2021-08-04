@@ -48,7 +48,13 @@ ExternalProject_Add(clustdist
 )
 
 # legacy_blast patch
-execute_process(COMMAND "patch ${CMAKE_INSTALL_PREFIX}/bin/legacy_blast.pl ../patch")
+add_custom_target(patch_blast ALL
+	COMMAND patch ${CMAKE_INSTALL_PREFIX}/bin/legacy_blast.pl ../patch
+)
+
 
 # provide libRlapack requested by r-ape.
-execute_process(COMMAND "ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so")
+add_custom_target(link_lapack ALL
+	COMMAND ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so
+)
+
