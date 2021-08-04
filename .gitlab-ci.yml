@@ -21,6 +21,8 @@ build:
     - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
     - mkdir build
     - cd build
+    - conda deactivate
+    - conda deactivate
     - CC=/usr/bin/gcc cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
     - cd ..
     - cd REPIN_ecology/REPIN_ecology 
@@ -34,10 +36,10 @@ build:
 test:
   stage: test
   script: 
-    - source /root/.bashrc
-    - conda activate repinpop
-    - source setenv.sh
     - cd build
     - make 
     - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
     - ./run_docker_test.sh -d neisseria_small
