@@ -22,7 +22,6 @@ build:
     - mkdir build
     - cd build
     - CC=/usr/bin/gcc cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
-    - make
     - cd ..
     - cd REPIN_ecology/REPIN_ecology 
     - gradle build
@@ -39,6 +38,6 @@ test:
     - conda activate repinpop
     - source setenv.sh
     - cd build
-    - make patch_blast
+    - make 
     - cd ..
     - ./run_docker_test.sh -d neisseria_small
