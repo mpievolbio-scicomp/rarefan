@@ -14,6 +14,7 @@ stages:
 build:
   stage: build
   script:
+    - lsmem
     - conda init bash
     - source ~/.bashrc
     - conda activate repinpop
@@ -37,5 +38,4 @@ test:
     - source /root/.bashrc
     - conda activate repinpop
     - source setenv.sh
-    - ./run_test.sh -d neisseria_small &
-    - top -b -d 01 -n 100 | grep java | jar REPIN > sys.log
+    - ./run_test.sh -d neisseria_small
