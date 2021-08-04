@@ -29,7 +29,6 @@ build:
   artifacts:
     paths:
       - ~/.bashrc
-      - ${CONDA_PREFIX}/
       - REPIN_ecology/REPIN_ecology/build/REPIN_ecology.jar
 
 test:
