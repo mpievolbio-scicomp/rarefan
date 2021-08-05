@@ -3,7 +3,6 @@
 .gradle/
 build/
 .ipynb_checkpoints/
-tags
 app/static/uploads/
 .idea/
 .project
@@ -15,8 +14,6 @@ gradlew.bat
 Rplots.pdf
 Session.vim
 __pycache__/
-test/
-test_data
 app/static/uploads
 .RData
 .Rhistory

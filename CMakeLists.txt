@@ -31,13 +31,13 @@ if(NOT NPROC EQUAL 0)
 endif()
 
 # andi
-ExternalProject_Add(andi
-    URL https://github.com/EvolBioInf/andi/archive/v0.13.tar.gz
-    DOWNLOAD_NAME andi-0.13.tar.gz
-    CONFIGURE_COMMAND autoreconf -fi -Im4 && ./configure CPPFLAGS=-I${CMAKE_INSTALL_PREFIX}/include CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib --prefix=${CMAKE_INSTALL_PREFIX}
-    BUILD_IN_SOURCE true
-    INSTALL_COMMAND ${MAKE_EXE} install
-)
+# ExternalProject_Add(andi
+#     URL https://github.com/EvolBioInf/andi/archive/v0.13.tar.gz
+#     DOWNLOAD_NAME andi-0.13.tar.gz
+#     CONFIGURE_COMMAND autoreconf -fi -Im4 && ./configure CPPFLAGS=-I${CMAKE_INSTALL_PREFIX}/include CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib --prefix=${CMAKE_INSTALL_PREFIX}
+#     BUILD_IN_SOURCE true
+#     INSTALL_COMMAND ${MAKE_EXE} install
+# )
 
 # clustdist
 ExternalProject_Add(clustdist
@@ -48,7 +48,13 @@ ExternalProject_Add(clustdist
 )
 
 # legacy_blast patch
-execute_process(COMMAND "patch ${CMAKE_INSTALL_PREFIX}/bin/legacy_blast.pl ../patch")
+add_custom_target(patch_blast ALL
+	COMMAND patch ${CMAKE_INSTALL_PREFIX}/bin/legacy_blast.pl ../patch
+)
+
 
 # provide libRlapack requested by r-ape.
-execute_process(COMMAND "ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so")
+add_custom_target(link_lapack ALL
+	COMMAND ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so
+)
+
