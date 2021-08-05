@@ -25,6 +25,7 @@ dependencies:
   - r-plotly
   - r-logging
   - r-ggpubr
+  - r-argparse
   - bioconductor-ggtree
   - bioconductor-muscle
   - bioconductor-biostrings
