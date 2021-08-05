@@ -1,10 +1,8 @@
-# TODO: Add comment
-# 
-# Author: Carsten Fortmann-Grote
-###############################################################################
+#! /usr/bin/env R
 
 source("analysis.R")
 library(ggpubr)
+
 # Parse command line args
 args = commandArgs(trailingOnly=TRUE)
 #folder: folder that contains presAbs_* files
