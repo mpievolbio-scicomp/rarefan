@@ -6,4 +6,5 @@ then
 fi
 
 export LD_LIBRARY_PATH=$CONDA_PREFIX/lib
-export FLASK_ENV=development
+# export FLASK_ENV=development
+export FLASK_ENV=production
