@@ -23,6 +23,7 @@ dependencies:
   - r-lifecycle>=1.0.0
   - r-shiny
   - r-plotly
+  - r-logging
   - bioconductor-ggtree
   - bioconductor-muscle
   - bioconductor-biostrings
