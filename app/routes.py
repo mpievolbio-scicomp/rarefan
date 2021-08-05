@@ -165,9 +165,13 @@ def submit():
         # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-            query_rayt_fname = query_rayt_fname+".faa"
-            src = os.path.join(app.static_folder, "rayts", query_rayt_fname)
-            shutil.copyfile(src, query_rayt_fname)
+            dst = query_rayt_fname+".faa"
+            src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
+            logging.debug("Copying rayt from %s to %s.", src, dst)
+            shutil.copyfile(src, dst)
+            
+            if not os.path.isfile(dst):
+                raise IOError("Copying %s to %s failed." % (src, dst))
 
         # Copy R script
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
