@@ -24,6 +24,7 @@ dependencies:
   - r-shiny
   - r-plotly
   - r-logging
+  - r-ggpubr
   - bioconductor-ggtree
   - bioconductor-muscle
   - bioconductor-biostrings
