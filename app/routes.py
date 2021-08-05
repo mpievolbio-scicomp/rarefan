@@ -239,7 +239,7 @@ def submit():
 
         else:
             distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-            andi_command = "echo 'Not running andi, tree file was uploaded.'")
+            andi_command = "echo 'Not running andi, tree file was uploaded.'"
             logging.info("andi command: %s", andi_command)
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
@@ -248,7 +248,6 @@ def submit():
             logging.info("clustdist command: %s", clustdist_command)
 
             clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
-
 
         # Zip results.
         zip_command = " ".join(["zip",

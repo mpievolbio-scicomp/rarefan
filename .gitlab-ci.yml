@@ -1,0 +1,43 @@
+image: mpievolbioscicomp/repinpop_base
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+    - cat /proc/meminfo
+    - conda init bash
+    - source ~/.bashrc
+    - conda activate repinpop
+    - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
+    - mkdir build
+    - cd build
+    - CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
+    - cd ..
+    - cd REPIN_ecology/REPIN_ecology 
+    - gradle build
+    - cd ../..
+  artifacts:
+    paths:
+      - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+      - build/
+
+test:
+  stage: test
+  script: 
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - ./run_docker_test.sh -d neisseria_small
