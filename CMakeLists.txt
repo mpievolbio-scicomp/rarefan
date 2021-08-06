@@ -13,14 +13,6 @@ project (repinpop)
 set (GSL_ROOT_DIR ${CMAKE_INSTALL_PREFIX})
 find_package(GSL REQUIRED)
 
-# External codes
-# divsufsort
-ExternalProject_Add(divsufsort
-    GIT_REPOSITORY https://github.com/y-256/libdivsufsort.git
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_INSTALL_PREFIX}
-    BUILD_IN_SOURCE false
-    INSTALL_COMMAND ${MAKE_EXE} install
-)
 
 # Count number of processors available for parallel building.
 include(ProcessorCount)
@@ -29,15 +21,6 @@ MESSAGE("Found ${NPROC} processors")
 if(NOT NPROC EQUAL 0)
     set(CMAKE_BUILD_FLAGS -j${NPROC})
 endif()
-
-# andi
-# ExternalProject_Add(andi
-#     URL https://github.com/EvolBioInf/andi/archive/v0.13.tar.gz
-#     DOWNLOAD_NAME andi-0.13.tar.gz
-#     CONFIGURE_COMMAND autoreconf -fi -Im4 && ./configure CPPFLAGS=-I${CMAKE_INSTALL_PREFIX}/include CFLAGS=-I${CMAKE_INSTALL_PREFIX}/include LDFLAGS=-L${CMAKE_INSTALL_PREFIX}/lib --prefix=${CMAKE_INSTALL_PREFIX}
-#     BUILD_IN_SOURCE true
-#     INSTALL_COMMAND ${MAKE_EXE} install
-# )
 
 # clustdist
 ExternalProject_Add(clustdist

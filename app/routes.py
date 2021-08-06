@@ -166,22 +166,32 @@ def submit():
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
             query_rayt_fname = query_rayt_fname+".faa"
-            src=os.path.abspath(
-                os.path.join(
-                    os.path.dirname(__file__),
-                    "..",
-                    'data',
-                    session['query_rayt']+".faa"
-                )
-            )
+            src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
+            logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
             shutil.copyfile(src, query_rayt_fname)
+            
+            if not os.path.isfile(query_rayt_fname):
+                raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        # Copy R script
+        # Copy R scripts
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "displayREPINsAndRAYTs.R"
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                      "analysis.R"
                                      ),
-                        os.path.join(session['tmpdir'],
-                                     'displayREPINsAndRAYTs.R'
+                        os.path.join(session['outdir'],
+                                     'analysis.R'
+                                     )
+                        )
+        shutil.copyfile(os.path.join(os.path.dirname(__file__),
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                     "run_analysis.R"
+                                     ),
+                        os.path.join(session['outdir'],
+                                     'run_analysis.R'
                                      )
                         )
 
