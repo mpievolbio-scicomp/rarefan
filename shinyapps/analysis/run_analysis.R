@@ -32,18 +32,27 @@ parser$add_argument('-t', '--tree',
                     help='The treefile to use (default "DIR/tmptree.nwk")'
 )
 
+# tree file
+parser$add_argument('outfile',
+                    metavar='OUTFILE',
+                    type="character", 
+                    dest='outfile',
+                    help='Save figures to OUTFILE'
+)
+
 args = parser$parse_args(commandArgs(TRUE))
 
 data_dir = args$data_dir
 rayt_type = args$rayt_type
 treefile = args$treefile
+outfile = args$outfile
 
 logging::loginfo(paste0("Reading data from ", data_dir))
 logging::loginfo(paste0("RAYT index = ", rayt_type))
 logging::loginfo(paste0("treefile = ", treefile))
+logging::loginfo(paste0("outfile = ", outfile))
 # Parse command line args
 
-outfile = paste0("rarefan_", rayt_type, ".pdf")
 barcolor = "#40e0d0"
 barsize = 2
 fontsize = 12
