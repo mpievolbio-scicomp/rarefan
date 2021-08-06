@@ -18,7 +18,14 @@ fluidPage(
 										"RAYT 5" = 4,
 										"RAYT 6" = 5
 								),
-								selected = 0)
+								selected = 0),
+					hr(),
+					output("These plots can be reproduced by running the R scripts in the results zip file downloaded from the results page.
+					The syntax is 
+					```
+						Rscript run_analysis.R [-r RAYT] [-t TREEFILE] DIR OUTFILE
+					```
+					where DIR is the path to the output directory in the unzipped results dataset and OUTFILE is the file where to save the figure.")
 							),
 				mainPanel(
 					h4("RAYT tree"),

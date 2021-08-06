@@ -173,12 +173,19 @@ def submit():
             if not os.path.isfile(query_rayt_fname):
                 raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        # Copy R script
+        # Copy R scripts
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "displayREPINsAndRAYTs.R"
+                                     "..", "analysis.R"
                                      ),
-                        os.path.join(session['tmpdir'],
-                                     'displayREPINsAndRAYTs.R'
+                        os.path.join(session['outdir'],
+                                     'analysis.R'
+                                     )
+                        )
+        shutil.copyfile(os.path.join(os.path.dirname(__file__),
+                                     "..", "run_analysis.R"
+                                     ),
+                        os.path.join(session['outdir'],
+                                     'run_analysis.R'
                                      )
                         )
 
