@@ -17,4 +17,4 @@ __pycache__/
 app/static/uploads
 .RData
 .Rhistory
-test/data/datasets/
+test/data/datasets

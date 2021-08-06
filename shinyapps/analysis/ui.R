@@ -6,8 +6,7 @@ fluidPage(
 		titlePanel("REPIN and RAYT analysis"),
 		sidebarLayout(
 				sidebarPanel(
-						textOutput("text"),
-					hr(),
+					textOutput("text"),
 					selectInput(inputId = 'rayt',
 								label="Select RAYT",
 								choices = list(
@@ -18,8 +17,9 @@ fluidPage(
 										"RAYT 5" = 4,
 										"RAYT 6" = 5
 								),
-								selected = 0)
-							),
+								selected = 0),
+						textOutput("plot_instructions")
+						),
 				mainPanel(
 					h4("RAYT tree"),
 					plotOutput(outputId = 'rayt_tree', width="60%", height="400px" ),

@@ -4,6 +4,7 @@ channels:
   - defaults
   - bioconda
   - anaconda
+  - r
 dependencies:
   - libstdcxx-ng
   - openjdk>=11.0.8
@@ -23,6 +24,10 @@ dependencies:
   - r-lifecycle>=1.0.0
   - r-shiny
   - r-plotly
+  - r-logging
+  - r-ggpubr
+  - r-argparse
+  - r-filenamer
   - bioconductor-ggtree
   - bioconductor-muscle
   - bioconductor-biostrings
