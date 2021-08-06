@@ -3,6 +3,7 @@
 # Author: Carsten Fortmann-Grote
 ###############################################################################
 
+# Load libraries silently.
 suppressMessages(library(Biostrings))
 suppressMessages(library(ape))
 suppressMessages(library(muscle))
@@ -14,8 +15,9 @@ suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
 
+
+# 6 Colors for plots (corresponding to 6 RAYT types)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
-# Define plot routine
 
 # Set theme for all plots
 logging::logdebug("defining theme")
@@ -35,6 +37,17 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
+#    """ Plot the REPIN phylogeny, RAYT population size and REPIN population size
+#    
+#    :param folder: Output directory containing the RAREFAN results
+#    :type  folder: character
+#
+#    :param treeFile: Name of the treefile in the output directory
+#    :type  treeFile: character
+#
+#    :param type: The RAYT type to analyse [0-5]
+#    :type  type: integer
+#    """
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -170,10 +183,17 @@ determineColor=function(associationFile){
   logging::logdebug(ass)
 
   colorAss=c()
+
   for(i in 1:length(ass[,1])){
      rayt=paste0(ass[i,1],"_",ass[i,2])
      c="NA"
-     if(nchar(ass[i,3])>0){
+
+     ### NOTE
+     # Here I'm trying to work around pathological cases such as the dokdonia dataset, where the association file is empty. I'm not sure it can work this way. The previously observed error happening in line 196 below is now avoided, but the RAYT phylogeny also fails. More work needed.
+     if(typeof(ass$REPINgroups) == 'logical') {
+         c="grey"
+     }
+     else if(nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
         c=colors[as.integer(split0[[1]][1])+1]
      }
@@ -183,6 +203,9 @@ determineColor=function(associationFile){
      temp=data.frame(repRAYT=rayt,color=c)
      colorAss=rbind(colorAss,temp)
 
+  }
+  if(typeof(ass$REPINgroups) == 'logical') {
+      return(colorAss)
   }
   groups=unique(ass[,3])
   logging::logdebug(paste0("groups=", groups))
