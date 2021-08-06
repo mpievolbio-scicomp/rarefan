@@ -6,7 +6,6 @@ fluidPage(
 		titlePanel("REPIN and RAYT analysis"),
 		sidebarLayout(
 				sidebarPanel(
-						textOutput("text"),
 					hr(),
 					selectInput(inputId = 'rayt',
 								label="Select RAYT",
@@ -20,11 +19,11 @@ fluidPage(
 								),
 								selected = 0),
 					hr(),
-					output("These plots can be reproduced by running the R scripts in the results zip file downloaded from the results page.
-					The syntax is 
-					```
-						Rscript run_analysis.R [-r RAYT] [-t TREEFILE] DIR OUTFILE
-					```
+					textOutput("These plots can be reproduced by running the R scripts in the results zip file downloaded from the results page.
+					The syntax is \n
+					\n
+						Rscript run_analysis.R [-r RAYT] [-t TREEFILE] DIR OUTFILE \n
+					\n
 					where DIR is the path to the output directory in the unzipped results dataset and OUTFILE is the file where to save the figure.")
 							),
 				mainPanel(
