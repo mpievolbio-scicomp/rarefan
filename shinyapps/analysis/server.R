@@ -18,6 +18,10 @@ function(input, output, session) {
           				paste("Run ID ", query$run_id, sep=" ")
           			}
               )
+			  output$plot_instructions <- renderText({
+          				paste("Please be patient while the plots are rendered. The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.")
+          			}
+			  )
               logging::logdebug(session$clientData$url_search)
               logging::logdebug("Still alive")
               run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)

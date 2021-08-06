@@ -1,16 +1,18 @@
 #! /usr/bin/env R
 
 source("analysis.R")
-library(ggpubr)
-library(argparse)
+suppressMessages(library(ggpubr))
+suppressMessages(library(argparse))
+suppressMessages(library(filenamer))
 
 parser <- ArgumentParser(description='Create plots from rarefan results.')
 
 # Input data dir
-parser$add_argument('data_dir',
+parser$add_argument('-d', '--data_dir',
                     metavar='DIR',
                     type="character", 
-                    help='The output data dir of the rarefan run to analyse.'
+					default='.',
+                    help='The output data dir of the rarefan run to analyse. Defaults to current working directory.'
 )
 
 # RAYT index
@@ -33,8 +35,9 @@ parser$add_argument('-t', '--tree',
 )
 
 # tree file
-parser$add_argument('outfile',
+parser$add_argument('-o', '--outfile',
                     metavar='OUTFILE',
+					default='analysis.png',
                     type="character", 
                     help='Save figures to OUTFILE'
 )
@@ -45,6 +48,10 @@ data_dir = args$data_dir
 rayt_type = args$rayt_type
 treefile = args$treefile
 outfile = args$outfile
+
+# Add rayt type to outfile basename
+fname = as.filename(outfile)
+outfile = as.character(insert(fname, paste0("rayt",rayt_type, "_"), 2))
 
 logging::loginfo(paste0("Reading data from ", data_dir))
 logging::loginfo(paste0("RAYT index = ", rayt_type))
