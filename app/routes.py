@@ -175,14 +175,20 @@ def submit():
 
         # Copy R scripts
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "analysis.R"
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                      "analysis.R"
                                      ),
                         os.path.join(session['outdir'],
                                      'analysis.R'
                                      )
                         )
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "run_analysis.R"
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                     "run_analysis.R"
                                      ),
                         os.path.join(session['outdir'],
                                      'run_analysis.R'
