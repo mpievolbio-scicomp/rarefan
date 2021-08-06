@@ -307,5 +307,5 @@ logging::basicConfig()
 logging::addHandler(writeToConsole)
 #logging::addHandler(writeToFile, file="/tmp/shiny.log", level='DEBUG')
 
-logging::setLevel(30) # DEBUG
+logging::setLevel(10) # DEBUG
 
