@@ -13,13 +13,14 @@ function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
     observe(
             {
+			  showModal(modalDialog("Running analysis, please wait ...", footer=NULL))
               query <- parseQueryString(session$clientData$url_search)
               output$text <- renderText({
           				paste("Run ID ", query$run_id, sep=" ")
           			}
               )
 			  output$plot_instructions <- renderText({
-          				paste("  ", "Please be patient while the plots are rendered. The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.", sep="")
+          				paste("  ", "The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.", sep="")
           			}
 			  )
               logging::logdebug(session$clientData$url_search)
@@ -59,5 +60,6 @@ function(input, output, session) {
                                       "bottom"
                 )
               })
+	  		 removeModal()
             })
 }
