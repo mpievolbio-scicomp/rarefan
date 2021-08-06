@@ -36,7 +36,6 @@ parser$add_argument('-t', '--tree',
 parser$add_argument('outfile',
                     metavar='OUTFILE',
                     type="character", 
-                    dest='outfile',
                     help='Save figures to OUTFILE'
 )
 
