@@ -18,8 +18,7 @@ fluidPage(
 										"RAYT 6" = 5
 								),
 								selected = 0),
-						textOutput(outputId="plot_instructions")
-
+						textOutput("plot_instructions")
 						),
 				mainPanel(
 					h4("RAYT tree"),
@@ -29,8 +28,7 @@ fluidPage(
 					plotOutput(outputId = 'repin_tree', width="60%", height="400px" ),
 					hr(),
 					h4("Correlation"),
-					plotOutput(outputId = 'correlations', width="60%", height="400px" ),
-					t
+					plotOutput(outputId = 'correlations', width="60%", height="400px" )
 				)
 		)
 )
