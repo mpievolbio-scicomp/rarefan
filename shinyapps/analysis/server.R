@@ -13,7 +13,6 @@ function(input, output, session) {
     logging::logdebug("Entering shiny app main()")
     observe(
             {
-			  showModal(modalDialog("Running analysis, please wait ...", footer=NULL))
               query <- parseQueryString(session$clientData$url_search)
               output$text <- renderText({
           				paste("Run ID ", query$run_id, sep=" ")
@@ -60,6 +59,5 @@ function(input, output, session) {
                                       "bottom"
                 )
               })
-	  		 removeModal()
             })
 }
