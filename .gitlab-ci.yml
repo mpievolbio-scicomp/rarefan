@@ -40,4 +40,12 @@ test:
     - source /root/.bashrc
     - conda activate repinpop
     - source setenv.sh
-    - ./run_docker_test.sh -d neisseria_small
+    - cd test/scripts
+    - ./test.sh neisseria_small clean
+    - ./test.sh neisseria_small setup
+    - ./test.sh neisseria_small run_java
+    - ./test.sh neisseria_small test_java
+    - ./test.sh neisseria_small run_andi
+    - ./test.sh neisseria_small test_andi
+    - ./test.sh neisseria_small run_clustdist
+    - ./test.sh neisseria_small test_clustdist
