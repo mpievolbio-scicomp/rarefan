@@ -3,14 +3,14 @@ set -e
 
 # Set root directories 
 DATASET="chlororaphis"
-PROJECT_ROOT_DIR=../..
+PROJECT_ROOT_DIR=$(realpath ../../)
 TMPDIR=/tmp/rarefan_test
 
 # Test directories
 TEST_ROOT_DIR=${PROJECT_ROOT_DIR}/test
 TEST_DATA_DIR=${TEST_ROOT_DIR}/data
 TEST_MD5_DIR=${TEST_ROOT_DIR}/md5
-TESTCASE_DATA_DIR=${TEST_DATA_DIR}/datasets/${DATASET}/in
+TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}/in/"
 
 # Run and output directories.
 RUN_DATA_DIR=${TMPDIR}/${DATASET}
@@ -33,18 +33,14 @@ java -Xmx10g -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REP
 
 # Run andi and check output.
 andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${TREENAME}.dist
-test -f ${RUN_DATA_DIR}/${TREENAME}.dist
+test -f ${RUN_OUT_DIR}/${TREENAME}.dist
 
 clustDist ${RUN_OUT_DIR}/${TREENAME}.dist > ${RUN_OUT_DIR}/${TREENAME}.nwk
-test -f ${RUN_DATA_DIR}/${TREENAME}.nwk
+test -f ${RUN_OUT_DIR}/${TREENAME}.nwk
 
 # Checksums.
 cd ${RUN_OUT_DIR}
 md5sum -c ${TEST_MD5_DIR}/${DATASET}.md5
-cd -
-
-# Make plots
-cd ${RUN_OUT_DIR}
 
 for rayt in 0 1 2 3 4 5
 do
