@@ -12,20 +12,21 @@ fi
 # LONGOPTIONS=dataset:
 
 if [ $1 == "-h" ]; then
-    echo "Usage: test.sh [DATASET OPERATION | -h | --help]"
+    echo "Usage: test.sh [DATASET OPERATIONS | -h | --help]"
     exit 1
 elif [ $1 == "--help" ]; then
-    echo "Usage: test.sh [DATASET OPERATION | -h | --help]"
+    echo "Usage: test.sh [DATASET OPERATIONS | -h | --help]"
     exit 1
-elif [ $# -ne 2 ]; then
-    echo "Wrong number of arguments ($#). Usage: test.sh [DATASET OPERATION | -h | --help]"
+elif [ $# -le 1 ]; then
+    echo "Wrong number of arguments ($#). Usage: test.sh [DATASET OPERATIONS | -h | --help]"
     exit 1
 fi
 
-
 # Set root directories 
 DATASET="$1"
-OPERATION="$2"
+shift
+OPERATIONS="$*"
+
 PROJECT_ROOT_DIR=$(realpath ../../)
 TMPDIR=/tmp/rarefan_test
 
@@ -33,7 +34,6 @@ TMPDIR=/tmp/rarefan_test
 TEST_ROOT_DIR=${PROJECT_ROOT_DIR}/test
 TEST_DATA_DIR=${TEST_ROOT_DIR}/data
 TEST_MD5_DIR=${TEST_ROOT_DIR}/md5
-TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}"
 
 # Run and output directories.
 RUN_DATA_DIR=${TMPDIR}/${DATASET}
@@ -43,7 +43,7 @@ RUN_REF_DIR=${RUN_DATA_DIR}/ref
 TREENAME=${DATASET}
 
 echo "DATASET=${DATASET}"
-echo "OPERATION=${OPERATION}"
+echo "OPERATIONS=${OPERATIONS}"
 
 
 case $DATASET in 
@@ -70,29 +70,59 @@ clean() {
     mkdir -vp ${RUN_REF_DIR}
 }
 
+rayt_faa=""
+ref_strain=""
+
 setup() {
     # Copy data to run dir.
-    rsync -ruvL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
     if [ $ISREF == "1" ]; then
+		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}"
+	    rsync -ruvL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
         rsync -ruvL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
-    fi
-
-    if [ $DATASET == "chlororaphis" ]; then
-        rayt_faa=${TEST_DATA_DIR}/yafM_SBW25.faa
     else
-        rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
-    fi
+		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/${DATASET}"
+		rsync -ruvL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
+	fi	
+	dataset_vars
+		
+	echo "RAYT AA sequence will be read from $rayt_faa."
+	echo "Reference strain set to $ref_strain."
+
     rsync -uv $rayt_faa ${RUN_DATA_DIR}
 } 
 
+dataset_vars() {
+# Dataset specific settings.
+	case $DATASET in
+		"chlororaphis")
+			rayt_faa=${TEST_DATA_DIR}/yafM_SBW25.faa
+			ref_strain=chlTAMOak81.fas
+			;;
+		"dokdonia")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=dokd-P16.fas
+			;;
+		"neisseria")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=Nmen_2594.fas
+			;;
+		*)
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=Nmen_2594.fas
+			;;
+	esac
+}
 
 java_cmd() {
-    javacmd="java -Xmx10g -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} chlTAMOak81.fas 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true"
+	dataset_vars
+    javacmd="java -Xmx10g -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} $ref_strain 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true"
     echo ${javacmd}
 }
 
 run_java() {
-    java -Xmx10g -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} chlTAMOak81.fas 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true
+	cmd=$(java_cmd)
+	echo $cmd
+	eval $cmd
 }
 
 test_java() {
@@ -179,10 +209,10 @@ test_ref_plots() {
 }
 
 plots() {
-    cd ${RUN_OUT_DIR}
+    cd ${PROJECT_ROOT_DIR}/shinyapps/analysis
     for rayt in 0 1 2 3 4 5
     do
-        Rscript ${PROJECT_ROOT_DIR}/shinyapps/analysis/run_analysis.R -d ${RUN_OUT_DIR} -t ${TREENAME}.nwk -o ${DATASET}.png -r ${rayt}
+        Rscript run_analysis.R -d ${RUN_OUT_DIR} -t ${TREENAME}.nwk -o ${RUN_OUT_DIR}/${DATASET}.png -r ${rayt}
     done
     cd -
 }
@@ -203,5 +233,7 @@ test_plots() {
 }
 
 # Run the desired action
-${OPERATION}
+for op in ${OPERATIONS}; do
+	$op
+done
 

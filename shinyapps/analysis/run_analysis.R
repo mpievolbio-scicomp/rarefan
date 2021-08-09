@@ -51,7 +51,7 @@ outfile = args$outfile
 
 # Add rayt type to outfile basename
 fname = as.filename(outfile)
-outfile = as.character(insert(fname, paste0("rayt",rayt_type, "_"), 2))
+outfile = as.character(insert(fname, paste0("rayt",rayt_type, "_")))
 
 logging::loginfo(paste0("Reading data from ", data_dir))
 logging::loginfo(paste0("RAYT index = ", rayt_type))
