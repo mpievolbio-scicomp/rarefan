@@ -387,7 +387,7 @@ drawRAYTphylogeny=function(data_dir){
 }
 
 logging::basicConfig()
-logging::addHandler(writeToConsole)
+#logging::addHandler(writeToConsole)
 #logging::addHandler(writeToFile, file="/tmp/shiny.log", level='DEBUG')
 
 logging::setLevel(20) # DEBUG
