@@ -295,34 +295,94 @@ plotCorrelationSingle=function(folder,type,
     return(p)
 }
 
+get_rayt_phylogeny=function(data_dir){
+  logging::loginfo("Getting RAYT phylogeny.")
+ 
+  # Check if phylogeny exists.
+  raytAlnFile = paste0(data_dir,"/raytAln.phy")
+  
+  ### TODO: use filenamer methods here.
+  raytPhyTreeFile = paste0(raytAlnFile, "_phyml_tree.txt")
+  raytPhyStatsFile = paste0(raytAlnFile, "_phyml_stats.txt")
+
+  if(!file.exists(raytAlnFile)) {
+	  
+	  logging::loginfo(paste0("RAYT alignment file '", raytAlnFile, "' not found, will perform alignment now."))
+	  # The associated rayt sequence file.
+	  raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
+	  
+	  # Read sequences
+	  raytseqs=readDNAStringSet(raytseqFile,format="fasta")
+	  
+	  # Run muscle alignment.
+	  aln=muscle(raytseqs)
+	  
+	  # Write alignment to file.
+	  write.phylip(aln,raytAlnFile)
+  }
+  else {
+	  logging::loginfo(paste0("RAYT alignment file '", raytAlnFile, "' found."))
+  }
+	  
+	
+  if(!(file.exists(raytPhyTreeFile) && file.exists(raytPhyStatsFile))) {
+	  logging::loginfo(paste0("RAYT phylogeny data files not found, will compute phylogeny now."))
+	  # Run phyml as system command.
+	  system(paste0("phyml --quiet -i ",raytAlnFile," -m GTR"))
+  }
+  else {
+	  logging::loginfo(paste0("RAYT phylogeny data files found."))
+  }
+  
+  files = structure(list(
+				  raytAlnFile=raytAlnFile
+  				 ,raytPhyTreeFile=raytPhyTreeFile
+  				 ,raytPhyStatsFile=raytPhyStatsFile
+				 )
+				)
+  return(files)
+
+}
 drawRAYTphylogeny=function(data_dir){
 
+  # Check and get phylogeny data.
+  rayt_files = get_rayt_phylogeny(data_dir)
+  
+  #
   logging::loginfo("Drawing RAYT phylogeny.")
-
-  raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
-  raytseqs=readDNAStringSet(raytseqFile,format="fasta")
-  aln=muscle(raytseqs)
-  raytAlnFile=paste0(data_dir,"/raytAln.phy")
-  write.phylip(aln,raytAlnFile)
-  system(paste0("phyml -i ",raytAlnFile," -m GTR"))
-  raytTreeFile=paste0(raytAlnFile,"_phyml_tree.txt" )
+ 	
+  # Read tree file.
+  raytTreeFile=rayt_files$raytPhyTreeFile
   nwk=read.tree(raytTreeFile)
+
   logging::logdebug(nwk)
+	
+  # Get colors
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
   logging::logdebug(colnames(colorDF))
   logging::logdebug(colorDF)
+  
+  # Retain only RAYT colors.
   onlyRAYTs <- colorDF[colorDF[,1] %in% nwk$tip.label, ]
   logging::logdebug(colnames(onlyRAYTs))
   logging::logdebug(onlyRAYTs)
+  
+  # Plot the tree
   p <- ggtree(nwk)
   logging::logdebug(nwk)
+  
+  # Add tip labels.
   p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
   logging::logdebug(cols)
-  p <-  p + scale_color_manual(values=cols,guide=FALSE)
+  
+  # Add colors
+  p <-  p + scale_color_manual(values=cols,guide="none")
+  
   logging::logdebug("Added color scale.")
+
   return(p)
 }
 
@@ -330,5 +390,5 @@ logging::basicConfig()
 logging::addHandler(writeToConsole)
 #logging::addHandler(writeToFile, file="/tmp/shiny.log", level='DEBUG')
 
-logging::setLevel(10) # DEBUG
+logging::setLevel(20) # DEBUG
 
