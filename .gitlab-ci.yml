@@ -41,7 +41,7 @@ test:
     - conda activate repinpop
     - source setenv.sh
     - cd test/scripts
-    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist 
+    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
     - mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
     - cd ..
   artifacts:
