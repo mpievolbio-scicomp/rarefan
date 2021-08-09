@@ -130,7 +130,6 @@ run_java() {
 test_java() {
     if test -f ${RUN_OUT_DIR}/results.txt; then
         echo "java results 'results.txt' found."
-        exit 0
     else
         echo "java results 'results.txt' not found."
         exit 1
@@ -144,7 +143,6 @@ run_andi() {
 test_andi() {
     if test -f ${RUN_OUT_DIR}/${TREENAME}.dist; then
         echo "andi output found."
-        exit 0
     else
         echo "andi output not found."
         exit 1
@@ -158,7 +156,6 @@ run_clustdist() {
 test_clustdist() {
     if test -f ${RUN_OUT_DIR}/${TREENAME}.nwk; then
         echo "clustDist output found."
-        exit 0
     else
         echo "clustDist output not found."
         exit 1
@@ -207,7 +204,6 @@ test_ref_plots() {
             fi
         done
     done
-    exit 0
 }
 
 plots() {
@@ -231,7 +227,6 @@ test_plots() {
             fi
         done
     done
-    exit 0
 }
 
 # Run the desired action
