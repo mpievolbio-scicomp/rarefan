@@ -72,6 +72,7 @@ clean() {
 
 rayt_faa=""
 ref_strain=""
+mem="10g"
 
 setup() {
     # Copy data to run dir.
@@ -109,13 +110,14 @@ dataset_vars() {
 		*)
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=Nmen_2594.fas
+			mem="4g"
 			;;
 	esac
 }
 
 java_cmd() {
 	dataset_vars
-    javacmd="java -Xmx10g -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} $ref_strain 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true"
+    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} $ref_strain 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true"
     echo ${javacmd}
 }
 
