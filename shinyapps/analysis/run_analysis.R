@@ -74,16 +74,30 @@ correlation_plot = plotCorrelationSingle(
 		pvLabelY='bottom'
 		)
 
-repin_facet_plot = plotREPINs(
+repin_facet_plot = tryCatch(plotREPINs(
            data_dir,
 		   treefile,
 		   rayt_type,
 		   barcolor,
 		   barsize,
 		   fontsize 
-)
+	),
+	error=function(e)
+		logging::logwarn("An error occured while plotting the REPIN/RAYT population sizes, will render an empty plot.")
+	)
+if(typeof(repin_facet_plot) == 'logical') {
+	repin_facet_plot = ggplot()
+}
+		
 
-phylogeny_plot = drawRAYTphylogeny(data_dir)
+phylogeny_plot = tryCatch(drawRAYTphylogeny(data_dir),
+		error=function(e)
+			logging::logwarn("An error occured while plotting the RAYT phylogeny, likely no RAYTs were found.")
+)
+if(typeof(phylogeny_plot) == 'logical') {
+	phylogeny_plot = ggplot()
+}
+			
 
 figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1, nrow=1)
 
