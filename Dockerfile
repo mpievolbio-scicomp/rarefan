@@ -12,7 +12,7 @@ RUN conda init bash
 
 # Copy the environment.yml from the docker build dir into the container's root dir.
 COPY environment.yml .
-COPY CI .
+COPY CI/e2e.sh .
 
 # Create conda env in docker container.
 RUN conda env create -f environment.yml
