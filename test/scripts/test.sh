@@ -102,6 +102,7 @@ dataset_vars() {
 		"dokdonia")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=dokd-P16.fas
+			mem="4g"
 			;;
 		"neisseria")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
