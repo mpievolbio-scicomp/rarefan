@@ -40,7 +40,6 @@ test_dokdonia:
   stage: test
   allow_failure: true
   script: 
-    - apt-get install wget unzip zip
     - cd build
     - make 
     - cd ..
@@ -59,7 +58,6 @@ test_neisseria:
   stage: test
   allow_failure: true
   script: 
-    - apt-get install wget unzip zip
     - cd build
     - make 
     - cd ..
@@ -78,7 +76,6 @@ test_chlororaphis:
   stage: test
   allow_failure: true
   script: 
-    - apt-get install wget unzip zip
     - cd build
     - make 
     - cd ..
