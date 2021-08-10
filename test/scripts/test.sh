@@ -78,18 +78,18 @@ setup() {
     # Copy data to run dir.
     if [ $ISREF == "1" ]; then
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}"
-	    rsync -ruvL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
-        rsync -ruvL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
+	    rsync -ruL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
+        rsync -ruL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
     else
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/${DATASET}"
-		rsync -ruvL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
+		rsync -ruL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
 	fi	
 	dataset_vars
 		
 	echo "RAYT AA sequence will be read from $rayt_faa."
 	echo "Reference strain set to $ref_strain."
 
-    rsync -uv $rayt_faa ${RUN_DATA_DIR}
+    rsync -u $rayt_faa ${RUN_DATA_DIR}
 } 
 
 dataset_vars() {
