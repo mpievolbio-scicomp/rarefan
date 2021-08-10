@@ -1,9 +1,18 @@
 #! /usr/bin/env R
 
 source("analysis.R")
-suppressMessages(library(ggpubr))
-suppressMessages(library(argparse))
-suppressMessages(library(filenamer))
+
+packages=c("ggpubr", "argparse", "filenamer")
+
+package_check = lapply(
+                      packages,
+                      FUN = function(x) {
+                          if(!require(x, character.only = TRUE)) {
+                              install.packages(x, dependencies=TRUE, repos="https://ftp.gwdg.de/pub/misc/cran")
+                              suppressMessages(library(x, character.only = TRUE))
+                          }
+                      }
+                  )
 
 parser <- ArgumentParser(description='Create plots from rarefan results.')
 
