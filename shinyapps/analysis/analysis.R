@@ -488,7 +488,7 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug(cols)
   
   # Add colors
-  p <-  p + scale_color_manual(values=cols,guide="none")
+  # p <-  p + scale_color_manual(values=cols,guide="none")
   
   logging::logdebug("Added color scale.")
 
