@@ -4,6 +4,7 @@ MAINTAINER grotec@evolbio.mpg.de
 # Install system packages.
 RUN apt-get update
 RUN apt-get upgrade -y
+RUN apt-get install linux-libc-dev
 RUN apt-get install util-linux git make gcc build-essential libgsl-dev gsl-bin andi -y
 
 # Init conda.
