@@ -56,7 +56,7 @@ test_dokdonia:
 
 test_neisseria:
   stage: test
-  allow_failure: true
+  allow_failure: false
   script: 
     - cd build
     - make 
@@ -74,7 +74,7 @@ test_neisseria:
 
 test_chlororaphis:
   stage: test
-  allow_failure: true
+  allow_failure: false
   script: 
     - cd build
     - make 
