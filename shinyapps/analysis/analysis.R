@@ -69,13 +69,79 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   panel.spacing=unit(2,"lines"),
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
+
+  tree_file = paste0(folder,"/",treeFile)
+  logging::logdebug("Reading tree file %s.", tree_file)
+
+  tree=read.tree(tree_file)
+  tips=tree$tip.label
+  logging::logdebug(str(tree))
+
+  logging::logdebug("Plotting ggtree...")
+  p=ggtree(tree)+
+      scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
+#      xlim_tree(0.2)+
+      geom_tiplab()
+
+  # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
+  
   association=read.table(assoc_file,header=TRUE)
-
   logging::logdebug(colnames(association))
   logging::logdebug(association)
 
+  d <- association[association$repintype==type,]
+  logging::logdebug(str(d))
+  logging::logdebug(d)
+  
+  repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
+
+  colorDF = determineColor(repin_rayt_assoc_table_file)
+  logging::logdebug(str(colorDF))
+  logging::logdebug(colorDF)
+
+  rayt_color = colorDF[colorDF$repRAYT==type,2]
+  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
+  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
+
+  rayt_color = unique(rayt_color)
+  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
+  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
+  logging::logdebug(paste0("rayt_color=", rayt_color))
+
+  if(length(rayt_color) == 0) {
+      rayt_color=c("grey")
+  }
+  logging::logdebug(paste0("rayt_color=", rayt_color))
+
+  has_rayt_popsize = length(tree$edge.length) == nrow(d)
+  logging::logdebug("has_ray_popsize = %s", has_rayt_popsize)
+
+  if(has_rayt_popsize){
+      logging::logdebug("Plotting RAYTs.")
+      p <- facet_plot(p,
+                    panel='RAYTs',
+                    data=d,
+                    geom=geom_segment,
+                    aes(x=0,
+                        xend=rayts,
+                        y=y,
+                        yend=y),
+                    size=bs,
+                    color=rayt_color
+          )
+  }
+  else {
+      logging::logwarn("Dimension mismatch:")
+      logging::logwarn("Number of edges = %d", length(tree$edge.length))
+      logging::logwarn("Number of rows in association table %s = %d", repin_rayt_assoc_table_file, nrow(d))
+      logging::logwarn("Not plotting RAYT population size.")
+  }
+
+
+
+  logging::logdebug("Constructing popSize data.")
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
@@ -85,89 +151,49 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   logging::logdebug(typeof(t))
   logging::logdebug(t)
-  if(typeof(t) == "logical") {
-    logging::logdebug("Returning empty plot.")
+
+  has_repins_popsize = length(tree$edge.length) == nrow(t) && typeof(t) != "logical"
+  if(has_repins_popsize){
+      popSize=data.frame(name=t[,1],
+                         rayts=t[,2],
+                         repins=t[,3],
+                         prop=(t[,5]/t[,3]),
+                         propAll=(t[,3]/t[,6]),
+                         numClus=t[,7],
+                         diffRAYTCluster=t[,7]-t[,2])
+
+      logging::logdebug(str(popSize))
+
+      logging::logdebug("plotting repin population size.")
+      p = facet_plot(p,
+                    panel='repin population size',
+                    data=popSize,
+                    geom=geom_segment,
+                    aes(x=0,
+                        xend=repins,
+                        y=y,
+                        yend=y),
+                    size=bs
+                   ,color=rayt_color
+                     )
   }
-
-  logging::logdebug("Constructing popSize data.")
-  popSize=data.frame(name=t[,1],
-                     rayts=t[,2],
-                     repins=t[,3],
-                     prop=(t[,5]/t[,3]),
-                     propAll=(t[,3]/t[,6]),
-                     numClus=t[,7],
-                     diffRAYTCluster=t[,7]-t[,2])
-
-
-  tree_file = paste0(folder,"/",treeFile)
-  logging::logdebug("Reading tree file %s.", tree_file)
-  tree=read.tree(tree_file)
-  tips=tree$tip.label
-  logging::logdebug(str(tree))
-
-  logging::logdebug("Getting ggtree object.")
-  p=ggtree(tree)+
-      scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
-#      xlim_tree(0.2)+
-      geom_tiplab()
-
-  # Check if RAYTs are in the dataset.
-  rayts=TRUE
-  repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
-
-  colorDF = determineColor(repin_rayt_assoc_table_file)
-
-  logging::logdebug("Plotting RAYTs.")
-  logging::logdebug(str(colorDF))
-  logging::logdebug(colorDF)
-
-  d <- association[association$repintype==type,]
-  
-  logging::logdebug(str(d))
-  logging::logdebug(d)
-  
-  rayt_color = colorDF[colorDF$repRAYT==type,2]
-  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
-  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
-
-  rayt_color = unique(rayt_color)
-  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
-  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
-  
-  logging::logdebug(paste0("rayt_color=", rayt_color))
-  p <- facet_plot(p,
-				panel='RAYTs',
-				data=d,
-				geom=geom_segment,
-				aes(x=0,
-					xend=rayts,
-					y=y,
-					yend=y),
-				size=bs
-	  )
-
-  logging::logdebug("plotting repin population size.")
-  logging::logdebug(str(popSize))
-  p = facet_plot(p,
-                panel='repin population size',
-                data=popSize,
-                geom=geom_segment,
-                aes(x=0,
-                    xend=repins,
-                    y=y,
-                    yend=y),
-                size=bs
-		       ,color=rayt_color
-	)
+  else {
+      logging::logwarn("Dimension mismatch:")
+      logging::logwarn("Number of edges = %d", length(tree$edge.length))
+      logging::logwarn("Number of rows in data file %s = %d", data_file, nrow(t))
+      logging::logwarn("Not plotting REPIN population size.")
+  }
   
   logging::logdebug("adding theme.")
   p = p + theme_tree2()
 
-  logging::logdebug("adding labels.")
-  p = facet_labeller(p,
-                    c(tree="",
-                      rayts="number of rayts")
-  )
+  if(has_rayt_popsize && has_repin_popsize) {
+      logging::logdebug("adding labels.")
+      p = facet_labeller(p,
+                        c(tree="",
+                          rayts="number of rayts")
+      )
+  }
 
   logging::logdebug("customizing theme.")
   p = p +
