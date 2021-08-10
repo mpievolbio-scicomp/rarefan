@@ -14,7 +14,12 @@ suppressMessages(library(stringr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
+suppressMessages(library(roxygen2))
 
+
+# Set log level
+logging::basicConfig()
+logging::setLevel(20) # 10: debug, 20: info, 30: warning, 40: error 
 
 # 6 Colors for plots (corresponding to 6 RAYT types)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
@@ -38,17 +43,24 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 ######################################################################################
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
-#    """ Plot the REPIN phylogeny, RAYT population size and REPIN population size
-#    
-#    :param folder: Output directory containing the RAREFAN results
-#    :type  folder: character
-#
-#    :param treeFile: Name of the treefile in the output directory
-#    :type  treeFile: character
-#
-#    :param type: The RAYT type to analyse [0-5]
-#    :type  type: integer
-#    """
+#' @description Plot the REPIN phylogeny, RAYT population size and REPIN population size
+#' 
+#' @param folder Output directory containing the RAREFAN results (character).
+#' @param treeFile Name of the treefile in the output directory (character).
+#' @param type The RAYT type to analyse (int in range 0-5)
+#' @return A ggplot object holding the plot.
+#'
+#'  @examples
+#'  \dontrun{
+#'  plotREPINs('/tmp/rarefan_test/neisseria/out', 
+#'               'neisseria.nwk',
+#'               0,
+#'               'green',
+#'               2,
+#'               12
+#'               )
+#' }
+        
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -58,6 +70,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug(paste0("    bs = ", bs))
   logging::logdebug(paste0("    fontsize = ", fontsize))
 
+  # Set theme.
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
                   legend.key = element_rect(fill = "white"),
                   axis.line.y = element_line(colour = "black"),
@@ -70,6 +83,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                   plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
   )
 
+  ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
   logging::logdebug("Reading tree file %s.", tree_file)
 
@@ -105,20 +119,25 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
   logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
 
+  # In some cases, we get a list of two identical colors but need only one.
   rayt_color = unique(rayt_color)
   logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
   logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
   logging::logdebug(paste0("rayt_color=", rayt_color))
 
+  # In other cases, no color is defined, set it to grey.
   if(length(rayt_color) == 0) {
       rayt_color=c("grey")
   }
   logging::logdebug(paste0("rayt_color=", rayt_color))
 
-  has_rayt_popsize = length(tree$edge.length) == nrow(d)
-  logging::logdebug("has_ray_popsize = %s", has_rayt_popsize)
+  logging::logdebug("Tree tip labels = %s", tree$tip.label)
+  logging::logdebug("repin_rayt_association.txt['genome'] = %s", d$genome)
+  logging::logdebug("repin_rayt_association.txt['rayts'] = %s", d$rayts)
 
-  if(has_rayt_popsize){
+  num_rayts = length(d$rayts)
+  logging::logdebug("Number of rayts: %d", num_rayts)
+  if(num_rayts > 0){
       logging::logdebug("Plotting RAYTs.")
       p <- facet_plot(p,
                     panel='RAYTs',
@@ -133,17 +152,16 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
           )
   }
   else {
-      logging::logwarn("Dimension mismatch:")
-      logging::logwarn("Number of edges = %d", length(tree$edge.length))
-      logging::logwarn("Number of rows in association table %s = %d", repin_rayt_assoc_table_file, nrow(d))
+      logging::logwarn("No RAYTs in association table %s for RAYT type %d.", repin_rayt_assoc_table_file, type)
       logging::logwarn("Not plotting RAYT population size.")
   }
 
-
-
+  # REPIN population size.
   logging::logdebug("Constructing popSize data.")
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
+
+  # data_file_ok = FALSE
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)
 		  logging::logwarn("File %s is empty.", data_file)
@@ -152,8 +170,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug(typeof(t))
   logging::logdebug(t)
 
-  has_repins_popsize = length(tree$edge.length) == nrow(t) && typeof(t) != "logical"
-  if(has_repins_popsize){
+  data_file_is_corrupt = typeof(t) == "logical"
+  if(!data_file_is_corrupt) {
       popSize=data.frame(name=t[,1],
                          rayts=t[,2],
                          repins=t[,3],
@@ -176,24 +194,14 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                     size=bs
                    ,color=rayt_color
                      )
+      
   }
   else {
-      logging::logwarn("Dimension mismatch:")
-      logging::logwarn("Number of edges = %d", length(tree$edge.length))
-      logging::logwarn("Number of rows in data file %s = %d", data_file, nrow(t))
-      logging::logwarn("Not plotting REPIN population size.")
-  }
+          logging::logwarn("Not plotting REPIN population size for RAYT type %d", type)
+      }
   
   logging::logdebug("adding theme.")
   p = p + theme_tree2()
-
-  if(has_rayt_popsize && has_repin_popsize) {
-      logging::logdebug("adding labels.")
-      p = facet_labeller(p,
-                        c(tree="",
-                          rayts="number of rayts")
-      )
-  }
 
   logging::logdebug("customizing theme.")
   p = p +
@@ -216,6 +224,13 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
 ######################################################################################
 determineColor=function(associationFile){
+    #' @description Determine the color for plotting the REPIN data based on the RAYT type
+    #'
+    #' @param associationFile Filename (path) of the data file that associates REPINs and RAYT types.
+    #' Typically, this is the file 'repin_rayt_association.txt' or 'repin_rayt_association_byREPIN' 
+    #' in the 'out/' directory of the run
+    #' @return A string designating the color.
+
   logging::logdebug("Determine colors from %s.", associationFile)
   ass=read.delim(associationFile,header=TRUE)
   logging::logdebug(str(ass))
@@ -276,6 +291,30 @@ plotCorrelationSingle=function(folder,type,
                                repinThreshold=0,
                                name=F,
                                labelOdd=""){
+    #'
+    #' @description Plot the REPIN population size vs. RAYT population size as a scatter plot.
+    #'
+    #' @param folder Name (path) of the output directory generated by RAREFAN (character).
+    #' @param xlim x-axis range to plot (vector).
+    #' @param ylim y-axis range to plot (vector).
+    #' @param theme The ggplot theme to apply. (ggplot2::theme)
+    #' @param fontsize Fontsize for plots (int).
+    #' @param pvLabelX X position indicator for plot labels (character).
+    #' @param pvLabelX Y position indicator for plot labels (character).
+    #' @return A ggplot object holding plot.
+    #' @example
+    #' \dontrun{
+    #' plotCorrelationSingle('/tmp/rarefan_test/neisseria/out',
+    #'                       0,
+    #'                       c(0, 1),
+    #'                       c(0, 320),
+    #'                       theme(),
+    #'                       12,
+    #'                       "left",
+    #'                       "top"
+    #'                       )
+    #' }
+                             
 
 	logging::logdebug("Plotting correlation.")
 
@@ -335,6 +374,17 @@ plotCorrelationSingle=function(folder,type,
 
 ######################################################################################
 get_rayt_phylogeny=function(data_dir){
+    #' 
+    #' @description Read or compute the RAYT phylogeny
+    #' @details Scans the given directory (data_dir) for a file named 'raytAln.phy' 
+    #'          resulting from a muscle alignment run.
+    #'          If not found, muscle is run on the RAYT aminoacid sequence data found in the given directory.
+    #'          Then checks for files named 'raytAln_phyml_tree.txt' and 'raytAln_phyml_stats.txt'. If either
+    #'          of these files is missing, `phyml` will be run on 'raytAln.phy'. A `structure` that holds all
+    #'          three filenames will be returned.
+    #' @param data_dir Name (path) of the output directory of the RAREFAN run.
+    #' @return A `structure` holding the filenames for the phylogeny data.
+
   logging::loginfo("Getting RAYT phylogeny.")
  
   # Check if phylogeny exists.
@@ -393,6 +443,12 @@ get_rayt_phylogeny=function(data_dir){
 
 ######################################################################################
 drawRAYTphylogeny=function(data_dir){
+    #'
+    #' @description Draw the RAYT phylogeny as a tree using the ggtree R package.
+    #'
+    #' @param data_dir Directory name (path) from where to read the phylogeny data.
+    #'
+    #' @return A ggplot object holding the tree graph.
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
@@ -436,9 +492,4 @@ drawRAYTphylogeny=function(data_dir){
   return(p)
 }
 
-logging::basicConfig()
-#logging::addHandler(writeToConsole)
-#logging::addHandler(writeToFile, file="/tmp/shiny.log", level='DEBUG')
-
-logging::setLevel(10) # DEBUG
 
