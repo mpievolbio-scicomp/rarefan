@@ -14,57 +14,18 @@ stages:
 build:
   stage: build
   script:
-    - cat /proc/meminfo
-    - conda init bash
-    - source ~/.bashrc
-    - conda activate repinpop
-    - export INSTALL_PREFIX=$(echo $CONDA_PREFIX)
-    - mkdir build
-    - cd build
-    - CC=/usr/bin/gcc CXX=/usr/bin/g++ cmake -DCMAKE_INSTALL_PREFIX=$INSTALL_PREFIX ..
-    - cd ..
-    - cd REPIN_ecology/REPIN_ecology 
-    - gradle build
-    - cd ../..
+      - CI/build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
       - build/
 
-test_neisseria_small:
+test:
   stage: test
   script: 
-    - cd build
-    - make 
-    - cd ..
-    - source /root/.bashrc
-    - conda activate repinpop
-    - source setenv.sh
-    - cd test/scripts
-    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
-    - mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
-    - cd ..
+    - CI/test.sh
   artifacts:
     paths:
       - test/data/neisseria_small/out
-
-test_dokdonia:
-  stage: test
-  allow_failure: true
-  script: 
-    - apt-get install wget unzip zip
-    - cd build
-    - make 
-    - cd ..
-    - source /root/.bashrc
-    - conda activate repinpop
-    - source setenv.sh
-    - cd test/scripts
-    - ./dl_zenodo.sh dokdonia
-    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
-    - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
-    - cd ..
-  artifacts:
-    paths:
       - test/data/dokdonia/out
       

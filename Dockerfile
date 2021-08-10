@@ -1,5 +1,5 @@
 FROM conda/miniconda3
-MAINTAINER grotec@evolbio.mpg.de
+MAINTAINER computing@evolbio.mpg.de
 
 # Install system packages.
 RUN apt-get update
@@ -12,6 +12,7 @@ RUN conda init bash
 
 # Copy the environment.yml from the docker build dir into the container's root dir.
 COPY environment.yml .
+COPY CI .
 
 # Create conda env in docker container.
 RUN conda env create -f environment.yml
