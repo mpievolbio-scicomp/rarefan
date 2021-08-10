@@ -52,7 +52,7 @@ test_dokdonia:
   stage: test
   allow_failure: true
   script: 
-    - apt-get install wget
+    - apt-get install wget unzip zip
     - cd build
     - make 
     - cd ..

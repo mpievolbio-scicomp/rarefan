@@ -1,6 +1,6 @@
 #! /bin/bash
 
-$DATASET="$1"
+DATASET="$1"
 
 chlororaphis() {
 	wget https://zenodo.org/record/5139700/files/chlororaphis.zip?download=1 -O /tmp/zenodo.zip && \

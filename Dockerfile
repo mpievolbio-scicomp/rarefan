@@ -5,7 +5,7 @@ MAINTAINER grotec@evolbio.mpg.de
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install linux-libc-dev
-RUN apt-get install util-linux git make gcc build-essential libgsl-dev gsl-bin andi -y
+RUN apt-get install util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip -y
 
 # Init conda.
 RUN conda init bash
