@@ -31,7 +31,7 @@ build:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
       - build/
 
-test:
+test_neisseria_small:
   stage: test
   script: 
     - cd build
@@ -47,4 +47,22 @@ test:
   artifacts:
     paths:
       - test/data/neisseria_small/out
+
+ test_dokdonia:
+  stage: test
+  allow_failure: true
+  script: 
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/scripts
+    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
+    - cd ..
+  artifacts:
+    paths:
+      - test/data/dokdonia/out
       
