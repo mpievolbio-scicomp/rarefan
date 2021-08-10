@@ -59,6 +59,7 @@ test_dokdonia:
     - conda activate repinpop
     - source setenv.sh
     - cd test/scripts
+    - dl_zenodo.sh dokdonia
     - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
     - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
     - cd ..
