@@ -48,7 +48,7 @@ test_neisseria_small:
     paths:
       - test/data/neisseria_small/out
 
- test_dokdonia:
+test_dokdonia:
   stage: test
   allow_failure: true
   script: 
