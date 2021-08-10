@@ -120,7 +120,10 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
 
   # In some cases, we get a list of two identical colors but need only one.
-  rayt_color = unique(rayt_color)
+  if (length(rayt_color) > 1) {
+      rayt_color = rayt_color[[1]]
+  }
+
   logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
   logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
   logging::logdebug(paste0("rayt_color=", rayt_color))
