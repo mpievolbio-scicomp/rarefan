@@ -20,7 +20,7 @@ build:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
       - build/
 
-test:neisseria_small:
+test:neisseria:small:
   stage: test
   needs: ["build"]
   script: 
@@ -38,7 +38,7 @@ test:neisseria_small:
       - test/data/neisseria_small/out
 
 test:dokdonia:
-  needs: ["test:neisseria_small"]
+  needs: ["test:neisseria:small"]
   stage: test
   allow_failure: true
   script: 
