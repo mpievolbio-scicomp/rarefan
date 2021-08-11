@@ -16,10 +16,9 @@ suppressMessages(library(cowplot))
 suppressMessages(library(logging))
 suppressMessages(library(roxygen2))
 
-
 # Set log level
 logging::basicConfig()
-logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error 
+logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
 
 # 6 Colors for plots (corresponding to 6 RAYT types)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")

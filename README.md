@@ -9,7 +9,7 @@ The following packages (linux, debian based distro) are required:
 
 ### Install dependencies on debian based linux distros (debian, *ubuntu, mint, ...)
 ```
-sudo apt install gcc libgsl-dev andi build-essential
+sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip
 ```
 
 ## Create the conda environment
@@ -27,16 +27,19 @@ Activate the new environment:
 ```
 $> conda activate repinpop
 ```
-Record the value of the `$CONDA_PREFIX` environment variable, e.g.
+
+
+## Install 3rd party libraries through cmake.
+Not all dependencies are available on the conda archives. `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git)
+is handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility.
+
+
+We observed that `clustDist` produces faulty results if compiled inside the conda environment. As a workaround, we recommend to build `clustDist` with deactivated conda environment. Here, we If you wish to install into Record the value of the `$CONDA_PREFIX` environment variable, e.g.
 
 ```
 echo $CONDA_PREFIX > conda_prefix.txt
 ```
 
-
-## Install 3rd party libraries through cmake.
-Not all dependencies are available on the conda archives. `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git)
-is handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility. 
 ```
 conda deactivate
 ```

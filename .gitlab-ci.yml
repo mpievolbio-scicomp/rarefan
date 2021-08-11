@@ -20,8 +20,9 @@ build:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
       - build/
 
-test_neisseria_small:
+test:neisseria_small:
   stage: test
+  needs: ["build"]
   script: 
     - cd build
     - make 
@@ -36,7 +37,8 @@ test_neisseria_small:
     paths:
       - test/data/neisseria_small/out
 
-test_dokdonia:
+test:dokdonia:
+  needs: ["test:neisseria_small"]
   stage: test
   allow_failure: true
   script: 
@@ -54,8 +56,9 @@ test_dokdonia:
     paths:
       - test/data/dokdonia/out
 
-test_neisseria:
+test:neisseria:
   stage: test
+  needs: ["test:dokdonia"]
   allow_failure: false
   script: 
     - cd build
@@ -72,8 +75,9 @@ test_neisseria:
     paths:
       - test/data/datasets/neisseria/ref
 
-test_chlororaphis:
+test:chlororaphis:
   stage: test
+  needs: ["test:neisseria"]
   allow_failure: false
   script: 
     - cd build
