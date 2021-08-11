@@ -10,14 +10,16 @@ cd test/scripts
 
 ./dl_zenodo.sh all
 
-./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
-mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
+# Run all.
+./test.sh neisseria_small clean setup run_java run_andi run_clustdist plots
+./test.sh neisseria clean setup run_java run_andi run_clustdist plots
+./test.sh chlororaphis clean setup run_java run_andi run_clustdist plots
+./test.sh dokdonia clean setup run_java run_andi run_clustdist plots
 
-./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
-mv ../data/datasets/dokdonia/out ../data/datasets/dokdonia/ref
-mv /tmp/rarefan_test/dokdonia/out ../data/datasets/dokdonia/out
-
-./test.sh neisseria clean setup ref_plots test_ref_plots
-./test.sh chlororaphis clean setup ref_plots test_ref_plots
+# Test all.
+./test.sh neisseria_small test_java test_andi test_clustdist test_plots test_md5
+./test.sh neisseria test_java test_andi test_clustdist test_plots test_md5
+./test.sh chlororaphis test_java test_andi test_clustdist test_plots test_md5
+./test.sh dokdonia test_java test_andi test_clustdist test_plots test_md5
 
 cd ..

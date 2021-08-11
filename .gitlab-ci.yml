@@ -22,8 +22,7 @@ build:
 
 test:neisseria:small:
   stage: test
-  needs: ["build"]
-  script: 
+  script:
     - cd build
     - make 
     - cd ..
@@ -38,7 +37,6 @@ test:neisseria:small:
       - test/data/neisseria_small/out
 
 test:dokdonia:
-  needs: ["test:neisseria:small"]
   stage: test
   allow_failure: true
   script: 
@@ -58,7 +56,6 @@ test:dokdonia:
 
 test:neisseria:
   stage: test
-  needs: ["test:dokdonia"]
   allow_failure: false
   script: 
     - cd build
@@ -77,7 +74,6 @@ test:neisseria:
 
 test:chlororaphis:
   stage: test
-  needs: ["test:neisseria"]
   allow_failure: false
   script: 
     - cd build

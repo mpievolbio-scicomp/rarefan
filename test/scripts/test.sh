@@ -22,11 +22,12 @@ elif [ $# -le 1 ]; then
     exit 1
 fi
 
-# Set root directories 
+# Parse command line arguments: First argument is the dataset, subsequent arguments are operations.
 DATASET="$1"
 shift
 OPERATIONS="$*"
 
+# Set root directories
 PROJECT_ROOT_DIR=$(realpath ../../)
 TMPDIR=/tmp/rarefan_test
 
@@ -129,6 +130,8 @@ run_java() {
 }
 
 test_java() {
+    echo
+    echo "*** Checking 'REPIN_ecology' output. ***"
     if test -f ${RUN_OUT_DIR}/results.txt; then
         echo "java results 'results.txt' found."
     else
@@ -142,6 +145,8 @@ run_andi() {
     andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${TREENAME}.dist
 }
 test_andi() {
+    echo
+    echo "*** Checking 'andi' output. ***"
     if test -f ${RUN_OUT_DIR}/${TREENAME}.dist; then
         echo "andi output found."
     else
@@ -155,6 +160,8 @@ run_clustdist() {
 }
 
 test_clustdist() {
+    echo
+    echo "*** Checking 'clustDist' output. ***"
     if test -f ${RUN_OUT_DIR}/${TREENAME}.nwk; then
         echo "clustDist output found."
     else
@@ -163,11 +170,22 @@ test_clustdist() {
     fi
 }
 
-test_all_files() {
+test_md5() {
 # Checksums.
+    echo
+    echo "*** Checking MD5 checksums ***"
     cd ${RUN_OUT_DIR}
-    md5sum -c ${TEST_MD5_DIR}/${DATASET}.md5
-    cd -
+
+    if md5sum -c ${TEST_MD5_DIR}/${DATASET}.md5; then
+      echo
+      echo "==> All MD5 checks passed <=="
+      echo
+    else
+      echo
+      echo "==> MD5 check failed. <=="
+      echo
+      exit 1
+    fi
 }
 
 ref_plots() {
@@ -187,6 +205,8 @@ ref_plots() {
 }
 
 test_ref_plots() {
+    echo
+    echo "*** Checking Reference plots. ***"
     if [ $ISREF -ne 1 ]; then
         echo
         echo "'$DATASET' is not a reference dataset."
@@ -232,6 +252,5 @@ test_plots() {
 
 # Run the desired action
 for op in ${OPERATIONS}; do
-	$op
+  $op
 done
-
