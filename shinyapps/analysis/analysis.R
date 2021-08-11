@@ -246,6 +246,7 @@ determineColor=function(associationFile){
      c="NA"
 
      if(typeof(ass$REPINgroups) == 'logical') {
+         logging::logdebug("REPINgroups is empty, set color to 'grey'.")
 		 c='grey'
      }
      else if(nchar(ass[i,3])>0){
@@ -488,7 +489,7 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug(cols)
   
   # Add colors
-  # p <-  p + scale_color_manual(values=cols,guide="none")
+  p <-  p + scale_color_manual(values=cols,guide="none")
   
   logging::logdebug("Added color scale.")
 
