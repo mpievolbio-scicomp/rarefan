@@ -1,9 +1,18 @@
 #! /usr/bin/env R
 
 source("analysis.R")
-suppressMessages(library(ggpubr))
-suppressMessages(library(argparse))
-suppressMessages(library(filenamer))
+
+packages=c("ggpubr", "argparse", "filenamer")
+
+package_check = lapply(
+                      packages,
+                      FUN = function(x) {
+                          if(!require(x, character.only = TRUE)) {
+                              install.packages(x, dependencies=TRUE, repos="https://ftp.gwdg.de/pub/misc/cran")
+                              suppressMessages(library(x, character.only = TRUE))
+                          }
+                      }
+                  )
 
 parser <- ArgumentParser(description='Create plots from rarefan results.')
 
@@ -51,7 +60,7 @@ outfile = args$outfile
 
 # Add rayt type to outfile basename
 fname = as.filename(outfile)
-outfile = as.character(insert(fname, paste0("rayt",rayt_type, "_"), 2))
+outfile = as.character(insert(fname, paste0("rayt",rayt_type, "_")))
 
 logging::loginfo(paste0("Reading data from ", data_dir))
 logging::loginfo(paste0("RAYT index = ", rayt_type))
@@ -81,7 +90,8 @@ repin_facet_plot = plotREPINs(
 		   barcolor,
 		   barsize,
 		   fontsize 
-)
+	)
+		
 
 phylogeny_plot = drawRAYTphylogeny(data_dir)
 

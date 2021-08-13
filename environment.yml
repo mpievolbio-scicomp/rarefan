@@ -27,6 +27,7 @@ dependencies:
   - r-logging
   - r-ggpubr
   - r-argparse
+  - r-roxygen2
   - r-base>=4.1.0
   - bioconductor-ggtree
   - bioconductor-muscle

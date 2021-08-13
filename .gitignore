@@ -18,3 +18,5 @@ app/static/uploads
 .RData
 .Rhistory
 test/data/datasets/
+.*.swp
+.Rproj.user
