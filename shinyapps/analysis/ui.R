@@ -1,5 +1,4 @@
 suppressMessages(library(shiny))
-suppressMessages(library(plotly))
 
 fluidPage(
 		# App title
@@ -28,8 +27,7 @@ fluidPage(
 					plotOutput(outputId = 'repin_tree', width="100%"),
 					hr(),
 					h4("Correlation"),
-					# plotOutput(outputId = 'correlations', width="100%")
-					plotlyOutput(outputId = 'correlations', width="100%")
+				  plotOutput(outputId = 'correlations', width="100%")
 				)
 		)
 )

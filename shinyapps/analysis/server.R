@@ -2,7 +2,6 @@
 # Required libraries
 
 suppressMessages(library(shiny))
-# suppressMessages(library(plotly))
 
 # Include local definitions
 source("analysis.R")
@@ -52,24 +51,13 @@ function(input, output, session) {
               })
 
               logging::logdebug("Calling 'plotCorrelationSingle'.")
-              # output$correlations <-  renderPlot({
-              #   plotCorrelationSingle(out_dir,
-              #                         input$rayt,
-              #                         theme,
-              #                         fontsize,
-              #                         "left",
-              #                         "bottom"
-              #   )
-              # })
-              output$correlations <-  renderPlotly({
-                ggplotly(
+              output$correlations <-  renderPlot({
                 plotCorrelationSingle(out_dir,
                                       input$rayt,
                                       theme,
                                       fontsize,
                                       "left",
                                       "bottom"
-                )
                 )
               })
             })
