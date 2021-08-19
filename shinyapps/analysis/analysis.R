@@ -369,7 +369,7 @@ plotCorrelationSingle=function(folder,type,
           ylab("REPIN population size")
 
 	logging::logdebug("Adding theme.")
-    p <- p+theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
+    p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
 
 	logging::logdebug("Done, return from 'plotCorrelations'.")
     return(p)
