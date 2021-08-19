@@ -26,7 +26,7 @@ public class DeterminePopulationFrequencies {
 	boolean analyseREPIN;
 	File outFolder;
 	HashMap<String/*genomes*/,HashMap<String/*focal seed*/,Integer/*pop size*/>> results=new HashMap<String,HashMap<String,Integer>>();
-	HashSet<String> fastaExtensions=new HashSet<String>(Arrays.asList("fas","fasta","fna","fastn","fn"));
+	public static HashSet<String> fastaExtensions=new HashSet<String>(Arrays.asList("fas","fasta","fna","fastn","fn"));
     int MCLThreads=1;
 	// Entry point.
 	public static void main(String args[]) {
@@ -57,7 +57,7 @@ public class DeterminePopulationFrequencies {
 		}
         // legacy_blast path given.
         else if(args.length==11) {
-			String legacyBlastPerlLocation=args[9];
+			String legacyBlastPerlLocation=args[10];
 			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads);
 		    dpf.print(out);
         }
@@ -182,7 +182,10 @@ public class DeterminePopulationFrequencies {
 				rgp.add(new REPINGenomePositions(rp.getREPINPositions()));
 			}
 			System.out.println("REPIN RAYT proximity calculation for "+onlyGenome+"...");
+
 			rrp.addRAYT(raytPos, genomes.get(i), rgp);
+			System.out.println("rgp: "+rgp.size()+"\n rrp: "+rrp.allRAYTs.size());
+
 		}
 		rrp.write(new File(outFolder+"/repin_rayt_association.txt"));
 		rrp.writeREPINType(new File(outFolder+"/repin_rayt_association_byREPIN.txt"),genomeIDs,focalSeeds.length);
@@ -228,7 +231,7 @@ public class DeterminePopulationFrequencies {
 		return pos;
 	}
 	
-	private boolean hasCorrectExtension(File f) {
+	public static  boolean hasCorrectExtension(File f) {
 		String[] split=f.getAbsolutePath().split("\\.");
 		String ext=split[split.length-1];
 		if(fastaExtensions.contains(ext)) {

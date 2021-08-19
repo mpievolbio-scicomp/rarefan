@@ -66,9 +66,9 @@ public class REPIN_RAYT_prox {
 			BufferedWriter bw=new BufferedWriter(new FileWriter(out));
 			bw.write("Genome\tRAYT\tREPINgroups\n");
 			for(int i=0;i<allRAYTs.size();i++) {
-				String split[]=allRAYTs.get(i).getIdent().split("_");
-				String raytNumber=split[1];
-				String genome=split[0];
+				String split[]=allRAYTs.get(i).getIdent().split("_"); 
+				String raytNumber=split[split.length-1];
+				String genome=getGenome(allRAYTs.get(i).getIdent());
 				bw.write(genome+"\t"+raytNumber+"\t"+allVicinity.get(i).toString()+"\n");
 			}
 			bw.close();
@@ -78,10 +78,19 @@ public class REPIN_RAYT_prox {
 		}
 	}
 	
+	private String getGenome(String ident) {
+		String split[]=ident.split("_");
+		String genome=split[0];
+		for(int j=1;j<split.length-1;j++) {
+		  genome=genome+"_"+split[j];
+		}
+		return genome;
+	}
+	
 	private HashMap<String,String> addRAYTsToREPINTypeDS(HashMap<String,String> repintypeDS){
 		for(int i=0;i<allRAYTs.size();i++) {
 			ArrayList<Integer> repintypes=allVicinity.get(i).get();
-			String genome=allRAYTs.get(i).getIdent().split("_")[0];
+			String genome=getGenome(allRAYTs.get(i).getIdent());
 			for(int j=0;j<repintypes.size();j++) {
 				String genomeRtype=genome+"\t"+repintypes.get(j);
 				String rayt=allRAYTs.get(i).getIdent();
