@@ -2,7 +2,7 @@
 # Required libraries
 
 suppressMessages(library(shiny))
-suppressMessages(library(plotly))
+# suppressMessages(library(plotly))
 
 # Include local definitions
 source("analysis.R")

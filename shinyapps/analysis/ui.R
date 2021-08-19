@@ -1,5 +1,5 @@
 suppressMessages(library(shiny))
-suppressMessages(library(plotly))
+# suppressMessages(library(plotly))
 
 fluidPage(
 		
