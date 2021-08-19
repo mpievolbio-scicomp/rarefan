@@ -7,6 +7,8 @@ suppressMessages(library(plotly))
 # Include local definitions
 source("analysis.R")
 
+logging::addHandler(writeToFile, file="/tmp/R.log", level='DEBUG')
+
 # Font size
 fontsize=16
 
