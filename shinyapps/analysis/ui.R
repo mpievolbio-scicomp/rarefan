@@ -29,7 +29,8 @@ fluidPage(
 					plotOutput(outputId = 'repin_tree', width="60%", height="400px" ),
 					hr(),
 					h4("Correlation"),
-					plotlyOutput(outputId = 'correlations', width="60%", height="400px" )
+					# plotlyOutput(outputId = 'correlations', width="60%", height="400px" )
+					plotOutput(outputId = 'correlations', width="60%", height="400px" )
 				)
 		)
 )

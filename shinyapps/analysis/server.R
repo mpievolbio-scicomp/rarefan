@@ -53,7 +53,7 @@ function(input, output, session) {
 
               logging::logdebug("Calling 'plotCorrelationSingle'.")
               output$correlations <-  renderPlotly({
-                ggplotly(
+                # ggplotly(
                 plotCorrelationSingle(out_dir,
                                       input$rayt,
                                       theme,
@@ -61,7 +61,7 @@ function(input, output, session) {
                                       "left",
                                       "bottom"
                 )
-                )
+                # )
               })
             })
 }
