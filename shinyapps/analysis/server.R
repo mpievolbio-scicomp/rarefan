@@ -51,8 +51,6 @@ function(input, output, session) {
               output$correlations <-  renderPlot({
                 plotCorrelationSingle(out_dir,
                                       input$rayt,
-                                      c(0,1),
-                                      c(0,320),
                                       theme,
                                       fontsize,
                                       "left",

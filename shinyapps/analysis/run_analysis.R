@@ -75,8 +75,6 @@ fontsize = 12
 correlation_plot = plotCorrelationSingle(
 		folder=data_dir,
 		type=rayt_type,
-		xlim=c(0, 1),
-		ylim=c(0, 320),
 		theme=theme,
 		fontsize=fontsize,
 		pvLabelX='left',
@@ -98,6 +96,8 @@ phylogeny_plot = drawRAYTphylogeny(data_dir)
 figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1, nrow=1)
 
 ggexport(figure, filename=outfile)
+
+return(figure)
 
 
 
