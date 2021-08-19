@@ -41,24 +41,6 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 ######################################################################################
 plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
-#' @description Plot the REPIN phylogeny, RAYT population size and REPIN population size
-#' 
-#' @param folder Output directory containing the RAREFAN results (character).
-#' @param treeFile Name of the treefile in the output directory (character).
-#' @param type The RAYT type to analyse (int in range 0-5)
-#' @return A ggplot object holding the plot.
-#'
-#'  @examples
-#'  \dontrun{
-#'  plotREPINs('/tmp/rarefan_test/neisseria/out', 
-#'               'neisseria.nwk',
-#'               0,
-#'               'green',
-#'               2,
-#'               12
-#'               )
-#' }
-        
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -225,13 +207,6 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
 ######################################################################################
 determineColor=function(associationFile){
-    #' @description Determine the color for plotting the REPIN data based on the RAYT type
-    #'
-    #' @param associationFile Filename (path) of the data file that associates REPINs and RAYT types.
-    #' Typically, this is the file 'repin_rayt_association.txt' or 'repin_rayt_association_byREPIN' 
-    #' in the 'out/' directory of the run
-    #' @return A string designating the color.
-
   logging::logdebug("Determine colors from %s.", associationFile)
   ass=read.delim(associationFile,header=TRUE)
   logging::logdebug(str(ass))
@@ -354,16 +329,6 @@ plotCorrelationSingle=function(folder,type,
 
 ######################################################################################
 get_rayt_phylogeny=function(data_dir){
-    #' 
-    #' @description Read or compute the RAYT phylogeny
-    #' @details Scans the given directory (data_dir) for a file named 'raytAln.phy' 
-    #'          resulting from a muscle alignment run.
-    #'          If not found, muscle is run on the RAYT aminoacid sequence data found in the given directory.
-    #'          Then checks for files named 'raytAln_phyml_tree.txt' and 'raytAln_phyml_stats.txt'. If either
-    #'          of these files is missing, `phyml` will be run on 'raytAln.phy'. A `structure` that holds all
-    #'          three filenames will be returned.
-    #' @param data_dir Name (path) of the output directory of the RAREFAN run.
-    #' @return A `structure` holding the filenames for the phylogeny data.
 
   logging::loginfo("Getting RAYT phylogeny.")
  
@@ -423,12 +388,6 @@ get_rayt_phylogeny=function(data_dir){
 
 ######################################################################################
 drawRAYTphylogeny=function(data_dir){
-    #'
-    #' @description Draw the RAYT phylogeny as a tree using the ggtree R package.
-    #'
-    #' @param data_dir Directory name (path) from where to read the phylogeny data.
-    #'
-    #' @return A ggplot object holding the tree graph.
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
