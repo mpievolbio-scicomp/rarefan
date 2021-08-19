@@ -14,7 +14,6 @@ suppressMessages(library(stringr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
-suppressMessages(library(roxygen2))
 
 # Set log level
 logging::basicConfig()
