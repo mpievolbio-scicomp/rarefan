@@ -51,14 +51,14 @@ function(input, output, session) {
               })
 
               logging::logdebug("Calling 'plotCorrelationSingle'.")
-              output$correlations <-  renderPlotly({ggplotly(
+              output$correlations <-  renderPlotly({
                 plotCorrelationSingle(out_dir,
                                       input$rayt,
                                       theme,
                                       fontsize,
                                       "left",
                                       "bottom"
-                ))
+                )
               })
             })
 }
