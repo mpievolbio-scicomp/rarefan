@@ -1,5 +1,5 @@
 # TODO: Add comment
-# 
+#
 # Author: Carsten Fortmann-Grote
 ###############################################################################
 
@@ -80,7 +80,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
-  
+
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
   logging::logdebug(association)
@@ -88,7 +88,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   d <- association[association$repintype==type,]
   logging::logdebug(str(d))
   logging::logdebug(d)
-  
+
   repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
 
   colorDF = determineColor(repin_rayt_assoc_table_file)
@@ -120,31 +120,12 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   num_rayts = length(d$rayts)
   logging::logdebug("Number of rayts: %d", num_rayts)
-  if(num_rayts > 0){
-      logging::logdebug("Plotting RAYTs.")
-      p <- facet_plot(p,
-                    panel='RAYTs',
-                    data=d,
-                    geom=geom_segment,
-                    aes(x=0,
-                        xend=rayts,
-                        y=y,
-                        yend=y),
-                    size=bs,
-                    color=rayt_color
-          )
-  }
-  else {
-      logging::logwarn("No RAYTs in association table %s for RAYT type %d.", repin_rayt_assoc_table_file, type)
-      logging::logwarn("Not plotting RAYT population size.")
-  }
 
   # REPIN population size.
   logging::logdebug("Constructing popSize data.")
   data_file = paste0(folder,"/presAbs_",type,".txt")
   logging::logdebug("Reading table from %s.", data_file)
 
-  # data_file_ok = FALSE
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)
 		  logging::logwarn("File %s is empty.", data_file)
@@ -155,34 +136,54 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   data_file_is_corrupt = typeof(t) == "logical"
   if(!data_file_is_corrupt) {
-      popSize=data.frame(name=t[,1],
-                         rayts=t[,2],
-                         repins=t[,3],
-                         prop=(t[,5]/t[,3]),
-                         propAll=(t[,3]/t[,6]),
-                         numClus=t[,7],
-                         diffRAYTCluster=t[,7]-t[,2])
+    if(num_rayts > 0){
+        logging::logdebug("Plotting RAYTs.")
+        p <- facet_plot(p,
+                      panel='RAYTs',
+                      data=d,
+                      geom=geom_segment,
+                      aes(x=0,
+                          xend=rayts,
+                          y=y,
+                          yend=y),
+                      size=bs,
+                      color=rayt_color
+            )
+    }
+    else {
+        logging::logwarn("No RAYTs in association table %s for RAYT type %d.", repin_rayt_assoc_table_file, type)
+        logging::logwarn("Not plotting RAYT population size.")
 
-      logging::logdebug(str(popSize))
+    }
+    popSize=data.frame(name=t[,1],
+                       rayts=t[,2],
+                       repins=t[,3],
+                       prop=(t[,5]/t[,3]),
+                       propAll=(t[,3]/t[,6]),
+                       numClus=t[,7],
+                       diffRAYTCluster=t[,7]-t[,2])
 
-      logging::logdebug("plotting repin population size.")
-      p = facet_plot(p,
-                    panel='REPIN population size',
-                    data=popSize,
-                    geom=geom_segment,
-                    aes(x=0,
-                        xend=repins,
-                        y=y,
-                        yend=y),
-                    size=bs
-                   ,color=rayt_color
-                     )
-      
+    logging::logdebug(str(popSize))
+
+    logging::logdebug("plotting repin population size.")
+    p = facet_plot(p,
+                  panel='REPIN population size',
+                  data=popSize,
+                  geom=geom_segment,
+                  aes(x=0,
+                      xend=repins,
+                      y=y,
+                      yend=y),
+                  size=bs
+                 ,color=rayt_color
+                   )
+
   }
   else {
-          logging::logwarn("Not plotting REPIN population size for RAYT type %d", type)
-      }
-  
+          logging::logwarn("Not plotting RAYT/REPIN population sizes for REP/RAYT type %d", type)
+          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", type," is empty."))
+  }
+
   logging::logdebug("adding theme.")
   p = p + theme_tree2()
 
@@ -331,43 +332,43 @@ plotCorrelationSingle=function(folder,type,
 get_rayt_phylogeny=function(data_dir){
 
   logging::loginfo("Getting RAYT phylogeny.")
- 
+
   # Check if phylogeny exists.
   raytAlnFile = paste0(data_dir,"/raytAln.phy")
-  
+
   ### TODO: use filenamer methods here.
   raytPhyTreeFile = paste0(raytAlnFile, "_phyml_tree.txt")
   raytPhyStatsFile = paste0(raytAlnFile, "_phyml_stats.txt")
 
   files = structure(list(raytAlnFile="", raytPhyTreeFile="", raytPhyStatsFile=""))
   if(!file.exists(raytAlnFile)) {
-	  
+
 	  logging::loginfo(paste0("RAYT alignment file '", raytAlnFile, "' not found, will perform alignment now."))
 	  # The associated rayt sequence file.
 	  raytseqFile=paste0(data_dir,"/repin_rayt_association.txt.fas")
-	  
+
 	  # Read sequences
 	  raytseqs=readDNAStringSet(raytseqFile,format="fasta")
-	  
+
 	  # If no rayt sequences found, return empty.
 	  if(length(raytseqs) == 0) {
 		  logging::logwarn(paste0("No RAYT sequences found in ", raytseqFile))
 		  return(files)
 	  }
 
-	  
+
 	  # Run muscle alignment.
 	  logging::logdebug("Running muscle...")
 	  aln=muscle(raytseqs)
 	  logging::logdebug("...done.")
-	  
+
 	  # Write alignment to file.
 	  write.phylip(aln,raytAlnFile)
   }
   else {
 	  logging::loginfo(paste0("RAYT alignment file '", raytAlnFile, "' found."))
   }
-	  
+
   if(!(file.exists(raytPhyTreeFile) && file.exists(raytPhyStatsFile))) {
 	  logging::loginfo(paste0("RAYT phylogeny data files not found, will compute phylogeny now."))
 	  # Run phyml as system command.
@@ -376,7 +377,7 @@ get_rayt_phylogeny=function(data_dir){
   else {
 	  logging::loginfo(paste0("RAYT phylogeny data files found."))
   }
-  
+
   files$raytAlnFile = raytAlnFile
   files$raytPhyTreeFile=raytPhyTreeFile
   files$raytPhyStatsFile=raytPhyStatsFile
@@ -395,37 +396,37 @@ drawRAYTphylogeny=function(data_dir){
 	  logging::logwarn("Alignment is empty, will return empty plot.")
 	  return(ggplot())
   }
-  
+
   #
   logging::loginfo("Drawing RAYT phylogeny.")
- 	
+
   # Read tree file.
   raytTreeFile=rayt_files$raytPhyTreeFile
   nwk=read.tree(raytTreeFile)
 
   # Plot the tree
   p <- ggtree(nwk)
-	
+
   # Get colors
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
   logging::logdebug(colnames(colorDF))
   logging::logdebug(colorDF)
-  
+
   # Retain only RAYT colors.
   onlyRAYTs <- colorDF[colorDF[,1] %in% nwk$tip.label, ]
   logging::logdebug(colnames(onlyRAYTs))
   logging::logdebug(onlyRAYTs)
-  
+
   # Add tip labels.
   p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
   logging::logdebug(cols)
-  
+
   # Add colors
   p <-  p + scale_color_manual(values=unique(cols),guide="none")
-  
+
   logging::logdebug("Added color scale.")
 
   return(p)
