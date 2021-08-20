@@ -55,6 +55,7 @@ public class REPINProperties {
 	int popsize;
 	boolean needsToContainWord=false;
 	int maxREPINDistance=130;
+	int MCLThreads=1;
 	HashMap<String,ArrayList<REPINposition>> repinPositions=new HashMap<String,ArrayList<REPINposition>>();
 	HashMap<String,ArrayList<REPINposition>> largestClusterRepinPositions;
 
@@ -73,6 +74,8 @@ public class REPINProperties {
 		return largestClusterRepinPositions;
 
 	}
+	
+
 	
 	private HashMap<String,ArrayList<REPINposition>> getSeedSequencePositions(){
 		ArrayList<Fasta> fas=Fasta.readFasta(seedSequence);
@@ -96,8 +99,9 @@ public class REPINProperties {
 	
 	
 
-	public REPINProperties(File outFolder,String genomeID,File fas,int wordlength,int numMuts,double minFrac,File mutRate,String word,boolean needsToContainWord,boolean analyseREPIN){
+	public REPINProperties(File outFolder,String genomeID,File fas,int wordlength,int numMuts,double minFrac,File mutRate,String word,boolean needsToContainWord,boolean analyseREPIN,int MCLThreads){
 		this.word=word;
+		this.MCLThreads=MCLThreads;
 		this.needsToContainWord=needsToContainWord;
 		this.outFolder=outFolder;
 		this.genomeID=genomeID;
@@ -177,7 +181,7 @@ public class REPINProperties {
 			if(analyseREPIN){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
-                String mcl_command =mclPath+" "+simNet+" "+" -I 1.2 --abc -o "+mclout;
+                String mcl_command =mclPath+" "+simNet+" "+" -te "+MCLThreads+" -I 1.2 --abc -o "+mclout;
                 System.out.println("mcl_command = " + mcl_command);
                 //<<< DEBUG
 				RunTreePrograms.runProgram(
