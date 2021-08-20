@@ -65,16 +65,14 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
-  logging::logdebug("Reading tree file %s.", tree_file)
 
   tree=read.tree(tree_file)
   tips=tree$tip.label
   logging::logdebug(str(tree))
 
-  logging::logdebug("Plotting ggtree...")
+  logging::loginfo("Plotting ggtree...")
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
-#      xlim_tree(0.2)+
       geom_tiplab()
 
   # RAYT population size.
@@ -83,17 +81,12 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
-  logging::logdebug(association)
 
   d <- association[association$repintype==type,]
-  logging::logdebug(str(d))
-  logging::logdebug(d)
 
   repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
 
   colorDF = determineColor(repin_rayt_assoc_table_file)
-  logging::logdebug(str(colorDF))
-  logging::logdebug(colorDF)
 
   rayt_color = colorDF[colorDF$repRAYT==type,2]
   logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
@@ -114,9 +107,6 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   }
   logging::logdebug(paste0("rayt_color=", rayt_color))
 
-  logging::logdebug("Tree tip labels = %s", tree$tip.label)
-  logging::logdebug("repin_rayt_association.txt['genome'] = %s", d$genome)
-  logging::logdebug("repin_rayt_association.txt['rayts'] = %s", d$rayts)
 
   num_rayts = length(d$rayts)
   logging::logdebug("Number of rayts: %d", num_rayts)
@@ -131,13 +121,10 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 		  logging::logwarn("File %s is empty.", data_file)
           )
 
-  logging::logdebug(typeof(t))
-  logging::logdebug(t)
 
   data_file_is_corrupt = typeof(t) == "logical"
   if(!data_file_is_corrupt) {
     if(num_rayts > 0){
-        logging::logdebug("Plotting RAYTs.")
         p <- facet_plot(p,
                       panel='RAYTs',
                       data=d,
@@ -151,10 +138,11 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
             )
     }
     else {
-        logging::logwarn("No RAYTs in association table %s for RAYT type %d.", repin_rayt_assoc_table_file, type)
-        logging::logwarn("Not plotting RAYT population size.")
+        logging::logwarn("No RAYTs in association table %s for RAYT type %s.", repin_rayt_assoc_table_file, type)
 
     }
+
+    # Construct new data frame holding the data to plot in facets.
     popSize=data.frame(name=t[,1],
                        rayts=t[,2],
                        repins=t[,3],
@@ -163,9 +151,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                        numClus=t[,7],
                        diffRAYTCluster=t[,7]-t[,2])
 
-    logging::logdebug(str(popSize))
-
-    logging::logdebug("plotting repin population size.")
+    # Add repin population size.
     p = facet_plot(p,
                   panel='REPIN population size',
                   data=popSize,
@@ -179,15 +165,14 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                    )
 
   }
-  else {
-          logging::logwarn("Not plotting RAYT/REPIN population sizes for REP/RAYT type %d", type)
+  else {  # Print a note on the plot.
           p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", type," is empty."))
   }
 
-  logging::logdebug("adding theme.")
+  # Apply theme.
   p = p + theme_tree2()
-
-  logging::logdebug("customizing theme.")
+    
+  # Adjust theme.
   p = p +
         theme(strip.text.x=element_text(hjust=0),
               strip.background = element_rect(color="black",
@@ -196,12 +181,10 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
               )
         )
 
-  logging::logdebug("setting font size.")
+  # Font size.
   p = p +
           theme(text=element_text(size=fontsize)) +
           themeCurr
-
-  logging::logdebug("Done, returning from function 'plotREPIN'")
 
   return(p)
 }
@@ -278,7 +261,15 @@ plotCorrelationSingle=function(folder,type,
 	)
 
 	if(typeof(t) == "logical") {
-		return(ggplot())
+        p = ggplot() +
+            geom_blank() +
+            xlim(c(0, 1)) +
+            ylim(c(0,1)) +
+            annotate(x=0.5, y=0.5, geom='text', label="No data to correlate.") +
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) +
+            theme
+
+		return(p)
 	}
 
     t$propMaster=t[,5]/t[,9]
