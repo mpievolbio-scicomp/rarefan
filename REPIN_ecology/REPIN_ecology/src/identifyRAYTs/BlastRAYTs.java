@@ -3,6 +3,7 @@ package identifyRAYTs;
 import java.io.*;
 import java.util.*;
 
+import REPINpopulations.DeterminePopulationFrequencies;
 import blastTools.*;
 import util.*;
 
@@ -22,9 +23,12 @@ public class BlastRAYTs {
 		runProgram(inFolder,query,outFolder,e,program,repType,nameSeqs,true);
 	}
 	static int minClusterSize=10;
+	
+
+	
 	public static void runProgram(File inFolder,File query,File outFolder,String e,String program,String[] repType,String nameSeqs,boolean analyseREPIN) {
 			
-		System.out.println("Running program" + program + ".");
+		System.out.println("Running program " + program + ".");
 		for(int k=0;k<repType.length;k++) {
 			ArrayList<Fasta> seqs=new ArrayList<Fasta>();
 			File out=new File(outFolder+"/"+nameSeqs);
@@ -34,7 +38,7 @@ public class BlastRAYTs {
 			File[] dbs=inFolder.listFiles();
 
 			for(int i=0;i<dbs.length;i++) {
-				if(dbs[i].getName().endsWith("fas")||dbs[i].getName().endsWith("fna")) {
+				if(DeterminePopulationFrequencies.hasCorrectExtension(dbs[i])) {
 					File db=dbs[i];
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
 					String seqName=getName(dbs[i]);
@@ -286,10 +290,10 @@ public class BlastRAYTs {
 			}
 			System.out.println(fasIdent+" "+in);
 			System.out.println(start+" "+end);
+		
 			String seq=getSeq(fas.get(fasIdent),start,end,rev);
 		
 			seqs.add(new Fasta(name+" "+inf.get(i).toString(),seq));
-
 
 		}
 	}
