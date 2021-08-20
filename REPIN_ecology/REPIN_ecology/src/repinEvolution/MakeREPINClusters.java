@@ -98,7 +98,7 @@ public class MakeREPINClusters {
 			String id=AlignTwoGenomes.getID(genomes[i]);
 			rp.put(id, new REPINpopulations());
 			for(int j=0;j<reps.length;j++) {
-				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false,analyseREPIN));
+				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false,analyseREPIN, 1));
 			}
 		}
 		
