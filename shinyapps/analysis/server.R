@@ -6,6 +6,8 @@ suppressMessages(library(shiny))
 # Include local definitions
 source("analysis.R")
 
+logging::addHandler(writeToFile, file="/tmp/R.log", level='DEBUG')
+
 # Font size
 fontsize=16
 
@@ -25,6 +27,7 @@ function(input, output, session) {
               logging::logdebug(session$clientData$url_search)
               logging::logdebug("Still alive")
               run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)
+              # run_dir <- paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id)
               logging::logdebug(paste0("run_dir = ", run_dir))
               out_dir <- paste0(run_dir, "/out")
               logging::logdebug(paste0("out_dir = ", out_dir))
@@ -51,8 +54,6 @@ function(input, output, session) {
               output$correlations <-  renderPlot({
                 plotCorrelationSingle(out_dir,
                                       input$rayt,
-                                      c(0,1),
-                                      c(0,320),
                                       theme,
                                       fontsize,
                                       "left",
