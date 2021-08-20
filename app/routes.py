@@ -89,8 +89,8 @@ def upload():
                 os.remove(f)
 
         basenames = [os.path.basename(f) for f in fnames]
-        strain_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in dna_extensions]
-        rayt_names = [".".join(bn.split(".")[:-1]) for bn in basenames if bn.split(".")[-1] in aa_extensions]
+        strain_names = [bn for bn in basenames if bn.split(".")[-1] in dna_extensions]
+        rayt_names = [bn for bn in basenames if bn.split(".")[-1] in aa_extensions]
         tree_names = [bn for bn in basenames if bn.split(".")[-1] in tree_extensions]
 
         session['strain_names'] = strain_names
@@ -141,9 +141,13 @@ def submit():
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
-        treefile = request.form.get('treefile')
+        treefile = request.form.get('treefile', None)
         if treefile == "None":
+            run_andi_clustdist = True
             treefile = "tmptree.nwk"
+        else:
+            run_andi_clustdist = False
+
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
@@ -157,23 +161,37 @@ def submit():
         logger.info("treefile: %s", session['treefile'])
         logger.info("email: %s", session['email'])
 
-        # copy query rayt to working dir
-        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt']+".faa")
+        # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
+        # the server provided rayts are listed without filename extension, so have to append that here.
+        query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-                                                                     src=os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                                                     "..",
-                                                                     'data',
-                                                                     session['query_rayt']+".faa"
-                                                                     )
-                                                                     )
-                                                                     shutil.copyfile(src, query_rayt_fname)
+            query_rayt_fname = query_rayt_fname+".faa"
+            src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
+            logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
+            shutil.copyfile(src, query_rayt_fname)
+            
+            if not os.path.isfile(query_rayt_fname):
+                raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        # Copy R script
+        # Copy R scripts
         shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..", "displayREPINsAndRAYTs.R"
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                      "analysis.R"
                                      ),
-                        os.path.join(session['tmpdir'],
-                                     'displayREPINsAndRAYTs.R'
+                        os.path.join(session['outdir'],
+                                     'analysis.R'
+                                     )
+                        )
+        shutil.copyfile(os.path.join(os.path.dirname(__file__),
+                                     "..",
+                                     'shinyapps',
+                                     'analysis',
+                                     "run_analysis.R"
+                                     ),
+                        os.path.join(session['outdir'],
+                                     'run_analysis.R'
                                      )
                         )
 
@@ -197,7 +215,7 @@ def submit():
                                      ),
                                      session['tmpdir'],
                                      session['outdir'],
-                                     session['reference_strain']+".fas",
+                                     session['reference_strain'],
                                      '{0:s}'.format(session['min_nmer_occurence']),
                                      '{0:s}'.format(session['nmer_length']),
                                      query_rayt_fname,
@@ -217,16 +235,29 @@ def submit():
         logging.info("R command: %s", R_command)
         R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-        andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
-        distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-        distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-        andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
-        logging.info("andi command: %s", andi_command)
-        andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+        if run_andi_clustdist:
+            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
+            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+            distfile = os.path.join(session['outdir'], os.path.basename(distfile))
+            andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
+            logging.info("andi command: %s", andi_command)
+            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-        clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-        logging.info("clustdist command: %s", clustdist_command)
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+            clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+            logging.info("clustdist command: %s", clustdist_command)
+            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+
+        else:
+            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+            andi_command = "echo 'Not running andi, tree file was uploaded.'"
+            logging.info("andi command: %s", andi_command)
+            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+
+            clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
+                                                     os.path.join(session['outdir'], 'tmptree.nwk'))
+            logging.info("clustdist command: %s", clustdist_command)
+
+            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         # Zip results.
         zip_command = " ".join(["zip",
@@ -245,8 +276,6 @@ def submit():
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
             "{} && touch {}".format(zip_command, zip_stamp)
         ]
-
-
 
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
@@ -443,7 +472,11 @@ def files(req_path):
             req_path = req_path[:-1]
         logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
-        back_link = url_for('results', run_id=os.path.basename(session['tmpdir']))
+        tmp_dir = session.get('tmpdir', None)
+        if tmp_dir is not None:
+            back_link = url_for('results', run_id=os.path.basename(tmp_dir))
+        else:
+            back_link = url_for('results')
 
         link_to_parent = True
         # Only insert link to parent dir if not at top level.

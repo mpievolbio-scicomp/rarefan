@@ -19,7 +19,7 @@ fi
 
 d=-
 if [ $# -lt 2 ]; then
-    echo "Usage: run_test.sh [-d | --dataset] DATASET [-h | --help]"
+    echo "Usage: run_docker_test.sh [-d | --dataset] DATASET [-h | --help]"
     exit 1
 fi
 while [[ "$#" -gt 0 ]]; do
@@ -29,7 +29,7 @@ while [[ "$#" -gt 0 ]]; do
             shift
             ;;
         -h|--help)
-            echo "Usage: run_test.sh [-d | --dataset] DATASET [-h | --help]"
+            echo "Usage: run_docker_test.sh [-d | --dataset] DATASET [-h | --help]"
             exit 1
             ;;
         *)
@@ -48,10 +48,9 @@ rsync -ruvL ${TEST_DATA_DIR}/ ${RUN_DATA_DIR}/
 rsync -uv test/data/yafM_Ecoli.faa ${RUN_DATA_DIR}
 rsync -uv test/data/yafM_SBW25.faa ${RUN_DATA_DIR}
 
-
 if [[ ! $dataset == *"chlororaphis"* ]]; then
 	treename="tmptree"
-	java -Xmx10g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} Nmen_2594.fas 55 21 ${RUN_DATA_DIR}/yafM_Ecoli.faa ${treename}.nwk 1e-30 true
+	java -Xmx4g -jar REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} Nmen_2594.fas 55 21 ${RUN_DATA_DIR}/yafM_Ecoli.faa ${treename}.nwk 1e-30 true
 fi
 if [[ $dataset == *"chlororaphis"* ]]; then
     treename="chlororaphis"
@@ -61,3 +60,9 @@ fi
 
 andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${treename}.dist
 clustDist ${RUN_OUT_DIR}/${treename}.dist > ${RUN_OUT_DIR}/${treename}.nwk
+
+# Rscript ./displayREPINsAndRAYTs.R ${RUN_OUT_DIR} &&\
+# display ${RUN_OUT_DIR}/repins.png &&\
+#display ${RUN_OUT_DIR}/correlations.png &&\
+
+# rm -rf $RUN_DATA_DIR

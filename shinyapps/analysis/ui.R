@@ -1,35 +1,33 @@
 suppressMessages(library(shiny))
-suppressMessages(library(plotly))
 
 fluidPage(
-		
 		# App title
 		titlePanel("REPIN and RAYT analysis"),
 		sidebarLayout(
 				sidebarPanel(
-						textOutput("text"),
-					hr(),
+					textOutput("text"),
 					selectInput(inputId = 'rayt',
-								label="Select RAYT",
+								label="Select REP/RAYT group",
 								choices = list(
-										"RAYT 1" = 0,
-										"RAYT 2" = 1,
-										"RAYT 3" = 2,
-										"RAYT 4" = 3,
-										"RAYT 5" = 4,
-										"RAYT 6" = 5
+										"RAYT 0" = 0,
+										"RAYT 1" = 1,
+										"RAYT 2" = 2,
+										"RAYT 3" = 3,
+										"RAYT 4" = 4,
+										"RAYT 5" = 5
 								),
-								selected = 0)
-							),
+								selected = 0),
+						textOutput("plot_instructions")
+						),
 				mainPanel(
 					h4("RAYT tree"),
-					plotlyOutput(outputId = 'rayt_tree'),
+					plotOutput(outputId = 'rayt_tree', width="100%"),
 					hr(),
 					h4("REPINs"),
-					plotlyOutput(outputId = 'repin_tree'),
+					plotOutput(outputId = 'repin_tree', width="100%"),
 					hr(),
 					h4("Correlation"),
-					plotlyOutput(outputId = 'correlations')
+				  plotOutput(outputId = 'correlations', width="100%")
 				)
 		)
 )

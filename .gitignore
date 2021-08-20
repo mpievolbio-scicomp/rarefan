@@ -3,7 +3,6 @@
 .gradle/
 build/
 .ipynb_checkpoints/
-tags
 app/static/uploads/
 .idea/
 .project
@@ -15,8 +14,9 @@ gradlew.bat
 Rplots.pdf
 Session.vim
 __pycache__/
-test/
-
-nothing added to commit but untracked files present (use "git add" to track)
-test_data
 app/static/uploads
+.RData
+.Rhistory
+test/data/datasets/
+.*.swp
+.Rproj.user

@@ -1,0 +1,92 @@
+image: mpievolbioscicomp/repinpop_base
+
+# Disable the Gradle daemon for Continuous Integration servers as correctness
+# is usually a priority over speed in CI environments. Using a fresh
+# runtime for each build is more reliable since the runtime is completely
+# isolated from any previous builds.
+variables:
+  GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  script:
+      - CI/build.sh
+  artifacts:
+    paths:
+      - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+      - build/
+
+test:neisseria:small:
+  stage: test
+  script:
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/scripts
+    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
+  artifacts:
+    paths:
+      - test/data/neisseria_small/out
+
+test:dokdonia:
+  stage: test
+  allow_failure: true
+  script: 
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/scripts
+    - ./dl_zenodo.sh dokdonia
+    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
+  artifacts:
+    paths:
+      - test/data/dokdonia/out
+
+test:neisseria:
+  stage: test
+  allow_failure: false
+  script: 
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/scripts
+    - ./dl_zenodo.sh neisseria
+    - ./test.sh neisseria clean setup ref_plots test_ref_plots
+    - mv /tmp/rarefan_test/neisseria/ref ../data/datasets/neisseria/ref
+  artifacts:
+    paths:
+      - test/data/datasets/neisseria/ref
+
+test:chlororaphis:
+  stage: test
+  allow_failure: false
+  script: 
+    - cd build
+    - make 
+    - cd ..
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/scripts
+    - ./dl_zenodo.sh chlororaphis
+    - ./test.sh chlororaphis clean setup ref_plots test_ref_plots
+    - mv /tmp/rarefan_test/chlororaphis/ref ../data/datasets/chlororaphis/ref
+  artifacts:
+    paths:
+      - test/data/datasets/chlororaphis/ref
+
