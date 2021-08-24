@@ -40,6 +40,9 @@ logger = get_logger()
 
 logger.warning("RAREFAN")
 
+def get_no_cpus():
+    return os.cpu_count()
+
 def validate_fasta(filename):
     """ Validates input from passed file as fasta formatted sequence data.
 
@@ -200,6 +203,9 @@ def submit():
 
         start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
+        mlc_threads = get_no_cpus()//2
+
+        logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
         java_command = " ".join(['java',
                                      '-Dcom.sun.management.jmxremote',
                                       '-Dcom.sun.management.jmxremote.port=9010',
@@ -222,7 +228,9 @@ def submit():
                                      treefile,
                                      '{0:s}'.format(session['e_value_cutoff']),
                                      {"y": "true", None: "false"}[session['analyse_repins']],
-                                        ])
+                                     mcl_threads,
+                                        ]
+                                )
 
         logging.info("Java command: %s", java_command)
         java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
