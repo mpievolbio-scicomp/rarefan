@@ -203,7 +203,7 @@ def submit():
 
         start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
-        mlc_threads = get_no_cpus()//2
+        mcl_threads = max(get_no_cpus()//4, 1)
 
         logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
         java_command = " ".join(['java',
@@ -228,7 +228,7 @@ def submit():
                                      treefile,
                                      '{0:s}'.format(session['e_value_cutoff']),
                                      {"y": "true", None: "false"}[session['analyse_repins']],
-                                     mcl_threads,
+                                     '{0:d}'.format(mcl_threads),
                                         ]
                                 )
 
