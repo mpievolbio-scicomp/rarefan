@@ -119,7 +119,13 @@ dataset_vars() {
 
 java_cmd() {
 	dataset_vars
-    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar ${RUN_DATA_DIR} ${RUN_OUT_DIR} $ref_strain 55 21 $rayt_faa ${TREENAME}.nwk 1e-30 true"
+    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+                                  ${RUN_DATA_DIR}\
+                                  ${RUN_OUT_DIR}\
+                                  ${ref_strain}\
+                                  55 21\
+                                  ${rayt_faa}\
+                                  ${TREENAME}.nwk 1e-30 true 1"
     echo ${javacmd}
 }
 
