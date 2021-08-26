@@ -153,6 +153,7 @@ def submit():
             else:
                 run_andi_clustdist = False
         else:
+            treefile = "tmptree.nwk"
             run_andi_clustdist = False
 
         session['treefile'] = treefile
