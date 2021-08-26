@@ -429,7 +429,6 @@ def results():
             is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
 
             status = is_started*1 + is_java_finished*10 + is_zip_finished*100
-            # flash("DEBUG: Status={}".format(status))
 
             if status < 1:
                 flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
@@ -454,7 +453,7 @@ def results():
                 render_plots = True
             else:
                 render_plots = len(strain_names) > 3
-
+            flash("render plots = {}".format(render_plots))
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
                                    results_form=results_form,
