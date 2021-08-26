@@ -266,7 +266,7 @@ def submit():
             logging.info("andi command: %s", andi_command)
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            if len(session.get('strain_names')) >= 4:
+            if len(session.get('strain_names')) > 3:
                 clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
                                                          os.path.join(session['outdir'], 'tmptree.nwk'))
 
@@ -448,7 +448,8 @@ def results():
 
             send_email(run_id, status, session['email'])
 
-            render_plots = len(session('strain_names')) >= 4
+            # Only show plots if more than 3 strains uploaded.
+            render_plots = len(session.get('strain_names')) > 3
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
                                    results_form=results_form,
