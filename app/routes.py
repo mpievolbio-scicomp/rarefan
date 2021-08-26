@@ -453,7 +453,6 @@ def results():
                 render_plots = True
             else:
                 render_plots = len(strain_names) > 3
-            flash("render plots = {}".format(render_plots))
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
                                    results_form=results_form,
