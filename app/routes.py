@@ -149,7 +149,7 @@ def submit():
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
 
-        if len(strain_names) > 4:
+        if len(strain_names) >= 4:
             if treefile == "None":
                 run_andi_clustdist = True
                 treefile = "tmptree.nwk"
@@ -264,11 +264,17 @@ def submit():
             clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         else:
-            andi_command = "echo 'Not running andi, tree file was uploaded.'"
+            andi_command = "echo 'Not running andi.'"
             logging.info("andi command: %s", andi_command)
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            clustdist_command = "echo 'Not running clustDist.'"
+            if len(session.get('strain_names')) >= 4:
+                clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
+                                                         os.path.join(session['outdir'], 'tmptree.nwk'))
+
+            else:
+                clustdist_command = "echo 'Not running clustDist.'"
+
             logging.info("clustdist command: %s", clustdist_command)
 
             clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
