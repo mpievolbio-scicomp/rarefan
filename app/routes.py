@@ -260,8 +260,6 @@ def submit():
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
             clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-            logging.info("clustdist command: %s", clustdist_command)
-            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         else:
             andi_command = "echo 'Not running andi.'"
@@ -275,9 +273,8 @@ def submit():
             else:
                 clustdist_command = "echo 'Not running clustDist.'"
 
-            logging.info("clustdist command: %s", clustdist_command)
-
-            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+        logging.info("clustdist command: %s", clustdist_command)
+        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         # Zip results.
         zip_command = " ".join(["zip",
@@ -450,11 +447,14 @@ def results():
                 flash("Your job {} has failed with an unexpected failure.".format(run_id))
 
             send_email(run_id, status, session['email'])
+
+            render_plots = len(session('strain_names')) >= 4
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
                                    results_form=results_form,
                                    run_id=run_id,
-                                   status=status
+                                   status=status,
+                                   render_plots=render_plots,
                                    )
 
         else:
