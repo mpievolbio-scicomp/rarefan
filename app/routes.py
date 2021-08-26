@@ -134,9 +134,12 @@ def submit():
 
     logging.debug("submit/%s", request.method)
     submit_form = SubmitForm()
-    submit_form.reference_strain.choices.extend(session.get('strain_names'))
+
+    strain_names = session.get('strain_names')
+    submit_form.reference_strain.choices.extend(strain_names)
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
+
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
@@ -145,10 +148,15 @@ def submit():
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
-        if treefile == "None":
-            run_andi_clustdist = True
-            treefile = "tmptree.nwk"
+
+        if len(strain_names) >= 4:
+            if treefile == "None":
+                run_andi_clustdist = True
+                treefile = "tmptree.nwk"
+            else:
+                run_andi_clustdist = False
         else:
+            treefile = "tmptree.nwk"
             run_andi_clustdist = False
 
         session['treefile'] = treefile
@@ -252,20 +260,21 @@ def submit():
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
             clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-            logging.info("clustdist command: %s", clustdist_command)
-            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         else:
-            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-            andi_command = "echo 'Not running andi, tree file was uploaded.'"
+            andi_command = "echo 'Not running andi.'"
             logging.info("andi command: %s", andi_command)
             andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
-                                                     os.path.join(session['outdir'], 'tmptree.nwk'))
-            logging.info("clustdist command: %s", clustdist_command)
+            if len(session.get('strain_names')) > 3:
+                clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
+                                                         os.path.join(session['outdir'], 'tmptree.nwk'))
 
-            clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+            else:
+                clustdist_command = "echo 'Not running clustDist.'"
+
+        logging.info("clustdist command: %s", clustdist_command)
+        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
         # Zip results.
         zip_command = " ".join(["zip",
@@ -438,11 +447,15 @@ def results():
                 flash("Your job {} has failed with an unexpected failure.".format(run_id))
 
             send_email(run_id, status, session['email'])
+
+            # Only show plots if more than 3 strains uploaded.
+            render_plots = len(session.get('strain_names')) > 3
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
                                    results_form=results_form,
                                    run_id=run_id,
-                                   status=status
+                                   status=status,
+                                   render_plots=render_plots,
                                    )
 
         else:
