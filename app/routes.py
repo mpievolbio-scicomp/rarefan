@@ -449,7 +449,11 @@ def results():
             send_email(run_id, status, session['email'])
 
             # Only show plots if more than 3 strains uploaded.
-            render_plots = len(session.get('strain_names', range(4))) > 3
+            strain_names = session.get('strain_names', None)
+            if strain_names is None:
+                render_plots = True
+            else:
+                render_plots = len(strain_names) > 3
 
             return render_template('results.html',
                                    title="Run {} results".format(run_id),
