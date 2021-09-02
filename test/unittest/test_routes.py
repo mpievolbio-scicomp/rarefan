@@ -33,10 +33,10 @@ class RoutesTest(unittest.TestCase):
         }
         cmd = routes.get_email_command(session)
 
-        expected_cmd = """printf "Subject: Your RAREFAN run neisseria has finished.
+        expected_cmd = """printf "Subject: Your RAREFAN run neisseria has completed.
 
 Hallo,
-your job on rarefan.evolbio.mpg.de with ID neisseria has finished.
+your job on rarefan.evolbio.mpg.de with ID neisseria has completed.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
 
