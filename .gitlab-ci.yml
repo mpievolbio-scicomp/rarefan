@@ -20,6 +20,15 @@ build:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
       - build/
 
+test:unittest:
+  stage: test
+  script:
+    - source /root/.bashrc
+    - conda activate repinpop
+    - source setenv.sh
+    - cd test/unittest
+    - pytest test_routes.py
+
 test:neisseria:small:
   stage: test
   script:

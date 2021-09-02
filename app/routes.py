@@ -40,16 +40,21 @@ logger = get_logger()
 
 logger.warning("RAREFAN")
 
+
 def get_no_cpus():
     return os.cpu_count()
 
-def status_code(run_id_path):
+
+def get_status_code(run_id_path):
     # Check if the run has finished.
     is_started = ".start.stamp" in os.listdir(run_id_path)
     is_java_finished = ".java.stamp" in os.listdir(run_id_path)
     is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
 
     status = is_started * 1 + is_java_finished * 10 + is_zip_finished * 100
+
+    return status
+
 
 def validate_fasta(filename):
     """ Validates input from passed file as fasta formatted sequence data.
@@ -66,9 +71,11 @@ def validate_fasta(filename):
             logger.warning("%s is not a valid fasta file.", filename)
         return is_fasta
 
+
 @app.route('/')
 def index():
     return render_template("index.html")
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -136,6 +143,7 @@ def upload():
             title="Upload sequences",
             confirmation_form=form
         )
+
 
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
@@ -295,7 +303,8 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         logging.info("zip command: %s", zip_command)
 
-        email_command = email_command(session)
+        email_command = get_email_command(session)
+        email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
 
         command_lines = [
             "touch {} &&".format(start_stamp),
@@ -303,7 +312,7 @@ def submit():
             "{} && touch {}".format(andi_command, andi_stamp),
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
             "{} && touch {}".format(zip_command, zip_stamp),
-            "{}".format(email_command)
+            "{} && touch {}".format(email_command, email_stamp)
         ]
 
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
@@ -340,7 +349,7 @@ def submit():
                     submit_form=submit_form,
                     )
 
-def email_command(session):
+def get_email_command(session):
 
     run_id = os.path.basename(session["tmpdir"])
     # Aggregate the run path.
@@ -356,7 +365,7 @@ def email_command(session):
 
     recipients = [session["email"]]
 
-    status_code = status_code(run_id_path)
+    status_code = get_status_code(run_id_path)
 
     if status_code in [101, 10, 100]:
         email_subject = "Your RAREFAN run {0:s} has failed.".format(os.path.basename(run_id_path))
@@ -414,7 +423,6 @@ http://rarefan.evolbio.mpg.de
             'rarefan.log'
         )
     )
-
     return email_command
 
 
@@ -432,41 +440,39 @@ def results():
 
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
-         
-        if is_valid_run_id:
 
+        status = status_code(run_id_path)
 
-            if status < 1:
-                flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
-            elif status == 1:
-                flash("Your job {} is running, please wait for page to refresh.".format(run_id))
-            elif status == 11:
-                flash("Your job {} is finished. Preparing run files for download".format(run_id))
-            elif status == 101:
-                flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-            elif status == 111:
-                flash("Your job {} has finished. Results and download links below.".format(run_id))
-            elif status in [10, 100]:
-                flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
-            else:
-                flash("Your job {} has failed with an unexpected failure.".format(run_id))
-
-            # Only show plots if more than 3 strains uploaded.
-            strain_names = session.get('strain_names', None)
-            if strain_names is None:
-                render_plots = True
-            else:
-                render_plots = len(strain_names) > 3
-            return render_template('results.html',
-                                   title="Run {} results".format(run_id),
-                                   results_form=results_form,
-                                   run_id=run_id,
-                                   status=status,
-                                   render_plots=render_plots,
-                                   )
-
+        if status < 1:
+            flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
+        elif status == 1:
+            flash("Your job {} is running, please wait for page to refresh.".format(run_id))
+        elif status == 11:
+            flash("Your job {} is finished. Preparing run files for download".format(run_id))
+        elif status == 101:
+            flash("Your job {} has failed. Preparing run files for download.".format(run_id))
+        elif status == 111:
+            flash("Your job {} has finished. Results and download links below.".format(run_id))
+        elif status in [10, 100]:
+            flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
         else:
-            flash("Not a valid run ID.")
+            flash("Your job {} has failed with an unexpected failure.".format(run_id))
+
+        # Only show plots if more than 3 strains uploaded.
+        strain_names = session.get('strain_names', None)
+        if strain_names is None:
+            render_plots = True
+        else:
+            render_plots = len(strain_names) > 3
+        return render_template('results.html',
+                               title="Run {} results".format(run_id),
+                               results_form=results_form,
+                               run_id=run_id,
+                               status=status,
+                               render_plots=render_plots,
+                               )
+
+    flash("Not a valid run ID.")
 
     return render_template("results_query.html",
                        results_form=results_form,
