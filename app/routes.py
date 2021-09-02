@@ -22,7 +22,7 @@ from Bio import SeqIO
 
 import datetime
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def get_logger():
     logger = logging.getLogger(__name__)
@@ -30,7 +30,7 @@ def get_logger():
     timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
     handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
     handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG)
+    handler.setLevel(logging.INFO)
     logger.addHandler(handler)
 
     return logger

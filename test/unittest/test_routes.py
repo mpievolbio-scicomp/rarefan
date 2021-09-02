@@ -33,7 +33,21 @@ class RoutesTest(unittest.TestCase):
         }
         cmd = routes.get_email_command(session)
 
-        self.assertEqual("echo 'Job still running.'", cmd)
+        expected_cmd = """printf "Subject: Your RAREFAN run neisseria has finished.
+
+Hallo,
+your job on rarefan.evolbio.mpg.de with ID neisseria has finished.
+You can browse and download the results at this link:
+http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
+
+In case of problems, please reply to this email and leave the email subject as is.
+
+Thank you for using RAREFAN.
+
+http://rarefan.evolbio.mpg.de
+" | msmtp no.name@no.host.xyz >> ../data/neisseria/out/rarefan.log"""
+
+        self.assertEqual(expected_cmd, cmd)
 
 
     def test_get_email_command_complete(self):
@@ -58,7 +72,7 @@ Thank you for using RAREFAN.
 http://rarefan.evolbio.mpg.de
 " | msmtp no.name@no.host.xyz >> ../data/neisseria_completed/out/rarefan.log"""
 
-        self.assertEqual(cmd, expected_cmd)
+        self.assertEqual(expected_cmd, cmd)
 
 
 if __name__ == '__main__':
