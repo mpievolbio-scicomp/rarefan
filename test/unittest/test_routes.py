@@ -19,13 +19,13 @@ class RoutesTest(unittest.TestCase):
 
     def test_get_status_code(self):
 
-        status_code = routes.get_status_code("../data/datasets/chlororaphis")
-        self.assertEqual(status_code, 111)  # add assertion here
+        status_code = routes.get_status_code("../data/neisseria")
+        self.assertEqual(111, status_code )  # add assertion here
 
     def test_get_email_command(self):
 
         session = {
-                'tmpdir'    :   '../data/datasets/chlororaphis',
+                'tmpdir'    :   '../data/neisseria',
                 'email'     :   'no.name@no.host.xyz',
         }
         cmd = routes.get_email_command(session)
@@ -33,9 +33,9 @@ class RoutesTest(unittest.TestCase):
         expected_cmd = """printf "Subject: Your RAREFAN run chlororaphis has finished.
 
 Hallo,
-your job on rarefan.evolbio.mpg.de with ID chlororaphis has finished.
+your job on rarefan.evolbio.mpg.de with ID neisseria has finished.
 You can browse and download the results at this link:
-http://rarefan.evolbio.mpg.de/results?run_id=chlororaphis.
+http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
 
 Thank you for using RAREFAN. We hope to see you soon again.
 
