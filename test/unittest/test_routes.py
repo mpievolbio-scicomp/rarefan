@@ -9,6 +9,9 @@ print(project_dir)
 
 sys.path.insert(0, project_dir)
 import app.routes as routes
+import logging
+
+routes.logger.setLevel(logging.DEBUG)
 
 class RoutesTest(unittest.TestCase):
     def setUp(self):
@@ -22,7 +25,18 @@ class RoutesTest(unittest.TestCase):
         status_code = routes.get_status_code("../data/neisseria_completed")
         self.assertEqual(111, status_code )  # add assertion here
 
-    def test_get_email_command(self):
+    def test_get_email_command_incomplete(self):
+
+        session = {
+                'tmpdir'    :   '../data/neisseria',
+                'email'     :   'no.name@no.host.xyz',
+        }
+        cmd = routes.get_email_command(session)
+
+        self.assertEqual("echo 'Job still running.'", cmd)
+
+
+    def test_get_email_command_complete(self):
 
         session = {
                 'tmpdir'    :   '../data/neisseria_completed',
@@ -37,11 +51,9 @@ your job on rarefan.evolbio.mpg.de with ID neisseria_completed has finished.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id=neisseria_completed.
 
-Thank you for using RAREFAN. We hope to see you soon again.
+In case of problems, please reply to this email and leave the email subject as is.
 
-Kind regards,
-
-RAREFAN.
+Thank you for using RAREFAN.
 
 http://rarefan.evolbio.mpg.de
 " | msmtp no.name@no.host.xyz >> ../data/neisseria_completed/out/rarefan.log"""

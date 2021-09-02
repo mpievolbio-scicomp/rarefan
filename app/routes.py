@@ -22,7 +22,6 @@ from Bio import SeqIO
 
 import datetime
 import logging
-
 logging.basicConfig(level=logging.DEBUG)
 
 def get_logger():
@@ -31,7 +30,7 @@ def get_logger():
     timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
     handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
     handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
     return logger
@@ -341,7 +340,7 @@ def submit():
 
         os.chdir(oldwd)
 
-        return redirect(url_for('results', run_id))
+        return redirect(url_for('results', run_id=run_id))
 
     return render_template(
                     'submit.html',
@@ -357,61 +356,24 @@ def get_email_command(session):
 
     # Check if email notification was requested.
     if session['email'] is None or session['email'] == "":
-        return None
-
-    # Check if an email has already been sent.
-    if '.email.stamp' in os.listdir(run_id_path):
-        return None
+        logging.debug("No email set.")
+        return "echo 'No email set.'"
 
     recipients = [session["email"]]
 
-    status_code = get_status_code(run_id_path)
 
-    if status_code in [101, 10, 100]:
-        email_subject = "Your RAREFAN run {0:s} has failed.".format(os.path.basename(run_id_path))
-        email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} has failed.
-You can browse and download the run files at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
-
-Pay attention to the log file under out/rarefan.log as it may provide further information about the failure.
-Please feel free to seek our support at mailto:computing.evolbio.mpg.de.
-
-Thank you for using RAREFAN. We hope to see you soon again.
-
-Kind regards,
-
-RAREFAN.
-
-http://rarefan.evolbio.mpg.de
-""".format(os.path.basename(run_id_path))
-
-        # Include admin as recipient.
-        recipients.append('computing@evolbio.mpg.de')
-
-    # Job success.
-    elif status_code == 111:
-        email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(run_id_path))
-        email_body = """Hallo,
+    email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(run_id_path))
+    email_body = """Hallo,
 your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
 
-Thank you for using RAREFAN. We hope to see you soon again.
+In case of problems, please reply to this email and leave the email subject as is.
 
-Kind regards,
-
-RAREFAN.
+Thank you for using RAREFAN.
 
 http://rarefan.evolbio.mpg.de
 """.format(os.path.basename(run_id_path))
-
-    # All other cases (job still running or queued).
-    else:
-        return None
-
-    logger.info("Sending RAREFAN report email.")
-    # Send mail to all recipients.
 
     email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
         email_subject,
@@ -441,7 +403,7 @@ def results():
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
 
-        status = status_code(run_id_path)
+        status = get_status_code(run_id_path)
 
         if status < 1:
             flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
