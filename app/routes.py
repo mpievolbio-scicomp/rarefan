@@ -22,8 +22,7 @@ from Bio import SeqIO
 
 import datetime
 import logging
-
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 def get_logger():
     logger = logging.getLogger(__name__)
@@ -40,8 +39,21 @@ logger = get_logger()
 
 logger.warning("RAREFAN")
 
+
 def get_no_cpus():
     return os.cpu_count()
+
+
+def get_status_code(run_id_path):
+    # Check if the run has finished.
+    is_started = ".start.stamp" in os.listdir(run_id_path)
+    is_java_finished = ".java.stamp" in os.listdir(run_id_path)
+    is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
+
+    status = is_started * 1 + is_java_finished * 10 + is_zip_finished * 100
+
+    return status
+
 
 def validate_fasta(filename):
     """ Validates input from passed file as fasta formatted sequence data.
@@ -58,9 +70,11 @@ def validate_fasta(filename):
             logger.warning("%s is not a valid fasta file.", filename)
         return is_fasta
 
+
 @app.route('/')
 def index():
     return render_template("index.html")
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
@@ -129,6 +143,7 @@ def upload():
             confirmation_form=form
         )
 
+
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
 
@@ -148,6 +163,7 @@ def submit():
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
+        run_id = os.path.basename(session['tmpdir'])
 
         if len(strain_names) >= 4:
             if treefile == "None":
@@ -286,12 +302,16 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         logging.info("zip command: %s", zip_command)
 
+        email_command = get_email_command(session)
+        email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
+
         command_lines = [
             "touch {} &&".format(start_stamp),
             "{} && touch {}".format(java_command, java_stamp),
             "{} && touch {}".format(andi_command, andi_stamp),
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
-            "{} && touch {}".format(zip_command, zip_stamp)
+            "{} && touch {}".format(zip_command, zip_stamp),
+            "{} && touch {}".format(email_command, email_stamp)
         ]
 
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
@@ -304,23 +324,23 @@ def submit():
                 fp.write('\n')
             fp.write('\n')
 
-        os.chmod('job.sh', stat.S_IRWXU )
+        os.chmod('job.sh', stat.S_IRWXU)
 
         # Write batch script to submit the job.
-        with open(os.path.join(tmpdir,'batch.sh'), 'w') as fp:
+        with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
             fp.write('\n')
             fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
             fp.write('\n')
 
-        os.chmod('batch.sh', stat.S_IRWXU )
+        os.chmod('batch.sh', stat.S_IRWXU)
 
         shell_command = os.path.join(tmpdir, 'batch.sh')
         proc = subprocess.Popen(shlex.split(shell_command), shell=False)
 
         os.chdir(oldwd)
 
-        return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
+        return redirect(url_for('results', run_id=run_id))
 
     return render_template(
                     'submit.html',
@@ -328,84 +348,44 @@ def submit():
                     submit_form=submit_form,
                     )
 
-def send_email(run_id, status_code, recipient):
+def get_email_command(session):
 
     # Aggregate the run path.
-    run_id_path = os.path.join(app.static_folder, "uploads", run_id)
+    run_id_path = session["tmpdir"]
+    run_id = os.path.basename(run_id_path)
 
-    # Check if email notification was requested.
-    if recipient is None or recipient == "":
-        return
+    # List of recipients. Always send to rarefan.
+    recipients = ["rarefan@evolbio.mpg.de"]
+    if session['email'] is None or session['email'] == "":
+        logging.debug("No email set.")
 
-    # Check if an email has already been sent.
-    if '.email.stamp' in os.listdir(run_id_path):
-        return
+    recipients.append(session["email"])
 
-    recipients = [recipient]
-
-    # Job failed.
-    if status_code in [101, 10, 100]:
-        email_subject = "Your RAREFAN run {0:s} has failed.".format(os.path.basename(run_id_path))
-        email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} has failed.
-You can browse and download the run files at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
-
-Pay attention to the log file under out/rarefan.log as it may provide further information about the failure.
-Please feel free to seek our support at mailto:computing.evolbio.mpg.de.
-
-Thank you for using RAREFAN. We hope to see you soon again.
-
-Kind regards,
-
-RAREFAN.
-
-http://rarefan.evolbio.mpg.de
-""".format(os.path.basename(run_id_path))
-
-        # Include admin as recipient.
-        recipients.append('computing@evolbio.mpg.de')
-
-    # Job success.
-    elif status_code == 111:
-        email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(run_id_path))
-        email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
+    email_subject = "Your RAREFAN run {0:s} has completed.".format(run_id)
+    email_body = """Hallo,
+your job on rarefan.evolbio.mpg.de with ID {0:s} has completed.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
 
-Thank you for using RAREFAN. We hope to see you soon again.
+In case of problems, please reply to this email and leave the email subject as is.
 
-Kind regards,
-
-RAREFAN.
+Thank you for using RAREFAN.
 
 http://rarefan.evolbio.mpg.de
-""".format(os.path.basename(run_id_path))
+""".format(run_id)
 
-    # All other cases (job still running or queued).
-    else:
-        return
-
-    logger.info("Sending RAREFAN report email.")
-    # Send mail to all recipients.
-    for recipient in recipients:
-        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
-            email_subject,
-            email_body,
-            recipient,
-            os.path.join(
-                run_id_path,
-                'out',
-                'rarefan.log'
-            )
+    email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
+        email_subject,
+        email_body,
+        " ".join(recipients),
+        os.path.join(
+            run_id_path,
+            'out',
+            'rarefan.log'
         )
+    )
+    return email_command
 
-        logger.info("email_command = %s", email_command)
-        proc = subprocess.Popen(email_command, shell=True)
-    #
-    # Generate email stamp.
-    proc = subprocess.Popen(shlex.split("touch {}/.email.stamp".format(run_id_path)))
 
 
 @app.route('/results', methods=['GET', 'POST'])
@@ -421,48 +401,39 @@ def results():
 
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
-         
-        if is_valid_run_id:
-            # Check if the run has finished.
-            is_started = ".start.stamp" in os.listdir(run_id_path)
-            is_java_finished = ".java.stamp" in os.listdir(run_id_path)
-            is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
 
-            status = is_started*1 + is_java_finished*10 + is_zip_finished*100
+        status = get_status_code(run_id_path)
 
-            if status < 1:
-                flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
-            elif status == 1:
-                flash("Your job {} is running, please wait for page to refresh.".format(run_id))
-            elif status == 11:
-                flash("Your job {} is finished. Preparing run files for download".format(run_id))
-            elif status == 101:
-                flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-            elif status == 111:
-                flash("Your job {} has finished. Results and download links below.".format(run_id))
-            elif status in [10, 100]:
-                flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
-            else:
-                flash("Your job {} has failed with an unexpected failure.".format(run_id))
-
-            send_email(run_id, status, session['email'])
-
-            # Only show plots if more than 3 strains uploaded.
-            strain_names = session.get('strain_names', None)
-            if strain_names is None:
-                render_plots = True
-            else:
-                render_plots = len(strain_names) > 3
-            return render_template('results.html',
-                                   title="Run {} results".format(run_id),
-                                   results_form=results_form,
-                                   run_id=run_id,
-                                   status=status,
-                                   render_plots=render_plots,
-                                   )
-
+        if status < 1:
+            flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
+        elif status == 1:
+            flash("Your job {} is running, please wait for page to refresh.".format(run_id))
+        elif status == 11:
+            flash("Your job {} is finished. Preparing run files for download".format(run_id))
+        elif status == 101:
+            flash("Your job {} has failed. Preparing run files for download.".format(run_id))
+        elif status == 111:
+            flash("Your job {} has finished. Results and download links below.".format(run_id))
+        elif status in [10, 100]:
+            flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
         else:
-            flash("Not a valid run ID.")
+            flash("Your job {} has failed with an unexpected failure.".format(run_id))
+
+        # Only show plots if more than 3 strains uploaded.
+        strain_names = session.get('strain_names', None)
+        if strain_names is None:
+            render_plots = True
+        else:
+            render_plots = len(strain_names) > 3
+        return render_template('results.html',
+                               title="Run {} results".format(run_id),
+                               results_form=results_form,
+                               run_id=run_id,
+                               status=status,
+                               render_plots=render_plots,
+                               )
+
+    flash("Not a valid run ID.")
 
     return render_template("results_query.html",
                        results_form=results_form,
@@ -518,3 +489,4 @@ def files(req_path):
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
+
