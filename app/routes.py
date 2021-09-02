@@ -43,6 +43,14 @@ logger.warning("RAREFAN")
 def get_no_cpus():
     return os.cpu_count()
 
+def status_code(run_id_path):
+    # Check if the run has finished.
+    is_started = ".start.stamp" in os.listdir(run_id_path)
+    is_java_finished = ".java.stamp" in os.listdir(run_id_path)
+    is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
+
+    status = is_started * 1 + is_java_finished * 10 + is_zip_finished * 100
+
 def validate_fasta(filename):
     """ Validates input from passed file as fasta formatted sequence data.
 
@@ -148,6 +156,7 @@ def submit():
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
+        run_id = os.path.basename(session['tmpdir'])
 
         if len(strain_names) >= 4:
             if treefile == "None":
@@ -286,12 +295,15 @@ def submit():
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         logging.info("zip command: %s", zip_command)
 
+        email_command = email_command(session)
+
         command_lines = [
             "touch {} &&".format(start_stamp),
             "{} && touch {}".format(java_command, java_stamp),
             "{} && touch {}".format(andi_command, andi_stamp),
             "{} && touch {}".format(clustdist_command, clustdist_stamp),
-            "{} && touch {}".format(zip_command, zip_stamp)
+            "{} && touch {}".format(zip_command, zip_stamp),
+            "{}".format(email_command)
         ]
 
         with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
@@ -304,23 +316,23 @@ def submit():
                 fp.write('\n')
             fp.write('\n')
 
-        os.chmod('job.sh', stat.S_IRWXU )
+        os.chmod('job.sh', stat.S_IRWXU)
 
         # Write batch script to submit the job.
-        with open(os.path.join(tmpdir,'batch.sh'), 'w') as fp:
+        with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
             fp.write(r"#! /bin/bash")
             fp.write('\n')
             fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
             fp.write('\n')
 
-        os.chmod('batch.sh', stat.S_IRWXU )
+        os.chmod('batch.sh', stat.S_IRWXU)
 
         shell_command = os.path.join(tmpdir, 'batch.sh')
         proc = subprocess.Popen(shlex.split(shell_command), shell=False)
 
         os.chdir(oldwd)
 
-        return redirect(url_for('results', run_id=os.path.basename(session['tmpdir'])))
+        return redirect(url_for('results', run_id))
 
     return render_template(
                     'submit.html',
@@ -328,22 +340,24 @@ def submit():
                     submit_form=submit_form,
                     )
 
-def send_email(run_id, status_code, recipient):
+def email_command(session):
 
+    run_id = os.path.basename(session["tmpdir"])
     # Aggregate the run path.
-    run_id_path = os.path.join(app.static_folder, "uploads", run_id)
+    run_id_path = session["tmpdir"]
 
     # Check if email notification was requested.
-    if recipient is None or recipient == "":
-        return
+    if session['email'] is None or session['email'] == "":
+        return None
 
     # Check if an email has already been sent.
     if '.email.stamp' in os.listdir(run_id_path):
-        return
+        return None
 
-    recipients = [recipient]
+    recipients = [session["email"]]
 
-    # Job failed.
+    status_code = status_code(run_id_path)
+
     if status_code in [101, 10, 100]:
         email_subject = "Your RAREFAN run {0:s} has failed.".format(os.path.basename(run_id_path))
         email_body = """Hallo,
@@ -385,27 +399,24 @@ http://rarefan.evolbio.mpg.de
 
     # All other cases (job still running or queued).
     else:
-        return
+        return None
 
     logger.info("Sending RAREFAN report email.")
     # Send mail to all recipients.
-    for recipient in recipients:
-        email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
-            email_subject,
-            email_body,
-            recipient,
-            os.path.join(
-                run_id_path,
-                'out',
-                'rarefan.log'
-            )
-        )
 
-        logger.info("email_command = %s", email_command)
-        proc = subprocess.Popen(email_command, shell=True)
-    #
-    # Generate email stamp.
-    proc = subprocess.Popen(shlex.split("touch {}/.email.stamp".format(run_id_path)))
+    email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
+        email_subject,
+        email_body,
+        " ".join(recipients),
+        os.path.join(
+            run_id_path,
+            'out',
+            'rarefan.log'
+        )
+    )
+
+    return email_command
+
 
 
 @app.route('/results', methods=['GET', 'POST'])
@@ -423,12 +434,7 @@ def results():
         is_valid_run_id = os.path.isdir(run_id_path)
          
         if is_valid_run_id:
-            # Check if the run has finished.
-            is_started = ".start.stamp" in os.listdir(run_id_path)
-            is_java_finished = ".java.stamp" in os.listdir(run_id_path)
-            is_zip_finished = ".zip.stamp" in os.listdir(run_id_path)
 
-            status = is_started*1 + is_java_finished*10 + is_zip_finished*100
 
             if status < 1:
                 flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
@@ -444,8 +450,6 @@ def results():
                 flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
             else:
                 flash("Your job {} has failed with an unexpected failure.".format(run_id))
-
-            send_email(run_id, status, session['email'])
 
             # Only show plots if more than 3 strains uploaded.
             strain_names = session.get('strain_names', None)
@@ -518,3 +522,4 @@ def files(req_path):
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
+
