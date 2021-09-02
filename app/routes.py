@@ -350,19 +350,18 @@ def submit():
 
 def get_email_command(session):
 
-    run_id = os.path.basename(session["tmpdir"])
     # Aggregate the run path.
     run_id_path = session["tmpdir"]
+    run_id = os.path.basename(run_id_path)
 
-    # Check if email notification was requested.
+    # List of recipients. Always send to rarefan.
+    recipients = ["rarefan@evolbio.mpg.de"]
     if session['email'] is None or session['email'] == "":
         logging.debug("No email set.")
-        return "echo 'No email set.'"
 
-    recipients = [session["email"]]
+    recipients.append(session["email"])
 
-
-    email_subject = "Your RAREFAN run {0:s} has finished.".format(os.path.basename(run_id_path))
+    email_subject = "Your RAREFAN run {0:s} has finished.".format(run_id)
     email_body = """Hallo,
 your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
 You can browse and download the results at this link:
@@ -373,7 +372,7 @@ In case of problems, please reply to this email and leave the email subject as i
 Thank you for using RAREFAN.
 
 http://rarefan.evolbio.mpg.de
-""".format(os.path.basename(run_id_path))
+""".format(run_id)
 
     email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
         email_subject,
