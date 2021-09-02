@@ -25,6 +25,7 @@ test:unittest:
   script:
     - source /root/.bashrc
     - conda activate repinpop
+    - conda install pytest
     - source setenv.sh
     - cd test/unittest
     - pytest test_routes.py

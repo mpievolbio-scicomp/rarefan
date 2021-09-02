@@ -34,7 +34,6 @@ dependencies:
   - bioconductor-biostrings
   - gradle
   - biopython
-  - pytest
   - email_validator
   - phyml
   - pip
