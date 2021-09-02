@@ -19,13 +19,13 @@ class RoutesTest(unittest.TestCase):
 
     def test_get_status_code(self):
 
-        status_code = routes.get_status_code("../data/neisseria")
+        status_code = routes.get_status_code("../data/neisseria_completed")
         self.assertEqual(111, status_code )  # add assertion here
 
     def test_get_email_command(self):
 
         session = {
-                'tmpdir'    :   '../data/neisseria',
+                'tmpdir'    :   '../data/neisseria_completed',
                 'email'     :   'no.name@no.host.xyz',
         }
         cmd = routes.get_email_command(session)
