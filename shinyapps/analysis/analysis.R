@@ -19,7 +19,7 @@ suppressMessages(library(logging))
 logging::basicConfig()
 logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
 
-# 6 Colors for plots (corresponding to 6 RAYT types)
+# 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
 
 # Set theme for all plots
@@ -32,20 +32,20 @@ theme=theme(axis.line.x = element_line(colour = "black"),
             panel.border = element_blank(),
             panel.background = element_blank(),
             legend.justification = c(0, 1),
-            legend.position = c(0.5, 1),
-            legend.title=element_blank(),
+            legend.position = c(0.90, 1),
+            # legend.title=element_blank(),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
 )
 
 
 ######################################################################################
-plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
+plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
   logging::logdebug(paste0("    treeFile = ", treeFile))
-  logging::logdebug(paste0("    type = ", type))
+  logging::logdebug(paste0("    rep_rayt_group = ", rep_rayt_group))
   logging::logdebug(paste0("    colorBars = ", colorBars))
   logging::logdebug(paste0("    bs = ", bs))
   logging::logdebug(paste0("    fontsize = ", fontsize))
@@ -82,13 +82,13 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
 
-  d <- association[association$repintype==type,]
+  d <- association[association$repintype==rep_rayt_group,]
 
   repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
 
   colorDF = determineColor(repin_rayt_assoc_table_file)
 
-  rayt_color = colorDF[colorDF$repRAYT==type,2]
+  rayt_color = colorDF[colorDF$repRAYT==rep_rayt_group,2]
   logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
   logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
 
@@ -113,7 +113,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   # REPIN population size.
   logging::logdebug("Constructing popSize data.")
-  data_file = paste0(folder,"/presAbs_",type,".txt")
+  data_file = paste0(folder,"/presAbs_",rep_rayt_group,".txt")
   logging::logdebug("Reading table from %s.", data_file)
 
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
@@ -138,7 +138,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
             )
     }
     else {
-        logging::logwarn("No RAYTs in association table %s for RAYT type %s.", repin_rayt_assoc_table_file, type)
+        logging::logwarn("No RAYTs in association table %s for RAYT rep_rayt_group %s.", repin_rayt_assoc_table_file, rep_rayt_group)
 
     }
 
@@ -166,12 +166,12 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   }
   else {  # Print a note on the plot.
-          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", type," is empty."))
+          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", rep_rayt_group," is empty."))
   }
 
   # Apply theme.
   p = p + theme_tree2()
-    
+
   # Adjust theme.
   p = p +
         theme(strip.text.x=element_text(hjust=0),
@@ -239,7 +239,7 @@ determineColor=function(associationFile){
 }
 
 ######################################################################################
-plotCorrelationSingle=function(folder,type,
+plotCorrelationSingle=function(folder,rep_rayt_group,
                                theme,
                                fontsize,
                                pvLabelX,
@@ -253,7 +253,7 @@ plotCorrelationSingle=function(folder,type,
 
 	logging::logdebug("Plotting correlation.")
 
-	data_file = paste0(folder,"/presAbs_",type,".txt")
+	data_file = paste0(folder,"/presAbs_",rep_rayt_group,".txt")
 	logging::logdebug("Reading data from %s.", data_file)
 	t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)
@@ -280,37 +280,36 @@ plotCorrelationSingle=function(folder,type,
     association=read.table(assoc_file,header=TRUE)
 
 	logging::logdebug("Preparing data structures and colors.")
-    association=association[association$repintype==type,]
-    t$color=association[match(t[,1],association[,1]),]$rayts
+  association=association[association$repintype==rep_rayt_group,]
+  t$color=association[match(t[,1],association[,1]),]$rayts
 
-    logging::logdebug(str(t))
+  logging::logdebug(str(t))
 
-    cols=t$color
-    names(cols)=cols
-	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
-    cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
-    cols[cols==0]="black"
+  cols <- t$color
+  names(cols) <- cols
+	colorDF <-  determineColor(paste0(folder,"/repin_rayt_association.txt"))
+  col <- unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
+  # cols[cols>0] <- unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
+  # cols[cols==0] <- "black"
 
-    logging::logdebug(cols)
+  # logging::logdebug(cols)
 
 	logging::logdebug("Setting up ggplots.")
-    p <- ggplot(t) +
-      geom_point(
+    p <- ggplot() +
+      geom_point(data = t,
              aes(x=propMaster,
                  y=numRepin,
-                 col=factor(color)
-             )
-         ) +
-      scale_color_manual(values=unique(cols),
-                         labels=c("no RAYT", paste0("RAYT ",type)),
-                         guide="legend"
-                         )
+                 size=factor(color)
+             ),
+             color=col
+         )
 	logging::logdebug("Adding limits, theme, and axis labels.")
     p <- p +
           xlim(c(0,1)) +
           theme +
           xlab("Proportion master sequence (~Replication rate)") +
-          ylab("REPIN population size")
+          ylab("REPIN population size") +
+          labs(size="RAYTs")
 
 	logging::logdebug("Adding theme.")
     p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
