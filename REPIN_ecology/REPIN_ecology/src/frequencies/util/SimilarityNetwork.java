@@ -35,6 +35,9 @@ public class SimilarityNetwork {
 	}
 	
 	public void writeCytoscapeInput(File out){
+
+        System.out.println("Writing Cytoscape input to " + out + ".");
+        System.out.println("Network size = " + simNetwork.size() + ".");
 		try{
 			if(simNetwork.size()>1){
 				BufferedWriter bw=new BufferedWriter(new FileWriter(out));
@@ -44,6 +47,7 @@ public class SimilarityNetwork {
 					for(int j=0;j<keys2.length;j++){
 						int diff=simNetwork.get(keys1[i]).get(keys2[j]);
 						if(diff==1){
+                            System.out.println(i+"\t" + j + "\t" + keys1[i]+"\t"+keys2[j]+"\t"+diff);
 							bw.write(keys1[i]+"\t"+keys2[j]+"\t"+diff+"\n");
 						}
 					}
