@@ -65,8 +65,8 @@ public class BlastRAYTs {
 	}
 	
 	private static String getName(File in) {
-		String[] parts=in.getName().split("\\.");
-		return parts[parts.length-2];
+		String parts=DeterminePopulationFrequencies.getGenomeID(in);
+		return parts;
 	}
 	
 	public static int getNumREPINClusters(String name,File folder,String repType,boolean analyseREPIN) {
@@ -109,7 +109,6 @@ public class BlastRAYTs {
 	public static String getMaxREPIN(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+"_largestCluster.nodes");
-			if(!in.exists())System.err.println(in);
 			if(in.exists()) {
 				BufferedReader br=new BufferedReader(new FileReader(in));
 				String line="";
@@ -137,6 +136,7 @@ public class BlastRAYTs {
 					return all+"_"+sum;
 				}else return "-1";
 			}else {
+				System.err.println("Cannot find file "+in+". There is probably no REPIN in the corresponding submitted genome.");
 				return "-1";
 			}
 		}catch(IOException e) {
