@@ -116,14 +116,12 @@ public class REPINProperties {
 			System.out.println("Write seed sequences...");
 			//NEEDS TO BE CONVERTED TO REPINS!!!!
 			writeSeedSequence(numMuts);
-			//if(regime!=null&&regime.equals("cluster")){
-			System.out.println("Determine largest sequence cluster...");
-			determineLargestSequenceCluster();
-			//}
-			if(analyseREPIN)writeAllSequenceClusters();
-			//System.out.println("Write mutation frequencies...");
-			//writeMutationFrequencies();
-			//System.out.println("Calculate mutation rates...");
+			int numDiffSeqs=getNumDiffSeqs(seedSequence);
+			if(numDiffSeqs>1) {
+				System.out.println("Determine largest sequence cluster...");
+				determineLargestSequenceCluster();
+				if(analyseREPIN)writeAllSequenceClusters();
+			}
 			numSeqs=getNumSeqs(seedSequence);
 			if(numSeqs>0){
 			    System.out.println("Determine mutation histogram...");
@@ -178,7 +176,7 @@ public class REPINProperties {
 			sn.writeCytoscapeInput(simNet);
 			sn.writeNodes(nodes);
 
-			if(analyseREPIN){
+			if(analyseREPIN ){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
                 String mcl_command =mclPath+" "+simNet+" "+" -te "+MCLThreads+" -I 1.2 --abc -o "+mclout;
@@ -195,6 +193,7 @@ public class REPINProperties {
 				writeNodes(largestCluster,seqSelection);
 				seedSequence=newSeedSequences;
 			}else{
+				
 				sn.writeNodes(largestCluster);
 				try{
 					Files.copy(seedSequence.toPath(), newSeedSequences.toPath(),StandardCopyOption.REPLACE_EXISTING);
@@ -461,6 +460,11 @@ public class REPINProperties {
 		return sum;
 	}
 
+	static int getNumDiffSeqs(File in){
+		ArrayList<Fasta> fas=Fasta.readFasta(in);
+		return fas.size();
+	}
+	
 	int getNumREPINs(File in){
 		int sum=0;
 
