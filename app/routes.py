@@ -268,7 +268,7 @@ def submit():
         R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
         if run_andi_clustdist:
-            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna"]]
+            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
             distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
             distfile = os.path.join(session['outdir'], os.path.basename(distfile))
             andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
