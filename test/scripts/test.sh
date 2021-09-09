@@ -45,7 +45,7 @@ echo "DATASET=${DATASET}"
 echo "OPERATIONS=${OPERATIONS}"
 
 
-case $DATASET in 
+case $DATASET in
     ecoli)
         ISREF=1
         ;;
@@ -85,14 +85,14 @@ setup() {
     else
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/${DATASET}"
 		rsync -ruL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
-	fi	
+	fi
 	dataset_vars
-		
+
 	echo "RAYT AA sequence will be read from $rayt_faa."
 	echo "Reference strain set to $ref_strain."
 
     rsync -u $rayt_faa ${RUN_DATA_DIR}
-} 
+}
 
 dataset_vars() {
 # Dataset specific settings.
@@ -207,9 +207,9 @@ test_md5() {
 
 ref_plots() {
     if [ $ISREF -ne 1 ]; then
-        echo 
+        echo
         echo "'$DATASET' is not a reference dataset."
-        echo 
+        echo
         exit 1
     fi
 
