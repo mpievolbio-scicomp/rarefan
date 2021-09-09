@@ -96,36 +96,46 @@ setup() {
 dataset_vars() {
 # Dataset specific settings.
 	case $DATASET in
-		"chlororaphis")
+		"ecoli")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=MG1655.fas
+			analyze_repins='false'
+			mem="4g"
+			;;
+    "chlororaphis")
 			rayt_faa=${TEST_DATA_DIR}/yafM_SBW25.faa
 			ref_strain=chlTAMOak81.fas
+			analyze_repins='true'
 			;;
 		"dokdonia")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=dokd-P16.fas
 			mem="4g"
+			analyze_repins='true'
 			;;
 		"neisseria")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=Nmen_2594.fas
+			analyze_repins='true'
 			;;
 		*)
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=Nmen_2594.fas
 			mem="4g"
+			analyze_repins='true'
 			;;
 	esac
 }
 
 java_cmd() {
 	dataset_vars
-    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar \
                                   ${RUN_DATA_DIR}\
                                   ${RUN_OUT_DIR}\
                                   ${ref_strain}\
                                   55 21\
                                   ${rayt_faa}\
-                                  ${TREENAME}.nwk 1e-30 true 1"
+                                  ${TREENAME}.nwk 1e-30 ${analyze_repins} 1"
     echo ${javacmd}
 }
 
