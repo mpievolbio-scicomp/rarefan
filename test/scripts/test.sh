@@ -1,6 +1,4 @@
 #! /bin/bash
-set -e
-
 ! getopt --test > /dev/null
 
 if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
@@ -161,7 +159,7 @@ test_java() {
 # Run andi and check output.
 
 run_andi() {
-    andi ${RUN_DATA_DIR}/*.fas ${RUN_DATA_DIR}/*.fn ${RUN_DATA_DIR}/*.fna ${RUN_DATA_DIR}/*.fastn ${RUN_DATA_DIR}/*.fasta> ${RUN_OUT_DIR}/${TREENAME}.dist
+    andi -j ${RUN_DATA_DIR}/*.fas ${RUN_DATA_DIR}/*.fn ${RUN_DATA_DIR}/*.fna ${RUN_DATA_DIR}/*.fastn ${RUN_DATA_DIR}/*.fasta> ${RUN_OUT_DIR}/${TREENAME}.dist
 }
 test_andi() {
     echo
