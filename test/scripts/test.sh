@@ -46,9 +46,6 @@ echo "OPERATIONS=${OPERATIONS}"
 
 
 case $DATASET in
-    ecoli)
-        ISREF=1
-        ;;
     chlororaphis)
         ISREF=1
         ;;
@@ -81,7 +78,7 @@ setup() {
     if [ $ISREF == "1" ]; then
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}"
 	    rsync -ruL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
-        rsync -ruL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
+      rsync -ruL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
     else
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/${DATASET}"
 		rsync -ruL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
@@ -97,6 +94,12 @@ setup() {
 dataset_vars() {
 # Dataset specific settings.
 	case $DATASET in
+		"NZ_CP043305.1_RagTag")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=NZ_CP043305.1_RagTag.fna
+			analyze_repins='true'
+			mem="4g"
+			;;
 		"ecoli")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=MG1655.fas
