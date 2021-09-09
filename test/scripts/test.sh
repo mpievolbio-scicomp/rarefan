@@ -48,6 +48,9 @@ echo "OPERATIONS=${OPERATIONS}"
 
 
 case $DATASET in 
+    ecoli)
+        ISREF=1
+        ;;
     chlororaphis)
         ISREF=1
         ;;
