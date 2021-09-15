@@ -74,7 +74,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
       geom_tiplab(size=fontsize*1/4)
-    p=p+xlim(layer_scales(p)$x$get_limits()*2)
+    p=p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
