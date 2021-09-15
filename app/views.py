@@ -38,7 +38,7 @@ class SequenceFilesValidator():
 class UploadForm(FlaskForm):
     sequences = MultipleFileField('File upload',
                                    validators=[validators.DataRequired(),
-                                               validators.Length(min=1, message="Please select at least 1 sequence files (fasta format) and (optionally) one tree file."),
+                                               validators.Length(min=1, message="Please select at least one sequence file (fasta format) and (optionally) one tree file."),
                                                SequenceFilesValidator(),
                                               ]
                                   )

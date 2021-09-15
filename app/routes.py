@@ -337,7 +337,7 @@ http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
 Pay attention to the log file under out/rarefan.log as it may provide further information about the failure.
 Please feel free to seek our support at mailto:computing.evolbio.mpg.de.
 
-Thank you for using RAREFAN. We hope to see you soon again.
+Thank you for using RAREFAN. We hope to see you again soon.
 
 Kind regards,
 
@@ -357,7 +357,7 @@ your job on rarefan.evolbio.mpg.de with ID {0:s} has finished.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
 
-Thank you for using RAREFAN. We hope to see you soon again.
+Thank you for using RAREFAN. We hope to see you again soon.
 
 Kind regards,
 
