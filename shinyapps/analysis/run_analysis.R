@@ -46,7 +46,7 @@ parser$add_argument('-t', '--tree',
 # tree file
 parser$add_argument('-o', '--outfile',
                     metavar='OUTFILE',
-					default='analysis.png',
+					default='analysis.pdf',
                     type="character", 
                     help='Save figures to OUTFILE'
 )

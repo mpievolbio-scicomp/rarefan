@@ -73,8 +73,8 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   logging::loginfo("Plotting ggtree...")
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
-      geom_tiplab()
-
+      geom_tiplab(size=fontsize*1/4)
+    p=p+xlim(layer_scales(p)$x$get_limits()*2)
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
@@ -183,7 +183,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   # Font size.
   p = p +
-          theme(text=element_text(size=fontsize)) +
+          theme(text=element_text(size=fontsize),axis.text=element_text(size=fontsize)) +
           themeCurr
 
   return(p)
@@ -409,7 +409,8 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug(onlyRAYTs)
 
   # Add tip labels.
-  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
+  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color),size=fontsize*1/4)+theme_tree2()
+  p=p+xlim(layer_scales(p)$x$get_limits()*1.5)
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
