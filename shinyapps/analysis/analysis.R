@@ -277,7 +277,6 @@ plotCorrelationSingle=function(folder,
 
   logging::logdebug("t=%s", str(t))
 
-<<<<<<< HEAD
     cols=t$color
     names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
@@ -306,36 +305,6 @@ plotCorrelationSingle=function(folder,
           theme +
           xlab("Proportion master sequence (~Replication rate)") +
           ylab("REPIN population size")
-=======
-  cols <- t$color
-  names(cols) <- cols
-	colorDF <-  determineColor(paste0(folder,"/repin_rayt_association.txt"))
-  logging::logdebug('colorDF=%s', str(colorDF))
-  col <- unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
-  logging::logdebug('col=%s', col)
-
-  if(isEmpty(col)){
-    col='grey'
-  }
-
-	logging::logdebug("Setting up ggplots.")
-  p <- ggplot() +
-    geom_point(data = t,
-           aes(x=propMaster,
-               y=numRepin,
-               size=factor(color)
-           ),
-           color=col
-       )
-
-	logging::logdebug("Adding limits, theme, and axis labels.")
-  p <- p +
-        xlim(c(0,1)) +
-        theme +
-        xlab("Proportion master sequence (~Replication rate)") +
-        ylab("REPIN population size") +
-        labs(size="RAYTs")
->>>>>>> develop
 
 	logging::logdebug("Adding theme.")
   p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
