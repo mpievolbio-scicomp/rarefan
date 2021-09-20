@@ -26,7 +26,9 @@
             </p>
         {% endif %}
         {% if status in [11, 111] %}
-        	<a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a> 
+            {%  if render_plots %}
+                <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
+            {% endif %}
         {% endif %}
     </body>
 {% endblock %}

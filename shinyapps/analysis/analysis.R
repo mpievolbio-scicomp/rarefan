@@ -19,7 +19,7 @@ suppressMessages(library(logging))
 logging::basicConfig()
 logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
 
-# 6 Colors for plots (corresponding to 6 RAYT types)
+# 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
 
 # Set theme for all plots
@@ -32,20 +32,20 @@ theme=theme(axis.line.x = element_line(colour = "black"),
             panel.border = element_blank(),
             panel.background = element_blank(),
             legend.justification = c(0, 1),
-            legend.position = c(0.5, 1),
-            legend.title=element_blank(),
+            legend.position = c(0.90, 1),
+            # legend.title=element_blank(),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
 )
 
 
 ######################################################################################
-plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
+plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
   logging::logdebug(paste0("    treeFile = ", treeFile))
-  logging::logdebug(paste0("    type = ", type))
+  logging::logdebug(paste0("    rep_rayt_group = ", rep_rayt_group))
   logging::logdebug(paste0("    colorBars = ", colorBars))
   logging::logdebug(paste0("    bs = ", bs))
   logging::logdebug(paste0("    fontsize = ", fontsize))
@@ -82,24 +82,14 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
 
-  d <- association[association$repintype==type,]
+  d <- association[association$repintype==rep_rayt_group,]
 
   repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
 
   colorDF = determineColor(repin_rayt_assoc_table_file)
 
-  rayt_color = colorDF[colorDF$repRAYT==type,2]
-  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
-  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
-
-  # In some cases, we get a list of two identical colors but need only one.
-  if (length(rayt_color) > 1) {
-      rayt_color = rayt_color[[1]]
-  }
-
-  logging::logdebug(paste0("typeof(rayt_color)=", typeof(rayt_color)))
-  logging::logdebug(paste0("length(rayt_color)=", length(rayt_color)))
-  logging::logdebug(paste0("rayt_color=", rayt_color))
+  rayt_color = colorDF[colorDF$repRAYT==rep_rayt_group,2]
+  logging::logdebug(paste0("str(rayt_color)=", str(rayt_color)))
 
   # In other cases, no color is defined, set it to grey.
   if(length(rayt_color) == 0) {
@@ -113,7 +103,7 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 
   # REPIN population size.
   logging::logdebug("Constructing popSize data.")
-  data_file = paste0(folder,"/presAbs_",type,".txt")
+  data_file = paste0(folder,"/presAbs_",rep_rayt_group,".txt")
   logging::logdebug("Reading table from %s.", data_file)
 
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
@@ -121,24 +111,24 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
 		  logging::logwarn("File %s is empty.", data_file)
           )
 
-
   data_file_is_corrupt = typeof(t) == "logical"
+
   if(!data_file_is_corrupt) {
     if(num_rayts > 0){
-        p <- facet_plot(p,
-                      panel='RAYTs',
-                      data=d,
-                      geom=geom_segment,
-                      aes(x=0,
-                          xend=rayts,
-                          y=y,
-                          yend=y),
-                      size=bs,
-                      color=rayt_color
-            )
+        p <- facet_plot(p
+                        , panel='RAYTs'
+                        , data=d
+                        , geom=geom_segment
+                        , aes(x=0
+                              , xend=rayts
+                              , y=y
+                              , yend=y)
+                        , size=bs
+                        , color=unique(rayt_color)
+                        )
     }
     else {
-        logging::logwarn("No RAYTs in association table %s for RAYT type %s.", repin_rayt_assoc_table_file, type)
+        logging::logwarn("No RAYTs in association table %s for RAYT rep_rayt_group %s.", repin_rayt_assoc_table_file, rep_rayt_group)
 
     }
 
@@ -151,27 +141,29 @@ plotREPINs=function(folder,treeFile,type,colorBars,bs,fontsize){
                        numClus=t[,7],
                        diffRAYTCluster=t[,7]-t[,2])
 
+    logging::logdebug("popSize=%s", str(popSize))
     # Add repin population size.
-    p = facet_plot(p,
-                  panel='REPIN population size',
-                  data=popSize,
-                  geom=geom_segment,
-                  aes(x=0,
-                      xend=repins,
-                      y=y,
-                      yend=y),
-                  size=bs
-                 ,color=rayt_color
+
+    p = facet_plot(p
+                   , panel='REPIN population size'
+                   , data=popSize
+                   , geom=geom_segment
+                   , aes(x=0
+                         , xend=repins
+                         , y=y
+                         , yend=y)
+                   , size=bs
+                   ,color=unique(rayt_color)
                    )
 
   }
-  else {  # Print a note on the plot.
-          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", type," is empty."))
+  else {
+          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", rep_rayt_group," is empty."))
   }
 
   # Apply theme.
   p = p + theme_tree2()
-    
+
   # Adjust theme.
   p = p +
         theme(strip.text.x=element_text(hjust=0),
@@ -204,13 +196,13 @@ determineColor=function(associationFile){
 
      if(typeof(ass$REPINgroups) == 'logical') {
          logging::logdebug("REPINgroups is empty, set color to 'grey'.")
-		 c='grey'
+    		 c='grey'
      }
      else if(!is.na(ass[i,3])&&nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
         c=colors[as.integer(split0[[1]][1])+1]
      }
-	 else{
+  	 else{
         c="grey"
      }
      temp=data.frame(repRAYT=rayt,color=c)
@@ -239,7 +231,8 @@ determineColor=function(associationFile){
 }
 
 ######################################################################################
-plotCorrelationSingle=function(folder,type,
+plotCorrelationSingle=function(folder,
+                               rep_rayt_group,
                                theme,
                                fontsize,
                                pvLabelX,
@@ -253,7 +246,7 @@ plotCorrelationSingle=function(folder,type,
 
 	logging::logdebug("Plotting correlation.")
 
-	data_file = paste0(folder,"/presAbs_",type,".txt")
+	data_file = paste0(folder,"/presAbs_",rep_rayt_group,".txt")
 	logging::logdebug("Reading data from %s.", data_file)
 	t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)
@@ -266,25 +259,25 @@ plotCorrelationSingle=function(folder,type,
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
             annotate(x=0.5, y=0.5, geom='text', label="No data to correlate.") +
-            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) +
-            theme
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + theme
 
 		return(p)
 	}
 
-    t$propMaster=t[,5]/t[,9]
-    t$numRepin=t[,9]
+  t$propMaster=t[,5]/t[,9]
+  t$numRepin=t[,9]
 
 	assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
 	logging::logdebug("Reading association data from %s.", assoc_file)
-    association=read.table(assoc_file,header=TRUE)
+  association=read.table(assoc_file,header=TRUE)
 
 	logging::logdebug("Preparing data structures and colors.")
-    association=association[association$repintype==type,]
-    t$color=association[match(t[,1],association[,1]),]$rayts
+  association=association[association$repintype==rep_rayt_group,]
+  t$color=association[match(t[,1],association[,1]),]$rayts
 
-    logging::logdebug(str(t))
+  logging::logdebug("t=%s", str(t))
 
+<<<<<<< HEAD
     cols=t$color
     names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
@@ -313,12 +306,43 @@ plotCorrelationSingle=function(folder,type,
           theme +
           xlab("Proportion master sequence (~Replication rate)") +
           ylab("REPIN population size")
+=======
+  cols <- t$color
+  names(cols) <- cols
+	colorDF <-  determineColor(paste0(folder,"/repin_rayt_association.txt"))
+  logging::logdebug('colorDF=%s', str(colorDF))
+  col <- unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
+  logging::logdebug('col=%s', col)
+
+  if(isEmpty(col)){
+    col='grey'
+  }
+
+	logging::logdebug("Setting up ggplots.")
+  p <- ggplot() +
+    geom_point(data = t,
+           aes(x=propMaster,
+               y=numRepin,
+               size=factor(color)
+           ),
+           color=col
+       )
+
+	logging::logdebug("Adding limits, theme, and axis labels.")
+  p <- p +
+        xlim(c(0,1)) +
+        theme +
+        xlab("Proportion master sequence (~Replication rate)") +
+        ylab("REPIN population size") +
+        labs(size="RAYTs")
+>>>>>>> develop
 
 	logging::logdebug("Adding theme.")
-    p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
+  p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
 
 	logging::logdebug("Done, return from 'plotCorrelations'.")
-    return(p)
+
+  return(p)
 }
 
 ######################################################################################

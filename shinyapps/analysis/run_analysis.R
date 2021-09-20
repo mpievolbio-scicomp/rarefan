@@ -19,7 +19,7 @@ parser <- ArgumentParser(description='Create plots from rarefan results.')
 # Input data dir
 parser$add_argument('-d', '--data_dir',
                     metavar='DIR',
-                    type="character", 
+                    type="character",
 					default='.',
                     help='The output data dir of the rarefan run to analyse. Defaults to current working directory.'
 )
@@ -27,7 +27,7 @@ parser$add_argument('-d', '--data_dir',
 # RAYT index
 parser$add_argument('-r', '--rayt',
                     metavar='RAYT',
-                    type="integer", 
+                    type="integer",
                     dest='rayt_type',
                     default=0,
                     choices=c(0,1,2,3,4,5),
@@ -37,7 +37,7 @@ parser$add_argument('-r', '--rayt',
 # tree file
 parser$add_argument('-t', '--tree',
                     metavar='TREEFILE',
-                    type="character", 
+                    type="character",
                     dest='treefile',
                     default='tmptree.nwk',
                     help='The treefile to use (default "DIR/tmptree.nwk")'
@@ -73,12 +73,12 @@ barsize = 2
 fontsize = 12
 
 correlation_plot = plotCorrelationSingle(
-		folder=data_dir,
-		type=rayt_type,
-		theme=theme,
-		fontsize=fontsize,
-		pvLabelX='left',
-		pvLabelY='bottom'
+		data_dir,
+		rayt_type,
+		theme,
+		fontsize,
+		'left',
+		'bottom'
 		)
 
 repin_facet_plot = plotREPINs(
@@ -87,18 +87,13 @@ repin_facet_plot = plotREPINs(
 		   rayt_type,
 		   barcolor,
 		   barsize,
-		   fontsize 
+		   fontsize
 	)
-		
+
 
 phylogeny_plot = drawRAYTphylogeny(data_dir)
 
 figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1, nrow=1)
 
 ggexport(figure, filename=outfile)
-
-return(figure)
-
-
-
 
