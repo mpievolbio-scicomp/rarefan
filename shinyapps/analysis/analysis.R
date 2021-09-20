@@ -309,7 +309,7 @@ plotCorrelationSingle=function(folder,type,
                          )
 	logging::logdebug("Adding limits, theme, and axis labels.")
     p <- p +
-          xlim(c(0,1)) +
+          xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
           theme +
           xlab("Proportion master sequence (~Replication rate)") +
           ylab("REPIN population size")
