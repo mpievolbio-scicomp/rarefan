@@ -6,18 +6,11 @@
 {% block body %}
     <h1>Upload your sequences to RAREFAN</h1>
     <p>
-        <p>
-            RAREFAN accepts the following filename extensions (the part after the "."): ".fasta", ".fastn", ".fn", ".fna", ".fas" for
-            DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newik formatted tree files.
-    </p>
-    <br>
-        <b>Note:</b>
-        Each fasta file must contain only one sequence. The fasta header must match the filename up to the first whitespace.
-        </br>
-        <b>Example:</b> filename = "chl17144.fas"</br>
-        <p>
-            >chl17144 | further notes on strain chl17144</br>
-        AGTCATCCTA...
+    <b>
+        Note:
+    </b>
+    RAREFAN accepts the following filename extensions (the part after the "."): ".fasta", ".fastn", ".fn", ".fna", ".fas" for
+    DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newick formatted tree files.
     </p>
     <p style="margin: 10px">
      <form action="{{ url_for('upload') }}" class="dropzone" id="my_dropzone" method="post" enctype="multipart/form-data">

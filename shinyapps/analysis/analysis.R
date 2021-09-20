@@ -73,9 +73,8 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
   logging::loginfo("Plotting ggtree...")
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
-      geom_tiplab()
-
-
+      geom_tiplab(size=fontsize*1/4)
+    p=p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
@@ -176,7 +175,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
 
   # Font size.
   p = p +
-          theme(text=element_text(size=fontsize)) +
+          theme(text=element_text(size=fontsize),axis.text=element_text(size=fontsize)) +
           themeCurr
 
   return(p)
@@ -199,7 +198,7 @@ determineColor=function(associationFile){
          logging::logdebug("REPINgroups is empty, set color to 'grey'.")
     		 c='grey'
      }
-     else if(nchar(ass[i,3])>0){
+     else if(!is.na(ass[i,3])&&nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
         c=colors[as.integer(split0[[1]][1])+1]
      }
@@ -216,7 +215,7 @@ determineColor=function(associationFile){
   groups=unique(ass[,3])
   logging::logdebug(paste0("groups=", groups))
   for(i in groups){
-     if(nchar(i)>0){
+     if(!is.na(i)&&nchar(i)>0){
         split=str_split(i,",")
         for(j in split[[1]]){
            pos=as.integer(split[[1]][1])
@@ -278,6 +277,36 @@ plotCorrelationSingle=function(folder,
 
   logging::logdebug("t=%s", str(t))
 
+<<<<<<< HEAD
+    cols=t$color
+    names(cols)=cols
+	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
+    colLegend=cols
+    cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
+    cols[cols==0]="black"
+    colLegend[colLegend>0]=paste0("RAYT ",type)
+    colLegend[colLegend==0]="no RAYT"
+    logging::logdebug(cols)
+
+	logging::logdebug("Setting up ggplots.")
+    p <- ggplot(t) +
+      geom_point(
+             aes(x=propMaster,
+                 y=numRepin,
+                 col=cols
+             )
+         ) +
+      scale_color_manual(values=unique(cols),
+                         labels=unique(colLegend),
+                         guide="legend"
+                         )
+	logging::logdebug("Adding limits, theme, and axis labels.")
+    p <- p +
+          xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
+          theme +
+          xlab("Proportion master sequence (~Replication rate)") +
+          ylab("REPIN population size")
+=======
   cols <- t$color
   names(cols) <- cols
 	colorDF <-  determineColor(paste0(folder,"/repin_rayt_association.txt"))
@@ -306,6 +335,7 @@ plotCorrelationSingle=function(folder,
         xlab("Proportion master sequence (~Replication rate)") +
         ylab("REPIN population size") +
         labs(size="RAYTs")
+>>>>>>> develop
 
 	logging::logdebug("Adding theme.")
   p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
@@ -405,7 +435,8 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug(onlyRAYTs)
 
   # Add tip labels.
-  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color))
+  p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color),size=fontsize*1/4)+theme_tree2()
+  p=p+xlim(layer_scales(p)$x$get_limits()*1.5)
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
