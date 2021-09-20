@@ -206,7 +206,7 @@ determineColor=function(associationFile){
          logging::logdebug("REPINgroups is empty, set color to 'grey'.")
 		 c='grey'
      }
-     else if(nchar(ass[i,3])>0){
+     else if(!is.na(ass[i,3])&&nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
         c=colors[as.integer(split0[[1]][1])+1]
      }
@@ -223,7 +223,7 @@ determineColor=function(associationFile){
   groups=unique(ass[,3])
   logging::logdebug(paste0("groups=", groups))
   for(i in groups){
-     if(nchar(i)>0){
+     if(!is.na(i)&&nchar(i)>0){
         split=str_split(i,",")
         for(j in split[[1]]){
            pos=as.integer(split[[1]][1])
