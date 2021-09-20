@@ -288,9 +288,11 @@ plotCorrelationSingle=function(folder,type,
     cols=t$color
     names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
+    colLegend=cols
     cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
     cols[cols==0]="black"
-
+    colLegend[colLegend>0]=paste0("RAYT ",type)
+    colLegend[colLegend==0]="no RAYT"
     logging::logdebug(cols)
 
 	logging::logdebug("Setting up ggplots.")
@@ -298,11 +300,11 @@ plotCorrelationSingle=function(folder,type,
       geom_point(
              aes(x=propMaster,
                  y=numRepin,
-                 col=factor(color)
+                 col=cols
              )
          ) +
       scale_color_manual(values=unique(cols),
-                         labels=c("no RAYT", paste0("RAYT ",type)),
+                         labels=unique(colLegend),
                          guide="legend"
                          )
 	logging::logdebug("Adding limits, theme, and axis labels.")
