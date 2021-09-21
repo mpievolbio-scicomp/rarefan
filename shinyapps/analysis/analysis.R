@@ -281,9 +281,11 @@ plotCorrelationSingle=function(folder,
     names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
     colLegend=cols
-    cols[cols>0]=colorDF[colorDF$repRAYT==type,]$color
+    logging::logdebug(colnames(colorDF))
+    logging::logdebug(colorDF)
+    cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
     cols[cols==0]="black"
-    colLegend[colLegend>0]=paste0("RAYT ",type)
+    colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
     colLegend[colLegend==0]="no RAYT"
     logging::logdebug(cols)
 
