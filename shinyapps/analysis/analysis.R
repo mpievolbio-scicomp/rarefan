@@ -32,10 +32,11 @@ theme=theme(axis.line.x = element_line(colour = "black"),
             panel.border = element_blank(),
             panel.background = element_blank(),
             legend.justification = c(0, 1),
-            legend.position = c(0.90, 1),
+            legend.position = c(0.80, 1),
             # legend.title=element_blank(),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
+	    legend.title=element_blank()
 )
 
 
@@ -182,7 +183,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
 }
 
 ######################################################################################
-determineColor=function(associationFile){
+determineColor=function(associationFile,repin_rayt_group){
   logging::logdebug("Determine colors from %s.", associationFile)
   ass=read.delim(associationFile,header=TRUE)
   logging::logdebug(str(ass))
@@ -218,11 +219,13 @@ determineColor=function(associationFile){
      if(!is.na(i)&&nchar(i)>0){
         split=str_split(i,",")
         for(j in split[[1]]){
-           pos=as.integer(split[[1]][1])
            j=as.integer(j)
-           temp=data.frame(repRAYT=j,color=colors[pos+1])
-           colorAss=rbind(colorAss,temp)
+           pos=as.integer(split[[1]][1])
+           if(length(colorAss[colorAss$repRAYT==j,]$color)==0){
+             temp=data.frame(repRAYT=j,color=colors[pos+1])
+             colorAss=rbind(colorAss,temp)
 		   logging::logdebug(paste0("i=",i, " j=",j, " pos=", pos, " temp=", temp))
+           }
         }
      }
   }
@@ -283,22 +286,22 @@ plotCorrelationSingle=function(folder,
     colLegend=cols
     logging::logdebug(colnames(colorDF))
     logging::logdebug(colorDF)
+    
     cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
     cols[cols==0]="black"
     colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
     colLegend[colLegend==0]="no RAYT"
     logging::logdebug(cols)
-
 	logging::logdebug("Setting up ggplots.")
-    p <- ggplot(t) +
+      p <- ggplot(t) +
       geom_point(
              aes(x=propMaster,
                  y=numRepin,
-                 col=cols
+                 col=as.factor(color)
              )
          ) +
-      scale_color_manual(values=unique(cols),
-                         labels=unique(colLegend),
+      scale_color_manual(values=cols,
+                         labels=colLegend,
                          guide="legend"
                          )
 	logging::logdebug("Adding limits, theme, and axis labels.")
