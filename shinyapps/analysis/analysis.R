@@ -415,9 +415,9 @@ drawRAYTphylogeny=function(data_dir){
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
   logging::logdebug(cols)
-
+  print(cols)
   # Add colors
-  p <-  p + scale_color_manual(values=unique(cols),guide="none")
+  p <-  p + scale_color_manual(values=cols,guide="none")
 
   logging::logdebug("Added color scale.")
 
