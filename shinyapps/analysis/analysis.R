@@ -295,7 +295,6 @@ plotCorrelationSingle=function(folder,
     colLegend=colLegend[!duplicated(colLegend)]
     cols=cols[!duplicated(cols)]
     logging::logdebug("Setting up ggplots.")
-    
     p <- ggplot(t) +
       geom_point(
              aes(x=propMaster,
@@ -304,7 +303,7 @@ plotCorrelationSingle=function(folder,
                  size=numRAYT
              )
          ) +
-        scale_size_continuous(guide="none")+
+        scale_size_continuous(guide="none",range=c(1,max(t$numRAYT)))+
         scale_color_manual(values=cols,
                          labels=colLegend,
                          guide="legend"
