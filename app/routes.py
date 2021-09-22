@@ -490,3 +490,6 @@ def files(req_path):
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
 
+@app.route('/manual', methods=['GET'])
+def manual():
+    return render_template('manual.html')
