@@ -276,10 +276,11 @@ plotCorrelationSingle=function(folder,
 
 	logging::logdebug("Preparing data structures and colors.")
   association=association[association$repintype==rep_rayt_group,]
-  t$color=association[match(t[,1],association[,1]),]$rayts
-
+  t$numRAYT=association[match(t[,1],association[,1]),]$rayts
   logging::logdebug("t=%s", str(t))
-
+    t$color=t$numRAYT
+    t$color[t$color>0]=1
+    t$color[t$color==0]=0
     cols=t$color
     names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
@@ -291,16 +292,20 @@ plotCorrelationSingle=function(folder,
     cols[cols==0]="black"
     colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
     colLegend[colLegend==0]="no RAYT"
-    logging::logdebug(cols)
-	logging::logdebug("Setting up ggplots.")
-      p <- ggplot(t) +
+    colLegend=colLegend[!duplicated(colLegend)]
+    cols=cols[!duplicated(cols)]
+    logging::logdebug("Setting up ggplots.")
+    
+    p <- ggplot(t) +
       geom_point(
              aes(x=propMaster,
                  y=numRepin,
-                 col=as.factor(color)
+                 col=as.factor(color),
+                 size=numRAYT
              )
          ) +
-      scale_color_manual(values=cols,
+        scale_size_continuous(guide="none")+
+        scale_color_manual(values=cols,
                          labels=colLegend,
                          guide="legend"
                          )

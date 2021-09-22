@@ -93,7 +93,7 @@ repin_facet_plot = plotREPINs(
 
 phylogeny_plot = drawRAYTphylogeny(data_dir)
 
-figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1, nrow=1)
+figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1)
 
 ggexport(figure, filename=outfile)
 
