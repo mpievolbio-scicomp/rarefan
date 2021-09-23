@@ -1,6 +1,6 @@
 # TODO: Add comment
 #
-# Author: Carsten Fortmann-Grote
+# Author: Carsten Fortmann-Grote, Frederic Bertel
 ###############################################################################
 
 # Load libraries silently.
@@ -41,6 +41,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 
 ######################################################################################
+# Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
 plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
@@ -66,9 +67,9 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
-
   logging::logdebug("Attempting to read tree file.")
 
+  # Attempt to open the tree file. If not readable (or not existing), return empty plot.
   tree=tryCatch(read.tree(tree_file),
 		  error=function(e)
 		  logging::logwarn("Tree file %s does not exist or is not readable.", tree_file)
@@ -88,16 +89,20 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
 		return(p)
   }
 
-
+  # Ok, we have read the tree, now render the plot.
   logging::loginfo("Plotting ggtree...")
+
+  # First facet is the tree itself.
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
       geom_tiplab(size=fontsize*1/4)
     p=p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
+
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
 
+  # Read the REP-RAYT association table.
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
 
