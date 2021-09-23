@@ -41,7 +41,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 
 ######################################################################################
-plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
+plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -237,7 +237,7 @@ determineColor=function(associationFile,repin_rayt_group){
 plotCorrelationSingle=function(folder,
                                rep_rayt_group,
                                theme,
-                               fontsize,
+                               fontsize=16,
                                pvLabelX,
                                pvLabelY,
                                subsetSmooth=F,
@@ -287,7 +287,7 @@ plotCorrelationSingle=function(folder,
     colLegend=cols
     logging::logdebug(colnames(colorDF))
     logging::logdebug(colorDF)
-    
+
     cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
     cols[cols==0]="black"
     colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
@@ -383,7 +383,7 @@ get_rayt_phylogeny=function(data_dir){
 
 
 ######################################################################################
-drawRAYTphylogeny=function(data_dir){
+drawRAYTphylogeny=function(data_dir, fontsize=16){
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
