@@ -67,9 +67,27 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
 
-  tree=read.tree(tree_file)
-  tips=tree$tip.label
-  logging::logdebug(str(tree))
+  logging::logdebug("Attempting to read tree file.")
+
+  tree=tryCatch(read.tree(tree_file),
+		  error=function(e)
+		  logging::logwarn("Tree file %s does not exist or is not readable.", tree_file)
+		  )
+
+  logging::logdebug(tree)
+  tree_file_is_corrupt = typeof(tree) == "logical"
+
+  if(tree_file_is_corrupt) {
+    p = ggplot() +
+            geom_blank() +
+            xlim(c(0, 1)) +
+            ylim(c(0,1)) +
+            annotate(x=0.5, y=0.5, geom='text', label="No REPIN tree found.") +
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + theme
+
+		return(p)
+  }
+
 
   logging::loginfo("Plotting ggtree...")
   p=ggtree(tree)+
