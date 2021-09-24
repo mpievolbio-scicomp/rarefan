@@ -20,7 +20,7 @@ logging::basicConfig()
 logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
 
 # 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
-colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
+colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6","#FF0022","#11FF22")
 
 # Set theme for all plots
 logging::logdebug("defining theme")
@@ -418,7 +418,7 @@ drawRAYTphylogeny=function(data_dir){
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
-  logging::logdebug(cols)
+  #logging::logdebug(cols)
   print(cols)
   # Add colors
   p <-  p + scale_color_manual(values=cols,guide="none")
