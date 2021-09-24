@@ -1,3 +1,5 @@
+{% extends "base.html" %}
+{% block head %}
 <html xmlns:v="urn:schemas-microsoft-com:vml"
 xmlns:o="urn:schemas-microsoft-com:office:office"
 xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -1060,7 +1062,9 @@ ul
   <o:idmap v:ext="edit" data="1"/>
  </o:shapelayout></xml><![endif]-->
 </head>
+{% endblock %}
 
+{% block body %}
 <body lang=EN-GB link=blue vlink="#954F72" style='tab-interval:36.0pt;
 word-wrap:break-word'>
 
@@ -2702,5 +2706,6 @@ lang=EN-US style='mso-ansi-language:EN-US;mso-fareast-language:EN-US'><o:p>&nbsp
 </div>
 
 </body>
+{% endblock %}
 
 </html>
