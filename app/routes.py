@@ -478,8 +478,6 @@ def files(req_path):
         tmp_dir = session.get('tmpdir', None)
         if tmp_dir is not None:
             run_id = os.path.basename(tmp_dir)
-        flash("tmp_dir = {}.".format(tmp_dir))
-        flash("run_id = {}.".format(run_id))
 
         try:
             back_link = url_for('results', run_id=run_id)
@@ -506,11 +504,3 @@ def files(req_path):
 @app.route('/manual', methods=['GET'])
 def manual():
     return render_template('manual.html')
-
-def get_runid_from_url():
-
-    current_url = request.base_url
-    split_url = current_url.split('/')
-    runid = split_url[2]
-
-    return runid
