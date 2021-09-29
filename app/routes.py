@@ -441,12 +441,16 @@ def results():
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
-    """"""
+    """
+    The 'files' route generates a navigable directory listing of a given run directory.
+    @param req_path: The requested path to display.
+    """
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     nested_file_path = os.path.join(uploads_dir, req_path)
-    #
-    # if os.path.realpath(nestedFilePath) != nestedFilePath:
-    #     return "no directory traversal please."
+    splits = nested_file_path.split('/')
+    uploads_idx = splits.index('uploads')
+    run_id = splits[uploads_idx+1]
+
 
     if os.path.isdir(nested_file_path):
         item_list = os.listdir(nested_file_path)
@@ -461,16 +465,23 @@ def files(req_path):
         # Concat dirs and files.
         item_list = [i for i in item_list if not "stamp" in i]
 
+        # Leading '/'
         if not req_path.startswith("/"):
             req_path = "/" + req_path
+
+        # Remove trailing '/'
         if req_path.endswith('/'):
             req_path = req_path[:-1]
         logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
+        # Save the target for the 'back to results' link.
         tmp_dir = session.get('tmpdir', None)
         if tmp_dir is not None:
-            back_link = url_for('results', run_id=os.path.basename(tmp_dir))
-        else:
+            run_id = os.path.basename(tmp_dir)
+
+        try:
+            back_link = url_for('results', run_id=run_id)
+        except:
             back_link = url_for('results')
 
         link_to_parent = True
