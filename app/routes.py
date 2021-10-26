@@ -10,7 +10,7 @@ from flask import flash
 from werkzeug.utils import secure_filename
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app
-from app.utilities import check_errors
+from app.utilities import checkers
 
 import os
 import shlex
@@ -129,8 +129,8 @@ def upload():
         session['outdir'] = None
         session['reference_strain'] = None
         session['query_rayt'] = None
-        session['min_nmer_occurence'] = None
         session['treefile'] = None
+        session['min_nmer_occurence'] = None
         session['nmer_length'] = None
         session['e_value_cutoff'] = None
         session['analyse_repins'] = None
@@ -360,20 +360,46 @@ def get_email_command(session):
 
     recipients.append(session["email"])
 
-    job_status = check_errors.rayt_repin_counts(session["outdir"], session["reference_strain"])
+    results = checkers.parse_results(session["outdir"], session["reference_strain"])
+    counts = results['counts']
+    status = results['status']
+
+    status_msg = {0: "OK", 1: "ERROR"}
 
     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
-    email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} is complete.
-You can browse and download the results at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
+    email_body = f"""Hallo,
+your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
+    Job Summary
+    ===========
+        RAYTs
+        -----
+        Exit status: {status_msg[status['rayts']]}.
 
-In case of problems, please reply to this email and leave the email subject as is.
+        We discovered {counts['rayts']} RAYTs using tblastn with
+        {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
 
-Thank you for using RAREFAN.
+        NMERs
+        -----
+        Exit status: {status_msg[status['overreps']]}.
 
-http://rarefan.evolbio.mpg.de
-""".format(run_id)
+        There are {counts['overreps']} {session['nmer_length']} bp long sequences that
+        occur more frequently than {session['min_nmer_occurence']} times.
+
+        REPINs
+        ------
+        Exit status: {status_msg[status['repins']]}.
+
+        We detected {sum(counts['repins'].values())} REPINs.
+
+    You can browse and download the results at this link:
+    http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
+
+    In case of problems, please reply to this email and leave the email subject as is.
+
+    Thank you for using RAREFAN.
+
+    http://rarefan.evolbio.mpg.de
+    """
 
     email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
         email_subject,
