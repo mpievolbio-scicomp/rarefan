@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import sys
 import os
 import logging
@@ -27,10 +26,10 @@ def count_lines(fname):
 
     return number_of_lines
 
-def rayt_and_repin_counts(outdir,
-              reference_strain,
-              ):
 
+def rayt_repin_counts(outdir,
+                      reference_strain,
+                      ):
     """ Parse output files from a given job and infer how the job has ended.
 
     :param outdir: The rarefan run output directory.
@@ -50,7 +49,7 @@ def rayt_and_repin_counts(outdir,
     results = {"number_of_rayts": number_of_rayts,
                "number_of_overreps": number_of_overreps,
                "number_of_repins": {}
-    }
+               }
 
     for i in range(0, 5):
         line_count = count_lines(

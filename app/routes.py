@@ -10,6 +10,7 @@ from flask import flash
 from werkzeug.utils import secure_filename
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app
+from app.utilities import check_errors
 
 import os
 import shlex
@@ -359,7 +360,7 @@ def get_email_command(session):
 
     recipients.append(session["email"])
 
-    job_status = check_job(session["outdir"], session["reference_strain"])
+    job_status = check_errors.rayt_repin_counts(session["outdir"], session["reference_strain"])
 
     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
     email_body = """Hallo,
