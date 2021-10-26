@@ -24,6 +24,12 @@ class UtilitiesTest(unittest.TestCase):
 
         counts = test_object.rayt_and_repin_counts(self.test_data_dir, "Nmen_2594")
 
+        # Check return type
+        self.assertIsInstance(counts, dict)
+        self.assertIn("number_of_rayts", counts.keys())
+        self.assertIn("number_of_overreps", counts.keys())
+        self.assertIn("number_of_repins", counts.keys())
+
         logging.info(counts)
 
 if __name__ == '__main__':
