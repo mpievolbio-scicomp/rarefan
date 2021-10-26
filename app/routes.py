@@ -361,9 +361,9 @@ def get_email_command(session):
 
     job_status = check_job(run_id, session["outdir"], session["reference_strain"])
 
-    email_subject = "Your RAREFAN run {0:s} has completed.".format(run_id)
+    email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
     email_body = """Hallo,
-your job on rarefan.evolbio.mpg.de with ID {0:s} has completed.
+your job on rarefan.evolbio.mpg.de with ID {0:s} is complete.
 You can browse and download the results at this link:
 http://rarefan.evolbio.mpg.de/results?run_id={0:s}.
 
