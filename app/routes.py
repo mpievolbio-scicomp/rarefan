@@ -37,8 +37,6 @@ def get_logger():
 
 logger = get_logger()
 
-logger.warning("RAREFAN")
-
 
 def get_no_cpus():
     return os.cpu_count()
@@ -360,6 +358,8 @@ def get_email_command(session):
         logging.debug("No email set.")
 
     recipients.append(session["email"])
+
+    job_status = check_job(run_id, session["outdir"], session["reference_strain"])
 
     email_subject = "Your RAREFAN run {0:s} has completed.".format(run_id)
     email_body = """Hallo,
