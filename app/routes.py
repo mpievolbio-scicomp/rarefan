@@ -195,7 +195,7 @@ def submit():
             src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
             logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
             shutil.copyfile(src, query_rayt_fname)
-            
+
             if not os.path.isfile(query_rayt_fname):
                 raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
@@ -298,6 +298,7 @@ def submit():
                                 'out'
                                 ]
                                )
+
         zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
         logging.info("zip command: %s", zip_command)
 
