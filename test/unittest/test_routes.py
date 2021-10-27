@@ -48,7 +48,41 @@ class RoutesTest(unittest.TestCase):
 
         print(cmd)
 
-        expected_cmd = """ """
+        expected_cmd = """printf "Subject: Your RAREFAN run neisseria is complete.
+
+Hallo,
+your job on rarefan.evolbio.mpg.de with ID neisseria is complete.
+    Job Summary
+    ===========
+        RAYTs
+        -----
+        Exit status: ERROR.
+
+        We discovered 0 RAYTs using tblastn with
+        yafM_Ecoli at an e-value threshold of 1e-30.
+
+        NMERs
+        -----
+        Exit status: ERROR.
+
+        There are 0 21 bp long sequences that
+        occur more frequently than 51 times.
+
+        REPINs
+        ------
+        Exit status: ERROR.
+
+        We detected 0 REPINs.
+
+    You can browse and download the results at this link:
+    http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
+
+    In case of problems, please reply to this email and leave the email subject as is.
+
+    Thank you for using RAREFAN.
+
+    http://rarefan.evolbio.mpg.de
+    " | msmtp rarefan@evolbio.mpg.de no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 
@@ -65,7 +99,41 @@ class RoutesTest(unittest.TestCase):
 
         print(cmd)
 
-        expected_cmd = """ """
+        expected_cmd = """printf "Subject: Your RAREFAN run neisseria_completed is complete.
+
+Hallo,
+your job on rarefan.evolbio.mpg.de with ID neisseria_completed is complete.
+    Job Summary
+    ===========
+        RAYTs
+        -----
+        Exit status: OK.
+
+        We discovered 60 RAYTs using tblastn with
+        yafM_Ecoli at an e-value threshold of 1e-30.
+
+        NMERs
+        -----
+        Exit status: OK.
+
+        There are 184 21 bp long sequences that
+        occur more frequently than 51 times.
+
+        REPINs
+        ------
+        Exit status: OK.
+
+        We detected 48 REPINs.
+
+    You can browse and download the results at this link:
+    http://rarefan.evolbio.mpg.de/results?run_id=neisseria_completed.
+
+    In case of problems, please reply to this email and leave the email subject as is.
+
+    Thank you for using RAREFAN.
+
+    http://rarefan.evolbio.mpg.de
+    " | msmtp rarefan@evolbio.mpg.de no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria_completed/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 
