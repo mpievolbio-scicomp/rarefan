@@ -9,9 +9,11 @@ from flask import flash
 
 from werkzeug.utils import secure_filename
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
-from app import app
+from app import app, db
 from app.utilities import checkers
+from app.models import Job
 
+import copy
 import os
 import shlex
 import shutil
@@ -186,6 +188,12 @@ def submit():
         logger.info("reference_strain: %s", session['reference_strain'])
         logger.info("treefile: %s", session['treefile'])
         logger.info("email: %s", session['email'])
+
+        # Store session in db.
+        job = Job(run_id=os.path.basename(session['tmpdir']))
+        job.setup = copy.deepcopy(session)
+
+        job.save()
 
         # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
