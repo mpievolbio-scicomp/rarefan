@@ -82,7 +82,7 @@ your job on rarefan.evolbio.mpg.de with ID neisseria is complete.
     Thank you for using RAREFAN.
 
     http://rarefan.evolbio.mpg.de
-    " | msmtp rarefan@evolbio.mpg.de no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria/out/rarefan.log"""
+    " | msmtp no.name@no.host.xyz rarefan@evolbio.mpg.de >> /home/grotec/Repositories/RepinPop/test/data/neisseria/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 
@@ -133,7 +133,7 @@ your job on rarefan.evolbio.mpg.de with ID neisseria_completed is complete.
     Thank you for using RAREFAN.
 
     http://rarefan.evolbio.mpg.de
-    " | msmtp rarefan@evolbio.mpg.de no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria_completed/out/rarefan.log"""
+    " | msmtp no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria_completed/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 

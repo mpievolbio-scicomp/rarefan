@@ -354,17 +354,20 @@ def get_email_command(session):
     run_id = os.path.basename(run_id_path)
 
     # List of recipients. Always send to rarefan.
-    recipients = ["rarefan@evolbio.mpg.de"]
     if session['email'] is None or session['email'] == "":
         logging.debug("No email set.")
 
-    recipients.append(session["email"])
+    recipients = [session["email"]]
 
     results = checkers.parse_results(session["outdir"], session["reference_strain"])
     counts = results['counts']
     status = results['status']
 
     status_msg = {0: "OK", 1: "ERROR"}
+
+    # Send email also to support if there was an error.
+    if sum(status.values()) > 0:
+        recipients.append('rarefan@evolbio.mpg.de')
 
     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
     email_body = f"""Hallo,
