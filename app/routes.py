@@ -8,10 +8,15 @@ from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
+
+from redis import Redis
+import rq
+
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
 from app.utilities import checkers
 from app.models import Job
+from app.tasks.rarefan import rarefan_task
 
 import copy
 import os
@@ -25,7 +30,7 @@ from Bio import SeqIO
 
 import datetime
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 def get_logger():
     logger = logging.getLogger(__name__)
@@ -33,7 +38,7 @@ def get_logger():
     timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
     handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
     handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
     return logger
@@ -41,8 +46,6 @@ def get_logger():
 logger = get_logger()
 
 
-def get_no_cpus():
-    return os.cpu_count()
 
 
 def get_status_code(run_id_path):
@@ -207,146 +210,133 @@ def submit():
             if not os.path.isfile(query_rayt_fname):
                 raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        # Copy R scripts
-        shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..",
-                                     'shinyapps',
-                                     'analysis',
-                                      "analysis.R"
-                                     ),
-                        os.path.join(session['outdir'],
-                                     'analysis.R'
-                                     )
-                        )
-        shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..",
-                                     'shinyapps',
-                                     'analysis',
-                                     "run_analysis.R"
-                                     ),
-                        os.path.join(session['outdir'],
-                                     'run_analysis.R'
-                                     )
-                        )
+        rarefan_job = app.queue.enqueue(
+            rarefan_task,
+            tmpdir=session['tmpdir'],
+            outdir=session['outdir'],
+            reference_strain=session['reference_strain'],
+            min_nmer_occurence=session['min_nmer_occurence'],
+            nmer_length=session['nmer_length'],
+            query_rayt_fname=query_rayt_fname,
+            treefile=session['treefile'],
+            e_value_cutoff=session['e_value_cutoff'],
+            analyse_repins=session['analyse_repins'],
+        )
 
-        oldwd = os.getcwd()
-        os.chdir(tmpdir)
+        job.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id()}}
+        job.save()
 
-        start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
-        mcl_threads = max(get_no_cpus()//4, 1)
 
-        logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
-        java_command = " ".join(['java',
-                                     '-Dcom.sun.management.jmxremote',
-                                      '-Dcom.sun.management.jmxremote.port=9010',
-                                      '-Dcom.sun.management.jmxremote.local.only=true',
-                                      '-Dcom.sun.management.jmxremote.authenticate=false',
-                                      '-Dcom.sun.management.jmxremote.ssl=false',
-                                     '-jar',
-                                     '-Xmx10g',
-                                     os.path.abspath(
-                                     os.path.join(os.path.dirname(app.root_path),
-                                     'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
-                                     )
-                                     ),
-                                     session['tmpdir'],
-                                     session['outdir'],
-                                     session['reference_strain'],
-                                     '{0:s}'.format(session['min_nmer_occurence']),
-                                     '{0:s}'.format(session['nmer_length']),
-                                     query_rayt_fname,
-                                     treefile,
-                                     '{0:s}'.format(session['e_value_cutoff']),
-                                     {"y": "true", None: "false"}[session['analyse_repins']],
-                                     '{0:d}'.format(mcl_threads),
-                                        ]
-                                )
+        # # Copy R scripts
+        # shutil.copyfile(os.path.join(os.path.dirname(__file__),
+        #                              "..",
+        #                              'shinyapps',
+        #                              'analysis',
+        #                               "analysis.R"
+        #                              ),
+        #                 os.path.join(session['outdir'],
+        #                              'analysis.R'
+        #                              )
+        #                 )
+        # shutil.copyfile(os.path.join(os.path.dirname(__file__),
+        #                              "..",
+        #                              'shinyapps',
+        #                              'analysis',
+        #                              "run_analysis.R"
+        #                              ),
+        #                 os.path.join(session['outdir'],
+        #                              'run_analysis.R'
+        #                              )
+        #                 )
 
-        logging.info("Java command: %s", java_command)
-        java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
+        # oldwd = os.getcwd()
+        # os.chdir(tmpdir)
 
-        R_command = " ".join(["Rscript",
-                                  'displayREPINsAndRAYTs.R',
-                                  session['outdir'],
-                                  treefile
-                                     ])
-        logging.info("R command: %s", R_command)
-        R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
+        # start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
 
-        if run_andi_clustdist:
-            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
-            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-            distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-            andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
-            logging.info("andi command: %s", andi_command)
-            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
+        # logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
+        # R_command = " ".join(["Rscript",
+        #                     'displayREPINsAndRAYTs.R',
+        #                     session['outdir'],
+        #                     treefile
+        #                         ])
+        # logging.info("R command: %s", R_command)
+        # R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
 
-        else:
-            andi_command = "echo 'Not running andi.'"
-            logging.info("andi command: %s", andi_command)
-            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+        # if run_andi_clustdist:
+        #     andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
+        #     distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
+        #     distfile = os.path.join(session['outdir'], os.path.basename(distfile))
+        #     andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
+        #     logging.info("andi command: %s", andi_command)
+        #     andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-            if len(session.get('strain_names')) > 3:
-                clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
-                                                         os.path.join(session['outdir'], 'tmptree.nwk'))
+        #     clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
 
-            else:
-                clustdist_command = "echo 'Not running clustDist.'"
+        # else:
+        #     andi_command = "echo 'Not running andi.'"
+        #     logging.info("andi command: %s", andi_command)
+        #     andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
 
-        logging.info("clustdist command: %s", clustdist_command)
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+        #     if len(session.get('strain_names')) > 3:
+        #         clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
+        #                                                  os.path.join(session['outdir'], 'tmptree.nwk'))
 
-        # Zip results.
-        zip_command = " ".join(["zip",
-                                "-rv",
-                                os.path.split(session['tmpdir'])[-1] + "_out.zip",
-                                'out'
-                                ]
-                               )
+        #     else:
+        #         clustdist_command = "echo 'Not running clustDist.'"
 
-        zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
-        logging.info("zip command: %s", zip_command)
+        # logging.info("clustdist command: %s", clustdist_command)
+        # clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
 
-        email_command = get_email_command(session)
-        email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
+        # # Zip results.
+        # zip_command = " ".join(["zip",
+        #                         "-rv",
+        #                         os.path.split(session['tmpdir'])[-1] + "_out.zip",
+        #                         'out'
+        #                         ]
+        #                        )
 
-        command_lines = [
-            "touch {} &&".format(start_stamp),
-            "{} && touch {}".format(java_command, java_stamp),
-            "{} && touch {}".format(andi_command, andi_stamp),
-            "{} && touch {}".format(clustdist_command, clustdist_stamp),
-            "{} && touch {}".format(zip_command, zip_stamp),
-            "{} && touch {}".format(email_command, email_stamp)
-        ]
+        # zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
+        # logging.info("zip command: %s", zip_command)
 
-        with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
-            fp.write('\n')
-            for line in command_lines:
-                fp.write(line)
-                fp.write('\n')
-            fp.write('\n')
+        # email_command = get_email_command(session)
+        # email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
 
-        os.chmod('job.sh', stat.S_IRWXU)
+        # command_lines = [
+        #     "touch {} &&".format(start_stamp),
+        #     "{} && touch {}".format(andi_command, andi_stamp),
+        #     "{} && touch {}".format(clustdist_command, clustdist_stamp),
+        #     "{} && touch {}".format(zip_command, zip_stamp),
+        #     "{} && touch {}".format(email_command, email_stamp)
+        # ]
 
-        # Write batch script to submit the job.
-        with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
-            fp.write('\n')
+        # with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
+        #     fp.write(r"#! /bin/bash")
+        #     fp.write('\n')
+        #     fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
+        #     fp.write('\n')
+        #     for line in command_lines:
+        #         fp.write(line)
+        #         fp.write('\n')
+        #     fp.write('\n')
 
-        os.chmod('batch.sh', stat.S_IRWXU)
+        # os.chmod('job.sh', stat.S_IRWXU)
 
-        shell_command = os.path.join(tmpdir, 'batch.sh')
-        proc = subprocess.Popen(shlex.split(shell_command), shell=False)
+        # # Write batch script to submit the job.
+        # with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
+        #     fp.write(r"#! /bin/bash")
+        #     fp.write('\n')
+        #     fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
+        #     fp.write('\n')
 
-        os.chdir(oldwd)
+        # os.chmod('batch.sh', stat.S_IRWXU)
+
+        # shell_command = os.path.join(tmpdir, 'batch.sh')
+        # proc = subprocess.Popen(shlex.split(shell_command), shell=False)
+
+        # os.chdir(oldwd)
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -541,6 +531,30 @@ def files(req_path):
     else:
         # Serve the file.
         return send_from_directory(*os.path.split(nested_file_path))
+
+
+@app.route('/redis_test', methods=['GET'])
+def redis_test():
+    args = request.args
+    seconds = int(args['seconds'])
+
+    queue = app.queue
+
+    job = queue.enqueue(example, seconds)
+
+    return ("Job is running with id {}".format(job.get_id()))
+
+@app.route('/check_tasks', methods=['GET'])
+def queue():
+    args = request.args
+    job_id = request.args['job_id']
+
+    redis_job = rq.job.Job.fetch(job_id, connection=app.redis)
+
+    redis_job.refresh()
+
+    return("Job with id {} is finished: {}".format(redis_job.id, redis_job.is_finished))
+
 
 @app.route('/manual', methods=['GET'])
 def manual():

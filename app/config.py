@@ -8,3 +8,4 @@ class Config(object):
         'host': 'localhost',
         'port': 27017
     }
+    REDIS_URL = os.environ.get("REDIS_URL") or 'redis://'
