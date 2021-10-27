@@ -372,37 +372,39 @@ def get_email_command(session):
     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
     email_body = f"""Hallo,
 your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
-    Job Summary
-    ===========
-        RAYTs
-        -----
-        Exit status: {status_msg[status['rayts']]}.
 
-        We discovered {counts['rayts']} RAYTs using tblastn with
-        {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
+Job Summary
+===========
 
-        NMERs
-        -----
-        Exit status: {status_msg[status['overreps']]}.
+    RAYTs
+    -----
+    Exit status: {status_msg[status['rayts']]}.
 
-        There are {counts['overreps']} {session['nmer_length']} bp long sequences that
-        occur more frequently than {session['min_nmer_occurence']} times.
+    We discovered {counts['rayts']} RAYTs using tblastn with
+    {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
 
-        REPINs
-        ------
-        Exit status: {status_msg[status['repins']]}.
+    NMERs
+    -----
+    Exit status: {status_msg[status['overreps']]}.
 
-        We detected {sum(counts['repins'].values())} REPINs.
+    There are {counts['overreps']} {session['nmer_length']} bp long sequences that
+    occur more frequently than {session['min_nmer_occurence']} times.
 
-    You can browse and download the results at this link:
-    http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
+    REPINs
+    ------
+    Exit status: {status_msg[status['repins']]}.
 
-    In case of problems, please reply to this email and leave the email subject as is.
+    We detected {sum(counts['repins'].values())} REPINs.
 
-    Thank you for using RAREFAN.
+You can browse and download the results at this link:
+http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
 
-    http://rarefan.evolbio.mpg.de
-    """
+In case of problems, please reply to this email and leave the email subject as is.
+
+Thank you for using RAREFAN.
+
+http://rarefan.evolbio.mpg.de
+"""
 
     email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
         email_subject,

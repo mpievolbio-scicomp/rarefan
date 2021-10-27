@@ -52,37 +52,39 @@ class RoutesTest(unittest.TestCase):
 
 Hallo,
 your job on rarefan.evolbio.mpg.de with ID neisseria is complete.
-    Job Summary
-    ===========
-        RAYTs
-        -----
-        Exit status: ERROR.
 
-        We discovered 0 RAYTs using tblastn with
-        yafM_Ecoli at an e-value threshold of 1e-30.
+Job Summary
+===========
 
-        NMERs
-        -----
-        Exit status: ERROR.
+    RAYTs
+    -----
+    Exit status: ERROR.
 
-        There are 0 21 bp long sequences that
-        occur more frequently than 51 times.
+    We discovered 0 RAYTs using tblastn with
+    yafM_Ecoli at an e-value threshold of 1e-30.
 
-        REPINs
-        ------
-        Exit status: ERROR.
+    NMERs
+    -----
+    Exit status: ERROR.
 
-        We detected 0 REPINs.
+    There are 0 21 bp long sequences that
+    occur more frequently than 51 times.
 
-    You can browse and download the results at this link:
-    http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
+    REPINs
+    ------
+    Exit status: ERROR.
 
-    In case of problems, please reply to this email and leave the email subject as is.
+    We detected 0 REPINs.
 
-    Thank you for using RAREFAN.
+You can browse and download the results at this link:
+http://rarefan.evolbio.mpg.de/results?run_id=neisseria.
 
-    http://rarefan.evolbio.mpg.de
-    " | msmtp no.name@no.host.xyz rarefan@evolbio.mpg.de >> /home/grotec/Repositories/RepinPop/test/data/neisseria/out/rarefan.log"""
+In case of problems, please reply to this email and leave the email subject as is.
+
+Thank you for using RAREFAN.
+
+http://rarefan.evolbio.mpg.de
+" | msmtp no.name@no.host.xyz rarefan@evolbio.mpg.de >> /home/grotec/Repositories/RepinPop/test/data/neisseria/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 
@@ -103,37 +105,39 @@ your job on rarefan.evolbio.mpg.de with ID neisseria is complete.
 
 Hallo,
 your job on rarefan.evolbio.mpg.de with ID neisseria_completed is complete.
-    Job Summary
-    ===========
-        RAYTs
-        -----
-        Exit status: OK.
 
-        We discovered 60 RAYTs using tblastn with
-        yafM_Ecoli at an e-value threshold of 1e-30.
+Job Summary
+===========
 
-        NMERs
-        -----
-        Exit status: OK.
+    RAYTs
+    -----
+    Exit status: OK.
 
-        There are 184 21 bp long sequences that
-        occur more frequently than 51 times.
+    We discovered 60 RAYTs using tblastn with
+    yafM_Ecoli at an e-value threshold of 1e-30.
 
-        REPINs
-        ------
-        Exit status: OK.
+    NMERs
+    -----
+    Exit status: OK.
 
-        We detected 48 REPINs.
+    There are 184 21 bp long sequences that
+    occur more frequently than 51 times.
 
-    You can browse and download the results at this link:
-    http://rarefan.evolbio.mpg.de/results?run_id=neisseria_completed.
+    REPINs
+    ------
+    Exit status: OK.
 
-    In case of problems, please reply to this email and leave the email subject as is.
+    We detected 48 REPINs.
 
-    Thank you for using RAREFAN.
+You can browse and download the results at this link:
+http://rarefan.evolbio.mpg.de/results?run_id=neisseria_completed.
 
-    http://rarefan.evolbio.mpg.de
-    " | msmtp no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria_completed/out/rarefan.log"""
+In case of problems, please reply to this email and leave the email subject as is.
+
+Thank you for using RAREFAN.
+
+http://rarefan.evolbio.mpg.de
+" | msmtp no.name@no.host.xyz >> /home/grotec/Repositories/RepinPop/test/data/neisseria_completed/out/rarefan.log"""
 
         self.assertEqual(expected_cmd, cmd)
 
