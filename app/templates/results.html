@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block head %}
 <head>
-    {% if status < 1000 %}
-        <meta http-equiv="refresh" content='30'></meta>
-    {% endif %}
+    <meta http-equiv="refresh" content='30'></meta>
 </head>
 {% endblock %}
 {% block body %}
@@ -13,23 +11,34 @@
 		<p>
 		<h1>{{title}}</h1>
 		</p>
-        {% if status > 10 %}
+    <p>
+        <h2>Job stages</h2>
+    <table cellpadding="10" cellspacing="10">
+        {% for stage, status in stati.items() %}
+        <tr>
+            <td>{{stage}} ==> </td>
+            <td> {{status}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    </p>
+    <p>
+        {% if stati['rarefan'] in ['terminated', 'complete'] %}
             <h2 topmargin=800px> Browse data </h2>
             <p>
                 <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
             </p>
+            {%  if render_plots %}
+                <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
+            {% endif %}
         {% endif %}
-        {% if status > 100     %}
+        {% if stati['zip'] in ['terminated', 'complete'] %}
             <h2> Download data </h2>
             <p>
                 <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
             </p>
         {% endif %}
-        {% if status in [11, 111] %}
-            {%  if render_plots %}
-                <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
-            {% endif %}
-        {% endif %}
+    </p>
     </body>
 {% endblock %}
 

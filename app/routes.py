@@ -46,8 +46,6 @@ def get_logger():
 logger = get_logger()
 
 
-
-
 def get_status_code(run_id_path):
     # Check if the run has finished.
     is_started = ".start.stamp" in os.listdir(run_id_path)
@@ -426,29 +424,43 @@ def results():
     results_form = AnalysisForm()
 
     if 'run_id' in args.keys():
-        
+
         run_id = args['run_id']
+
+        job = Job.objects.get_or_404(run_id=run_id)
+
+        stages = job.stages
+
+        stati = {}
+
+        for stage in stages.keys():
+            redis_job_id = stages[stage]['redis_job_id']
+            try:
+                redis_job = rq.job.Job.fetch(redis_job_id, connection=app.redis)
+                redis_job_status = redis_job.get_status()
+            except:
+                redis_job_status = "complete"
+
+            stati[stage] = redis_job_status
         # Check if this is a valid run id.
 
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
 
-        status = get_status_code(run_id_path)
-
-        if status < 1:
-            flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
-        elif status == 1:
-            flash("Your job {} is running, please wait for page to refresh.".format(run_id))
-        elif status == 11:
-            flash("Your job {} is finished. Preparing run files for download".format(run_id))
-        elif status == 101:
-            flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-        elif status == 111:
-            flash("Your job {} has finished. Results and download links below.".format(run_id))
-        elif status in [10, 100]:
-            flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
-        else:
-            flash("Your job {} has failed with an unexpected failure.".format(run_id))
+        # if status < 1:
+        #     flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
+        # elif status == 1:
+        #     flash("Your job {} is running, please wait for page to refresh.".format(run_id))
+        # elif status == 11:
+        #     flash("Your job {} is finished. Preparing run files for download".format(run_id))
+        # elif status == 101:
+        #     flash("Your job {} has failed. Preparing run files for download.".format(run_id))
+        # elif status == 111:
+        #     flash("Your job {} has finished. Results and download links below.".format(run_id))
+        # elif status in [10, 100]:
+        #     flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
+        # else:
+        #     flash("Your job {} has failed with an unexpected failure.".format(run_id))
 
         # Only show plots if more than 3 strains uploaded.
         strain_names = session.get('strain_names', None)
@@ -457,10 +469,10 @@ def results():
         else:
             render_plots = len(strain_names) > 3
         return render_template('results.html',
-                               title="Run {} results".format(run_id),
+                               title="Results for RAREFAN run {}".format(run_id),
                                results_form=results_form,
                                run_id=run_id,
-                               status=status,
+                               stati=stati,
                                render_plots=render_plots,
                                )
 

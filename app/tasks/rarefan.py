@@ -43,13 +43,12 @@ def rarefan_task(**kwargs):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=False)
 
-    while not proc.poll():
-        logging.debug("rarefan is running.")
-    logging.debug("rarefan returned with %s", proc.returncode)
+    stdout, stderr = proc.communicate()
 
-    # stdout, stderr = proc.communicate()
-
-    return proc.returncode
+    return {'returncode': proc.returncode,
+            'stdout': stdout,
+            'stderr': stderr
+            }
 
 
 if __name__ == "main":
