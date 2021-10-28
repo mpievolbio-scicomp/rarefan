@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 
 from redis import Redis
 import rq
+from rq.job import Job as RQJob
 from rq.exceptions import NoSuchJobError
 
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
@@ -19,7 +20,9 @@ from app.models import Job
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task
 from app.tasks.zip import zip_task
-from app.tasks.email import email_task
+# from app.tasks.email import email_task
+
+from app.callbacks.callbacks import rarefan_on_success, on_failure
 
 import copy
 import os
@@ -189,64 +192,93 @@ def submit():
         logger.info("email: %s", session['email'])
 
         # Store session in db.
-        job = Job(run_id=os.path.basename(session['tmpdir']))
-        job.setup = copy.deepcopy(session)
+        run_id = os.path.basename(session['tmpdir'])
+        dbjob = Job(run_id=run_id)
+        dbjob.setup = copy.deepcopy(session)
 
-        job.save()
+        dbjob.save()
 
         # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
             query_rayt_fname = query_rayt_fname + ".faa"
-            src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
+            src = os.path.join(app.static_folder, "rayts", session['query_rayt'] + ".faa")
             logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
             shutil.copyfile(src, query_rayt_fname)
 
             if not os.path.isfile(query_rayt_fname):
                 raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        rarefan_job = app.queue.enqueue(
+        rarefan_job = RQJob.create(
             rarefan_task,
-            tmpdir=session['tmpdir'],
-            outdir=session['outdir'],
-            reference_strain=session['reference_strain'],
-            min_nmer_occurence=session['min_nmer_occurence'],
-            nmer_length=session['nmer_length'],
-            query_rayt_fname=query_rayt_fname,
-            treefile=session['treefile'],
-            e_value_cutoff=session['e_value_cutoff'],
-            analyse_repins=session['analyse_repins'],
+            connection=app.redis,
+            on_success=rarefan_on_success,
+            on_failure=on_failure,
+            meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+            kwargs={
+                "tmpdir": session['tmpdir'],
+                "outdir": session['outdir'],
+                "reference_strain": session['reference_strain'],
+                "min_nmer_occurence": session['min_nmer_occurence'],
+                "nmer_length": session['nmer_length'],
+                "query_rayt_fname": query_rayt_fname,
+                "treefile": session['treefile'],
+                "e_value_cutoff": session['e_value_cutoff'],
+                "analyse_repins": session['analyse_repins'],
+                }
         )
+
 
         run_tree_task = len(strain_names) >= 4
         if run_tree_task:
-            tree_job = app.queue.enqueue(tree_task,
-                                         run_dir=session['tmpdir'],
-                                         treefile=session['treefile'],
-                                         depends_on=[rarefan_job]
-                                         )
+            tree_job = RQJob.create(tree_task,
+                                    depends_on=[rarefan_job],
+                                    connection=app.redis,
+                                    meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+                                    kwargs={
+                                         "run_dir": session['tmpdir'],
+                                         "treefile": session['treefile'],
+                                        }
+                                    )
         else:
-            tree_job = app.queue.enqueue(lambda x: None, depends_on=rarefan_job)
+            tree_job = RQJob.create(lambda x: None, depends_on=rarefan_job)
 
-        zip_job = app.queue.enqueue(zip_task,
-                                    run_dir=session['tmpdir'],
-                                    depends_on=[rarefan_job, tree_job]
+        zip_job = RQJob.create(zip_task,
+                               depends_on=[rarefan_job, tree_job],
+                               connection=app.redis,
+                               kwargs={'run_dir':session['tmpdir']},
                                     )
 
-        job.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id()},
-                      'tree': {'redis_job_id': tree_job.get_id()},
-                      'zip': {'redis_job_id': zip_job.get_id()},
+        dbjob.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id(),
+                                    'results': {'returncode': None,
+                                                'counts': {'rayts': None,
+                                                           'seeds': None,
+                                                           'repins': None,
+                                                          },
+                                                'data_sanity': {'rayts': None,
+                                                           'seeds': None,
+                                                           'repins': None,
+                                                          },
+                                    },
+                                    'status': rarefan_job.get_status()
+                                    },
+                      'tree': {'redis_job_id': tree_job.get_id(),
+                               'results': {'returncode': None, 'log': ""},
+                               'status': tree_job.get_status()
+                               },
+                      'zip': {'redis_job_id': zip_job.get_id(),
+                               'results': {'returncode': None, 'log': ""},
+                               'status': zip_job.get_status()
+                              }
                       }
-        job.save()
+        dbjob.save()
 
-        email_job = app.queue.enqueue(email_task,
-                                      job,
-                                      )
+        # Enqueue the jobs
+        app.queue.enqueue_job(rarefan_job)
+        app.queue.enqueue_job(tree_job)
+        app.queue.enqueue_job(zip_job)
 
-
-        # email_command = get_email_command(session)
-        # email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -267,9 +299,9 @@ def results():
 
         run_id = args['run_id']
 
-        job = Job.objects.get_or_404(run_id=run_id)
+        dbjob = Job.objects.get_or_404(run_id=run_id)
 
-        stages = job.stages
+        stages = dbjob.stages
 
         stati = {}
 
@@ -285,6 +317,10 @@ def results():
 
             stati[stage] = redis_job_status
 
+            # dbjob.update(push__stages__[stage]['status'] = copy.deepcopy(redis_job_status)
+
+        dbjob.save()
+
         if any([stage == "failed" for stage in stati.values()]):
             stati['overall'] = 'failed'
         elif all([stage in ['complete', 'finished'] for stage in stati.values()]):
@@ -292,7 +328,6 @@ def results():
         else:
             stati['overall'] = "running"
 
-            # Check if this is a valid run id.
 
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
@@ -381,17 +416,6 @@ def files(req_path):
         return send_from_directory(*os.path.split(nested_file_path))
 
 
-@app.route('/redis_test', methods=['GET'])
-def redis_test():
-    args = request.args
-    seconds = int(args['seconds'])
-
-    queue = app.queue
-
-    job = queue.enqueue(example, seconds)
-
-    return ("Job is running with id {}".format(job.get_id()))
-
 @app.route('/check_tasks', methods=['GET'])
 def queue():
     args = request.args
@@ -402,7 +426,6 @@ def queue():
     redis_job.refresh()
 
     return("Job with id {} is finished: {}".format(redis_job.id, redis_job.is_finished))
-
 
 @app.route('/manual', methods=['GET'])
 def manual():

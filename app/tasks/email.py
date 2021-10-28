@@ -3,17 +3,24 @@ import os
 import sys
 import shlex
 import shutil
+import subprocess
+
 from app.utilities import checkers
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
+
 def email_task(job):
-    command = get_email_command(job.setup)
+    session = job.setup
+    results = checkers.parse_results(job)
+    subject, body  = get_email(session, results)
 
 
-def get_email_command(session):
+    return 0, ""
 
+
+def get_email(session, results):
     # Aggregate the run path.
     run_id_path = session['tmpdir']
     run_id = os.path.basename(run_id_path)
@@ -22,17 +29,23 @@ def get_email_command(session):
     if session['email'] is None or session['email'] == "":
         logging.debug("No email set.")
 
-    recipients = [session["email"]]
+    recipients = []
 
-    results = checkers.parse_results(session["outdir"], session["reference_strain"])
+    user_email = session['email']
+    if user_email is not None or user_email != "None":
+        recipients.append(user_email)
+
     counts = results['counts']
     status = results['status']
 
     status_msg = {0: "OK", 1: "ERROR"}
 
-    # Send email also to support if there was an error.
+    # Append support to recipients if there was an error.
     if sum(status.values()) > 0:
         recipients.append('rarefan@evolbio.mpg.de')
+
+    if len(recipients) == 0:
+        return None
 
     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
     email_body = f"""Hallo,
@@ -71,16 +84,4 @@ Thank you for using RAREFAN.
 http://rarefan.evolbio.mpg.de
 """
 
-    email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
-        email_subject,
-        email_body,
-        " ".join(recipients),
-        os.path.join(
-            run_id_path,
-            'out',
-            'rarefan.log'
-        )
-    )
-    return email_command
-
-
+    return email_body, email_subject
