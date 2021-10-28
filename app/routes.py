@@ -15,12 +15,11 @@ from rq.exceptions import NoSuchJobError
 
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
-from app.utilities import checkers
 from app.models import Job
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task
 from app.tasks.zip import zip_task
-# from app.tasks.email import email_task
+from app.tasks.email import email_task
 
 import copy
 import os
@@ -164,13 +163,17 @@ def submit():
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
-        os.mkdir(session['outdir'])
+
+        if os.path.isdir(session['outdir']):
+            logging.warning("Rerun")
+        else:
+            os.mkdir(session['outdir'])
+
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
         run_id = os.path.basename(session['tmpdir'])
-
 
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
@@ -195,7 +198,7 @@ def submit():
         # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-            query_rayt_fname = query_rayt_fname+".faa"
+            query_rayt_fname = query_rayt_fname + ".faa"
             src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
             logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
             shutil.copyfile(src, query_rayt_fname)
@@ -237,6 +240,9 @@ def submit():
                       }
         job.save()
 
+        email_job = app.queue.enqueue(email_task,
+                                      job,
+                                      )
 
 
         # email_command = get_email_command(session)
@@ -249,78 +255,6 @@ def submit():
                     title='Submit',
                     submit_form=submit_form,
                     )
-
-def get_email_command(session):
-
-    # Aggregate the run path.
-    run_id_path = session["tmpdir"]
-    run_id = os.path.basename(run_id_path)
-
-    # List of recipients. Always send to rarefan.
-    if session['email'] is None or session['email'] == "":
-        logging.debug("No email set.")
-
-    recipients = [session["email"]]
-
-    results = checkers.parse_results(session["outdir"], session["reference_strain"])
-    counts = results['counts']
-    status = results['status']
-
-    status_msg = {0: "OK", 1: "ERROR"}
-
-    # Send email also to support if there was an error.
-    if sum(status.values()) > 0:
-        recipients.append('rarefan@evolbio.mpg.de')
-
-    email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
-    email_body = f"""Hallo,
-your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
-
-Job Summary
-===========
-
-    RAYTs
-    -----
-    Exit status: {status_msg[status['rayts']]}.
-
-    We discovered {counts['rayts']} RAYTs using tblastn with
-    {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
-
-    NMERs
-    -----
-    Exit status: {status_msg[status['overreps']]}.
-
-    There are {counts['overreps']} {session['nmer_length']} bp long sequences that
-    occur more frequently than {session['min_nmer_occurence']} times.
-
-    REPINs
-    ------
-    Exit status: {status_msg[status['repins']]}.
-
-    We detected {sum(counts['repins'].values())} REPINs.
-
-You can browse and download the results at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
-
-In case of problems, please reply to this email and leave the email subject as is.
-
-Thank you for using RAREFAN.
-
-http://rarefan.evolbio.mpg.de
-"""
-
-    email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
-        email_subject,
-        email_body,
-        " ".join(recipients),
-        os.path.join(
-            run_id_path,
-            'out',
-            'rarefan.log'
-        )
-    )
-    return email_command
-
 
 
 @app.route('/results', methods=['GET', 'POST'])

@@ -46,7 +46,7 @@ def rarefan_task(**kwargs):
     log, _ = proc.communicate()
 
     # Append stdout and stderr to logfile.
-    with open(os.path.join(kwargs['tmpdir'], 'rarefan.log'), 'ab') as fh:
+    with open(os.path.join(kwargs['tmpdir'], 'out', 'rarefan.log'), 'ab') as fh:
         fh.write(log)
 
     return {'returncode': proc.returncode,

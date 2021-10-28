@@ -28,16 +28,16 @@ def zip_task(run_dir):
 
     proc = subprocess.Popen(shlex.split(zip_command),
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT,
+                            stderr=subprocess.PIPE,
                             shell=False)
 
-    log, _ = proc.communicate()
+    log, err = proc.communicate()
 
-    # Append stdout and stderr to logfile.
+    # Append only stderr to logfile.
     with open(os.path.join('out', 'rarefan.log'), 'ab') as fh:
-        fh.write(log)
+        fh.write(err)
 
     os.chdir(oldwd)
 
-    return proc.returncode, log
+    return proc.returncode, err
 

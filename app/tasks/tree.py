@@ -4,11 +4,17 @@ import sys
 import shlex
 import shutil
 
-def tree_task(run_dir, treefile='tmptree.nwk'):
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+def tree_task(run_dir, treefile=None):
     """ Generate a phylogenetic tree from all DNA sequence files in given directory.
 
     :param run_dir: The directory containing the sequence files.
     :type  run_dir: str (path)
+
+    :param treefile: Name of the treefile (default: 'tmptree.nwk')
+    :type  treefile: str
 
     :return: The return code and log from the tree generation.
     :rtype: tuple
@@ -19,21 +25,29 @@ def tree_task(run_dir, treefile='tmptree.nwk'):
 
     inputs = [os.path.join(run_dir, f) for f in os.listdir(run_dir) if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
 
-    # Check if treefile exists.
-    tf = os.path.join(run_dir, treefile)
-    outdir = os.path.join(run_dir, 'out')
-    if os.path.isfile(tf):
-        shutil.copy(tf, os.path.join(outdir, 'tmptree.nwk'))
+    for f in inputs:
+        logging.debug("Found sequence file %s.", f)
 
-        return 0, "Copied {} to {}".format(tf, os.path.join(outdir, 'tmptree.nwk')), ""
+    # Check if treefile exists.
+    if treefile is None or treefile == "None":
+        treefile = 'tmptree.nwk'
+    in_treefile = os.path.join(run_dir, treefile)
+    outdir = os.path.join(run_dir, 'out')
+    out_treefile = os.path.join(outdir, treefile)
+    if os.path.isfile(in_treefile):
+        shutil.copy(in_treefile, out_treefile)
+
+        return 0, "Copied {} to {}".format(in_treefile, out_treefile)
 
     # else (no treefile exists.)
-    command = "andi -j {} | clustDist > {}".format(" ".join(inputs), treefile)
+    command = "andi -j {} | clustDist > {}".format(" ".join(inputs), out_treefile)
 
-    proc = subprocess.Popen(shlex.split(command),
+    logging.debug("tree generation command: %s", command)
+
+    proc = subprocess.Popen(command,
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT,
-                            shell=False)
+                            shell=True)
 
     log, _ = proc.communicate()
 
