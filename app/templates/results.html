@@ -12,18 +12,18 @@
 		<h1>{{title}}</h1>
 		</p>
     <p>
-        <h2>Job stages</h2>
-    <table cellpadding="10" cellspacing="10">
+        <h2>Stages report</h2>
+    <table width="20%" cellpadding="10" cellspacing="10">
         {% for stage, status in stati.items() %}
         <tr>
-            <td>{{stage}} ==> </td>
-            <td> {{status}}</td>
+            <td>{{stage}}</td>
+            <td>{{status}}</td>
         </tr>
         {% endfor %}
     </table>
     </p>
     <p>
-        {% if stati['rarefan'] in ['terminated', 'complete'] %}
+        {% if stati['rarefan'] in ['finished', 'complete'] %}
             <h2 topmargin=800px> Browse data </h2>
             <p>
                 <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
@@ -32,7 +32,7 @@
                 <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
             {% endif %}
         {% endif %}
-        {% if stati['zip'] in ['terminated', 'complete'] %}
+        {% if stati['zip'] in ['finished', 'complete'] %}
             <h2> Download data </h2>
             <p>
                 <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>

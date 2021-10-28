@@ -41,13 +41,16 @@ def rarefan_task(**kwargs):
 
     proc = subprocess.Popen(shlex.split(java_command),
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, shell=False)
+                            stderr=subprocess.STDOUT, shell=False)
 
-    stdout, stderr = proc.communicate()
+    log, _ = proc.communicate()
+
+    # Append stdout and stderr to logfile.
+    with open(os.path.join(kwargs['tmpdir'], 'rarefan.log'), 'ab') as fh:
+        fh.write(log)
 
     return {'returncode': proc.returncode,
-            'stdout': stdout,
-            'stderr': stderr
+            'log': log
             }
 
 

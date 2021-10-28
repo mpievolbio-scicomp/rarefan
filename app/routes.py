@@ -11,12 +11,16 @@ from werkzeug.utils import secure_filename
 
 from redis import Redis
 import rq
+from rq.exceptions import NoSuchJobError
 
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
 from app.utilities import checkers
 from app.models import Job
 from app.tasks.rarefan import rarefan_task
+from app.tasks.tree import tree_task
+from app.tasks.zip import zip_task
+# from app.tasks.email import email_task
 
 import copy
 import os
@@ -167,15 +171,6 @@ def submit():
         treefile = request.form.get('treefile', None)
         run_id = os.path.basename(session['tmpdir'])
 
-        if len(strain_names) >= 4:
-            if treefile == "None":
-                run_andi_clustdist = True
-                treefile = "tmptree.nwk"
-            else:
-                run_andi_clustdist = False
-        else:
-            treefile = "tmptree.nwk"
-            run_andi_clustdist = False
 
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
@@ -221,120 +216,31 @@ def submit():
             analyse_repins=session['analyse_repins'],
         )
 
-        job.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id()}}
+        run_tree_task = len(strain_names) >= 4
+        if run_tree_task:
+            tree_job = app.queue.enqueue(tree_task,
+                                         run_dir=session['tmpdir'],
+                                         treefile=session['treefile'],
+                                         depends_on=[rarefan_job]
+                                         )
+        else:
+            tree_job = app.queue.enqueue(lambda x: None, depends_on=rarefan_job)
+
+        zip_job = app.queue.enqueue(zip_task,
+                                    run_dir=session['tmpdir'],
+                                    depends_on=[rarefan_job, tree_job]
+                                    )
+
+        job.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id()},
+                      'tree': {'redis_job_id': tree_job.get_id()},
+                      'zip': {'redis_job_id': zip_job.get_id()},
+                      }
         job.save()
 
 
 
-        # # Copy R scripts
-        # shutil.copyfile(os.path.join(os.path.dirname(__file__),
-        #                              "..",
-        #                              'shinyapps',
-        #                              'analysis',
-        #                               "analysis.R"
-        #                              ),
-        #                 os.path.join(session['outdir'],
-        #                              'analysis.R'
-        #                              )
-        #                 )
-        # shutil.copyfile(os.path.join(os.path.dirname(__file__),
-        #                              "..",
-        #                              'shinyapps',
-        #                              'analysis',
-        #                              "run_analysis.R"
-        #                              ),
-        #                 os.path.join(session['outdir'],
-        #                              'run_analysis.R'
-        #                              )
-        #                 )
-
-        # oldwd = os.getcwd()
-        # os.chdir(tmpdir)
-
-        # start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
-
-
-        # logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
-        # R_command = " ".join(["Rscript",
-        #                     'displayREPINsAndRAYTs.R',
-        #                     session['outdir'],
-        #                     treefile
-        #                         ])
-        # logging.info("R command: %s", R_command)
-        # R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
-
-        # if run_andi_clustdist:
-        #     andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
-        #     distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-        #     distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-        #     andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
-        #     logging.info("andi command: %s", andi_command)
-        #     andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
-
-        #     clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-
-        # else:
-        #     andi_command = "echo 'Not running andi.'"
-        #     logging.info("andi command: %s", andi_command)
-        #     andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
-
-        #     if len(session.get('strain_names')) > 3:
-        #         clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
-        #                                                  os.path.join(session['outdir'], 'tmptree.nwk'))
-
-        #     else:
-        #         clustdist_command = "echo 'Not running clustDist.'"
-
-        # logging.info("clustdist command: %s", clustdist_command)
-        # clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
-
-        # # Zip results.
-        # zip_command = " ".join(["zip",
-        #                         "-rv",
-        #                         os.path.split(session['tmpdir'])[-1] + "_out.zip",
-        #                         'out'
-        #                         ]
-        #                        )
-
-        # zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
-        # logging.info("zip command: %s", zip_command)
-
         # email_command = get_email_command(session)
         # email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
-
-        # command_lines = [
-        #     "touch {} &&".format(start_stamp),
-        #     "{} && touch {}".format(andi_command, andi_stamp),
-        #     "{} && touch {}".format(clustdist_command, clustdist_stamp),
-        #     "{} && touch {}".format(zip_command, zip_stamp),
-        #     "{} && touch {}".format(email_command, email_stamp)
-        # ]
-
-        # with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
-        #     fp.write(r"#! /bin/bash")
-        #     fp.write('\n')
-        #     fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
-        #     fp.write('\n')
-        #     for line in command_lines:
-        #         fp.write(line)
-        #         fp.write('\n')
-        #     fp.write('\n')
-
-        # os.chmod('job.sh', stat.S_IRWXU)
-
-        # # Write batch script to submit the job.
-        # with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
-        #     fp.write(r"#! /bin/bash")
-        #     fp.write('\n')
-        #     fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
-        #     fp.write('\n')
-
-        # os.chmod('batch.sh', stat.S_IRWXU)
-
-        # shell_command = os.path.join(tmpdir, 'batch.sh')
-        # proc = subprocess.Popen(shlex.split(shell_command), shell=False)
-
-        # os.chdir(oldwd)
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -438,33 +344,29 @@ def results():
             try:
                 redis_job = rq.job.Job.fetch(redis_job_id, connection=app.redis)
                 redis_job_status = redis_job.get_status()
-            except:
+            except NoSuchJobError:
                 redis_job_status = "complete"
+            except:
+                redis_job_status = "failed"
 
             stati[stage] = redis_job_status
-        # Check if this is a valid run id.
+
+        if any([stage == "failed" for stage in stati.values()]):
+            stati['overall'] = 'failed'
+        elif all([stage in ['complete', 'finished'] for stage in stati.values()]):
+            stati['overall'] = "success"
+        else:
+            stati['overall'] = "running"
+
+            # Check if this is a valid run id.
 
         run_id_path = os.path.join(app.static_folder, "uploads", run_id)
         is_valid_run_id = os.path.isdir(run_id_path)
 
-        # if status < 1:
-        #     flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
-        # elif status == 1:
-        #     flash("Your job {} is running, please wait for page to refresh.".format(run_id))
-        # elif status == 11:
-        #     flash("Your job {} is finished. Preparing run files for download".format(run_id))
-        # elif status == 101:
-        #     flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-        # elif status == 111:
-        #     flash("Your job {} has finished. Results and download links below.".format(run_id))
-        # elif status in [10, 100]:
-        #     flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
-        # else:
-        #     flash("Your job {} has failed with an unexpected failure.".format(run_id))
-
         # Only show plots if more than 3 strains uploaded.
         strain_names = session.get('strain_names', None)
         if strain_names is None:
+            # This case happens if results endpoint is accessed manually i.e. without earlier upload and processing.
             render_plots = True
         else:
             render_plots = len(strain_names) > 3
