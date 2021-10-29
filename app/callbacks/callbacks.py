@@ -36,6 +36,8 @@ def rarefan_on_success(job, connection, result, *args, **kwargs):
     dbjob.update(set__stages__rarefan__results__counts__seeds=parsed['counts']['seeds'])
     dbjob.update(set__stages__rarefan__results__counts__repins=sum(parsed['counts']['repins'].values()))
 
+    dbjob.save()
+
 
 
 def on_failure(job, connection, type, value, traceback):

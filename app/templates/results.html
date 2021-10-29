@@ -45,7 +45,10 @@
                 <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
             </p>
         {% endif %}
-    </p>
+            <p>
+                <h2><a href={{url_for('rerun')}}?run_id={{run_id}}>Rerun this job</a></h2>
+            </p>
+        </p>
     </body>
 {% endblock %}
 

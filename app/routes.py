@@ -18,7 +18,7 @@ from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm,
 from app import app, db
 from app.models import Job
 from app.tasks.rarefan import rarefan_task
-from app.tasks.tree import tree_task
+from app.tasks.tree import tree_task, empty_task
 from app.tasks.zip import zip_task
 from app.tasks.email import email_task, email_test
 
@@ -168,9 +168,22 @@ def submit():
         session['outdir'] = os.path.join(tmpdir, 'out')
 
         if os.path.isdir(session['outdir']):
-            logging.warning("Rerun")
-        else:
-            os.mkdir(session['outdir'])
+            logging.warning("Rerun, creating new directory")
+            rerun_tmpdir = tempfile.mkdtemp(
+                suffix=None,
+                prefix="",
+                dir=app.config["UPLOAD_DIR"]
+            )
+            # Copy old run_dir
+            shutil.copytree(session['tmpdir'], rerun_tmpdir, dirs_exist_ok=True)
+            # Rm old results
+            shutil.rmtree(os.path.join(rerun_tmpdir, 'out'))
+
+            # Reset values.
+            session['tmpdir'] = rerun_tmpdir
+            session['outdir'] = os.path.join(rerun_tmpdir, 'out')
+
+        os.mkdir(session['outdir'])
 
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
@@ -243,7 +256,10 @@ def submit():
                                         }
                                     )
         else:
-            tree_job = RQJob.create(lambda x: None, depends_on=rarefan_job)
+            tree_job = RQJob.create(empty_task,
+                                    depends_on=rarefan_job,
+                                    connection=app.redis,
+                                    )
 
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
@@ -252,6 +268,15 @@ def submit():
                                connection=app.redis,
                                kwargs={'run_dir':session['tmpdir']},
                                     )
+        email_job = RQJob.create(email_task,
+                                 depends_on=['rarefan_job',
+                                             'tree_job',
+                                             'zip_job',
+                                             ],
+                                 meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+                                 connection=app.redis,
+                                 kwargs={'dbjob': dbjob},
+                                 )
 
         dbjob.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id(),
                                     'results': {'returncode': None,
@@ -281,18 +306,12 @@ def submit():
         app.queue.enqueue_job(rarefan_job)
         app.queue.enqueue_job(tree_job)
         app.queue.enqueue_job(zip_job)
+        app.queue.enqueue_job(email_job)
 
         # Enqueue email job.
         # Emails should be sent out on overall success or failure. It must somehow be a monitoring job, or a callback.
         # Use a callback. on_success on zip task, on_failure on general. On failure must check dbjob if mail has already been sent.
-        app.queue.enqueue(email_task,
-                          dbjob,
-                          depends_on=['rarefan_job',
-                                      'tree_job',
-                                      'zip_job',
-                                      ]
-                          )
-
+       
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -312,24 +331,38 @@ def results():
     if 'run_id' in args.keys():
 
         run_id = args['run_id']
+        logging.debug(run_id)
 
         dbjob = Job.objects.get_or_404(run_id=run_id)
+
+        is_complete = dbjob.notification_is_sent
 
         stages = dbjob.stages
 
         stati = {}
+        if is_complete:
+            stati['rarefan'] = stages['rarefan']['status']
+            stati['tree'] = stages['tree']['status']
+            stati['zip'] = stages['zip']['status']
 
-        for stage in stages.keys():
-            redis_job_id = stages[stage]['redis_job_id']
-            try:
-                redis_job = rq.job.Job.fetch(redis_job_id, connection=app.redis)
-                redis_job_status = redis_job.get_status()
-            except NoSuchJobError:
-                redis_job_status = "complete"
-            except:
-                redis_job_status = "failed"
+        else:
 
-            stati[stage] = redis_job_status
+            for stage in stages.keys():
+                redis_job_id = stages[stage]['redis_job_id']
+                try:
+                    redis_job = rq.job.Job.fetch(redis_job_id, connection=app.redis)
+                    redis_job_status = redis_job.get_status()
+                except NoSuchJobError:
+                    redis_job_status = "complete"
+                except:
+                    redis_job_status = "failed"
+
+                stati[stage] = redis_job_status
+
+            # Update database.
+            dbjob.update(set__stages__rarefan__status=stati['rarefan'])
+            dbjob.update(set__stages__tree__status=stati['tree'])
+            dbjob.update(set__stages__zip__status=stati['zip'])
 
         if any([stage == "failed" for stage in stati.values()]):
             stati['overall'] = 'failed'
@@ -340,10 +373,6 @@ def results():
         else:
             stati['overall'] = "running"
 
-        # Update database.
-        dbjob.update(set__stages__rarefan__status=stati['rarefan'])
-        dbjob.update(set__stages__tree__status=stati['tree'])
-        dbjob.update(set__stages__zip__status=stati['zip'])
 
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
@@ -444,3 +473,32 @@ def test_mail():
 
     app.queue.enqueue(email_test)
     return redirect(url_for('index'))
+
+@app.route('/rerun')
+def rerun():
+    args = request.args
+    run_id = request.args['run_id']
+
+    dbjob = Job.objects.get_or_404(run_id=run_id)
+
+    submit_form = SubmitForm()
+
+    strain_names = dbjob.setup.get('strain_names')
+    submit_form.reference_strain.choices.extend(strain_names)
+    submit_form.reference_strain.data=dbjob.setup.get('reference_strain')
+    submit_form.query_rayt.choices.extend(dbjob.setup.get('rayt_names'))
+    submit_form.query_rayt.data = dbjob.setup.get('query_rayt')
+    submit_form.treefile.choices.extend(["None"] + dbjob.setup.get('tree_names'))
+    submit_form.treefile.data = dbjob.setup.get('treefile')
+    submit_form.min_nmer_occurence.data = dbjob.setup.get('min_nmer_occurence')
+    submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
+    submit_form.analyse_repins.data = dbjob.setup.get('analyse_repins')
+    submit_form.e_value_cutoff.data = dbjob.setup.get('e_value_cutoff')
+    submit_form.email.data = dbjob.setup.get('email')
+
+    return render_template(
+                    'submit.html',
+                    title='Submit',
+                    submit_form=submit_form
+                    )
+    

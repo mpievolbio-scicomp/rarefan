@@ -1,4 +1,5 @@
 import subprocess
+import copy
 import os
 import sys
 import shlex
@@ -60,14 +61,20 @@ def email_task(dbjob):
                       recipients=recipients,
                       )
     logging.debug("Message: %s", message)
-    logging.debug("Mail sent? %s", str(dbjob.notification_is_sent))
-    if not dbjob.notification_is_sent:
+
+    is_sent = copy.deepcopy(dbjob.notification_is_sent)
+    while not is_sent:
         mail_status = mail.send(message)
         logging.debug("Mail status %s", str(mail_status))
+        logging.debug("Mail status type: %s", str(type(mail_status)))
 
         if mail_status is None:
-            dbjob.update(set__notification_is_sent=True)
-    logging.debug("Mail sent? %s", str(dbjob.notification_is_sent))
+            logging.debug("Updating Mail status.")
+            is_sent = True
+    dbjob.update(set__notification_is_sent=copy.deepcopy(is_sent))
+    dbjob.save()
+
+    logging.debug("Mail sent? %s", str(is_sent))
 
 
 def get_email(session, results):

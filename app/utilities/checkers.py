@@ -73,11 +73,14 @@ def parse_results(outdir,
                      for i in range(5)]
 
     # Count repins for each type 0..5
+    repin_checks = [0]*5
     for i, cluster_file in enumerate(cluster_files):
         try:
             results['counts']['repins'][i] = count_lines(cluster_file)
         except:
-            results['status']['repins'] = 1
+            repin_checks[i] = 1
+
+        results['status']['repins'] = int(all([r == 1 for r in repin_checks]))
 
     return results
 

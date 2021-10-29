@@ -57,3 +57,5 @@ def tree_task(run_dir, treefile=None):
 
     return proc.returncode, log
 
+def empty_task():
+    pass
