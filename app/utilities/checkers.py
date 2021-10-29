@@ -38,6 +38,8 @@ def parse_results(outdir,
 
     """
 
+    # Strip extension from reference strain filename.
+    reference_strain = ".".join(reference_strain.split(".")[:-1])
     assoc_fname = os.path.join(outdir, "repin_rayt_association.txt.fas")
     overrep_fname = os.path.join(outdir, reference_strain + ".overrep")
 
@@ -78,4 +80,10 @@ def parse_results(outdir,
             results['status']['repins'] = 1
 
     return results
+
+
+if __name__ == "__main__":
+    parsed = parse_results(sys.argv[1], 'Nmen_2594.fas')
+
+    print(parsed)
 

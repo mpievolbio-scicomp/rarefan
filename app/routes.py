@@ -20,7 +20,7 @@ from app.models import Job
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task
 from app.tasks.zip import zip_task
-# from app.tasks.email import email_task
+from app.tasks.email import email_task, email_test
 
 from app.callbacks.callbacks import rarefan_on_success, on_failure
 
@@ -279,6 +279,8 @@ def submit():
         app.queue.enqueue_job(tree_job)
         app.queue.enqueue_job(zip_job)
 
+        # Enqueue email job.
+
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -317,41 +319,35 @@ def results():
 
             stati[stage] = redis_job_status
 
-            # dbjob.update(push__stages__[stage]['status'] = copy.deepcopy(redis_job_status)
-
-        dbjob.save()
-
         if any([stage == "failed" for stage in stati.values()]):
             stati['overall'] = 'failed'
         elif all([stage in ['complete', 'finished'] for stage in stati.values()]):
-            stati['overall'] = "success"
+            stati['overall'] = "complete"
+        elif stati['rarefan'] == "queued":
+            stati['overall'] = "queued"
         else:
             stati['overall'] = "running"
 
+        # Update database.
+        dbjob.update(set__stages__rarefan__status=stati['rarefan'])
+        dbjob.update(set__stages__tree__status=stati['tree'])
+        dbjob.update(set__stages__zip__status=stati['zip'])
 
-        run_id_path = os.path.join(app.static_folder, "uploads", run_id)
-        is_valid_run_id = os.path.isdir(run_id_path)
-
-        # Only show plots if more than 3 strains uploaded.
-        strain_names = session.get('strain_names', None)
-        if strain_names is None:
-            # This case happens if results endpoint is accessed manually i.e. without earlier upload and processing.
-            render_plots = True
-        else:
-            render_plots = len(strain_names) > 3
+        # Only show plots if more than 3 strains.
+        render_plots = len(dbjob.setup.get('strain_names', [])) > 3
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
                                results_form=results_form,
                                run_id=run_id,
                                stati=stati,
+                               results_data=dbjob.stages['rarefan']['results'],
                                render_plots=render_plots,
                                )
 
-    flash("Not a valid run ID.")
-
     return render_template("results_query.html",
-                       results_form=results_form,
-                           title="Results")
+                           results_form=results_form,
+                           title="Results",
+                           )
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
@@ -430,3 +426,15 @@ def queue():
 @app.route('/manual', methods=['GET'])
 def manual():
     return render_template('manual.html')
+
+@app.route('/test_mail')
+def test_mail():
+    success, message= email_test()
+
+    logging.debug("Mail was sent: %s", str(success))
+    logging.debug("Mail message was: %s", str(message))
+
+    # app.queue.enqueue(email_test, )
+
+
+    return render_template('index.html')

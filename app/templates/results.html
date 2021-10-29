@@ -12,24 +12,31 @@
 		<h1>{{title}}</h1>
 		</p>
     <p>
-        <h2>Stages report</h2>
-    <table width="20%" cellpadding="10" cellspacing="10">
-        {% for stage, status in stati.items() %}
-        <tr>
-            <td>{{stage}}</td>
-            <td>{{status}}</td>
-        </tr>
-        {% endfor %}
-    </table>
+        <h2>Status:
+            {{ stati['overall'] }}
+        </h2>
     </p>
-    <p>
+
         {% if stati['rarefan'] in ['finished', 'complete'] %}
-            <h2 topmargin=800px> Browse data </h2>
-            <p>
-                <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
-            </p>
+    <p>
+        <h2>
+            Summary
+        </h2>
+        <table width="20%">
+            <tr>
+                <td> RAYTs</td> <td>{{results_data['counts']['rayts']}}</td>
+            </tr>
+            <tr>
+                <td> Seeds</td> <td>{{results_data['counts']['seeds']}}</td>
+            </tr>
+            <tr>
+                <td> REPINs</td> <td>{{results_data['counts']['repins']}}</td>
+            </tr>
+        </table>
+        <p>
+            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}}>Browse data</a> </h2>
             {%  if render_plots %}
-                <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
+            <h2><a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank">Plot data</a></h2>
             {% endif %}
         {% endif %}
         {% if stati['zip'] in ['finished', 'complete'] %}

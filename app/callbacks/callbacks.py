@@ -22,18 +22,18 @@ def rarefan_on_success(job, connection, result, *args, **kwargs):
     logging.debug(redis_job_id)
     logging.debug(list(result.keys()))
 
-    rc = copy.deepcopy(result['returncode'])
-    dbjob.update(set__stages__rarefan__results__returncode=rc)
-    # dbjob.update(set__stages__rarefan__results__log=result['log'])
+    # Update returncode.
+    dbjob.update(set__stages__rarefan__results__returncode=result['returncode'])
 
-    results = parse_results(dbjob['setup']['tmpdir'], dbjob['setup']['reference_strain'])
+    # Parse output files and report counts.
+    parsed = parse_results(dbjob['setup']['outdir'], dbjob['setup']['reference_strain'])
 
-    dbjob.update(set__stages__rarefan__results__data_sanity__rayts=results['status']['rayts'])
-    dbjob.update(set__stages__rarefan__results__data_sanity__seeds=results['status']['seeds'])
-    dbjob.update(set__stages__rarefan__results__data_sanity__repins=results['status']['repins'])
-    dbjob.update(set__stages__rarefan__results__counts__rayts=results['counts']['rayts'])
-    dbjob.update(set__stages__rarefan__results__counts__seeds=results['counts']['seeds'])
-    dbjob.update(set__stages__rarefan__results__counts__repins=results['counts']['repins'])
+    dbjob.update(set__stages__rarefan__results__data_sanity__rayts=parsed['status']['rayts'])
+    dbjob.update(set__stages__rarefan__results__data_sanity__seeds=parsed['status']['seeds'])
+    dbjob.update(set__stages__rarefan__results__data_sanity__repins=parsed['status']['repins'])
+    dbjob.update(set__stages__rarefan__results__counts__rayts=parsed['counts']['rayts'])
+    dbjob.update(set__stages__rarefan__results__counts__seeds=parsed['counts']['seeds'])
+    dbjob.update(set__stages__rarefan__results__counts__repins=sum(parsed['counts']['repins'].values()))
 
 
 
