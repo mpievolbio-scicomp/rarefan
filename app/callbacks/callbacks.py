@@ -5,6 +5,7 @@ import copy
 from app import db
 from app.models import Job as DBJob
 from app.utilities.checkers import parse_results
+from app.tasks.email import email_task
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -44,3 +45,8 @@ def on_failure(job, connection, type, value, traceback):
     logging.debug(type)
     logging.debug(value)
     logging.debug(traceback)
+
+    dbjob_id = job.meta['dbjob_id']
+    dbjob = DBJob.objects.get(id=dbjob_id)
+
+    email_task(dbjob)

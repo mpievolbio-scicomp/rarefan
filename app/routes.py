@@ -234,6 +234,7 @@ def submit():
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
                                     depends_on=[rarefan_job],
+                                    on_failure=on_failure,
                                     connection=app.redis,
                                     meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
                                     kwargs={
@@ -246,6 +247,8 @@ def submit():
 
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
+                               on_failure=on_failure,
+                               meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
                                connection=app.redis,
                                kwargs={'run_dir':session['tmpdir']},
                                     )
@@ -280,6 +283,15 @@ def submit():
         app.queue.enqueue_job(zip_job)
 
         # Enqueue email job.
+        # Emails should be sent out on overall success or failure. It must somehow be a monitoring job, or a callback.
+        # Use a callback. on_success on zip task, on_failure on general. On failure must check dbjob if mail has already been sent.
+        app.queue.enqueue(email_task,
+                          dbjob,
+                          depends_on=['rarefan_job',
+                                      'tree_job',
+                                      'zip_job',
+                                      ]
+                          )
 
 
         return redirect(url_for('results', run_id=run_id))
@@ -429,12 +441,6 @@ def manual():
 
 @app.route('/test_mail')
 def test_mail():
-    success, message= email_test()
 
-    logging.debug("Mail was sent: %s", str(success))
-    logging.debug("Mail message was: %s", str(message))
-
-    # app.queue.enqueue(email_test, )
-
-
-    return render_template('index.html')
+    app.queue.enqueue(email_test)
+    return redirect(url_for('index'))

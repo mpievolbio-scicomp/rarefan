@@ -19,10 +19,6 @@ app.app_context().push()
 
 def email_test():
 
-    # app.config["TESTING"] = False
-    print(app.config)
-    logging.debug("TESTING is %s", app.config['TESTING'])
-
     recipients = ['grotec@evolbio.mpg.de']
 
     message = Message("Test from flask",
@@ -36,96 +32,94 @@ def email_test():
     logging.debug("Mail was sent: %s", str(success))
     logging.debug("Mail message was: %s", str(message))
 
-    # assert g.outbox[0].subject == 'Test from flask'
-    # app.config["TESTING"] = True
     return success, message
 
 
 def email_task(dbjob):
-    pass
 
-#     session = dbjob.setup
-#     results = checkers.parse_results(dbjob.setup['outdir'],
-#                                      dbjob.setup['reference_strain'])
-#     subject, body  = get_email(session, results)
-#     recipients = []
+    session = dbjob.setup
+    results = checkers.parse_results(dbjob.setup['outdir'],
+                                     dbjob.setup['reference_strain'])
+    subject, body  = get_email(session, results)
+    recipients = []
 
-#     user_email = session['email']
-#     if user_email is not None or user_email != "None":
-#         recipients.append(user_email)
+    user_email = session['email']
+    if user_email is not None or user_email != "None":
+        recipients.append(user_email)
 
-#     status = any([st not in ['finished', 'completed'] for st in [dbjob.stages[stage]['status'] for stage in ['rarefan', 'tree', 'zip']]])
+    status = any([st not in ['finished', 'completed'] for st in [dbjob.stages[stage]['status'] for stage in ['rarefan', 'tree', 'zip']]])
 
-#     if status is False:
-#         recipients.append(app.config["MAIL_USERNAME"])
+    if status is False:
+        recipients.append(app.config["MAIL_USERNAME"])
 
-#     message = Message(subject,
-#                       sender=app.config['MAIL_USERNAME'],
-#                       recipients=recipients,
-#                       body=body)
+    sender = app.config['DEFAULT_MAIL_SENDER']
 
-#     mail.send(msg)
+    message = Message(subject=subject,
+                      body=body,
+                      sender=sender,
+                      recipients=recipients,
+                      )
+    logging.debug("Message: %s", message)
+    logging.debug("Mail sent? %s", str(dbjob.notification_is_sent))
+    if not dbjob.notification_is_sent:
+        mail_status = mail.send(message)
+        logging.debug("Mail status %s", str(mail_status))
+
+        if mail_status is None:
+            dbjob.update(set__notification_is_sent=True)
+    logging.debug("Mail sent? %s", str(dbjob.notification_is_sent))
 
 
-# def get_email(session, results):
-#     # Aggregate the run path.
-#     run_id_path = session['tmpdir']
-#     run_id = os.path.basename(run_id_path)
+def get_email(session, results):
+    # Aggregate the run path.
+    run_id_path = session['tmpdir']
+    run_id = os.path.basename(run_id_path)
 
-#     # List of recipients. Always send to rarefan.
-#     if session['email'] is None or session['email'] == "":
-#         logging.debug("No email set.")
+    if session['email'] is None or session['email'] == "":
+        logging.debug("No email set.")
 
-#     counts = results['counts']
-#     status = results['status']
+    counts = results['counts']
+    status = results['status']
 
-#     status_msg = {0: "OK", 1: "ERROR"}
+    status_msg = {0: "passed", 1: "failed"}
 
-#     # Append support to recipients if there was an error.
-#     if sum(status.values()) > 0:
-#         recipients.append('rarefan@evolbio.mpg.de')
+    email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
+    email_body = f"""Hallo,
+your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
 
-#     if len(recipients) == 0:
-#         return None
+Job Summary
+===========
 
-#     email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
-#     email_body = f"""Hallo,
-# your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
+    RAYTs
+    -----
+    Data sanity check: {status_msg[status['rayts']]}.
 
-# Job Summary
-# ===========
+    We discovered {counts['rayts']} RAYTs using tblastn with
+    {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
 
-#     RAYTs
-#     -----
-#     Exit status: {status_msg[status['rayts']]}.
+    Seeds
+    -----
+    Data sanity check: {status_msg[status['seeds']]}.
 
-#     We discovered {counts['rayts']} RAYTs using tblastn with
-#     {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
+    There are {counts['seeds']} {session['nmer_length']}bp long sequences that
+    occur more frequently than {session['min_nmer_occurence']} times.
 
-#     NMERs
-#     -----
-#     Exit status: {status_msg[status['overreps']]}.
+    REPINs
+    ------
+    Data sanity check: {status_msg[status['repins']]}.
 
-#     There are {counts['overreps']} {session['nmer_length']} bp long sequences that
-#     occur more frequently than {session['min_nmer_occurence']} times.
+    We detected {sum(counts['repins'].values())} REPINs.
 
-#     REPINs
-#     ------
-#     Exit status: {status_msg[status['repins']]}.
+You can browse and download the results at http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
 
-#     We detected {sum(counts['repins'].values())} REPINs.
+In case of problems, please reply to this email and leave the email subject as is.
 
-# You can browse and download the results at this link:
-# http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
+Thank you for using RAREFAN.
 
-# In case of problems, please reply to this email and leave the email subject as is.
+http://rarefan.evolbio.mpg.de
+"""
 
-# Thank you for using RAREFAN.
-
-# http://rarefan.evolbio.mpg.de
-# """
-
-#     return email_body, email_subject
+    return email_subject, email_body
 
 
 if __name__ == "__main__":
