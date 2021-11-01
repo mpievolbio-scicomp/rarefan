@@ -44,20 +44,20 @@ def parse_results(outdir,
     overrep_fname = os.path.join(outdir, reference_strain + ".overrep")
 
     filenames = {"rayts": assoc_fname,
-                 "seeds": overrep_fname
+                 "nmers": overrep_fname
                  }
     results = {"counts":
                {"rayts": 0,
-                "seeds": 0,
+                "nmers": 0,
                 "repins": {},
                 },
                "status": {"rayts": 0,
-                          "seeds": 0,
+                          "nmers": 0,
                           "repins": 0 
                           }
                }
 
-    for fname in "rayts", "seeds":
+    for fname in "rayts", "nmers":
         try:
             results["counts"][fname] = count_lines(filenames[fname])
         except:

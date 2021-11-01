@@ -30,10 +30,10 @@ def rarefan_on_success(job, connection, result, *args, **kwargs):
     parsed = parse_results(dbjob['setup']['outdir'], dbjob['setup']['reference_strain'])
 
     dbjob.update(set__stages__rarefan__results__data_sanity__rayts=parsed['status']['rayts'])
-    dbjob.update(set__stages__rarefan__results__data_sanity__seeds=parsed['status']['seeds'])
+    dbjob.update(set__stages__rarefan__results__data_sanity__nmers=parsed['status']['nmers'])
     dbjob.update(set__stages__rarefan__results__data_sanity__repins=parsed['status']['repins'])
     dbjob.update(set__stages__rarefan__results__counts__rayts=parsed['counts']['rayts'])
-    dbjob.update(set__stages__rarefan__results__counts__seeds=parsed['counts']['seeds'])
+    dbjob.update(set__stages__rarefan__results__counts__nmers=parsed['counts']['nmers'])
     dbjob.update(set__stages__rarefan__results__counts__repins=sum(parsed['counts']['repins'].values()))
 
     dbjob.save()
@@ -52,3 +52,4 @@ def on_failure(job, connection, type, value, traceback):
     dbjob = DBJob.objects.get(id=dbjob_id)
 
     email_task(dbjob)
+    raise RuntimeError

@@ -4,6 +4,9 @@ import sys
 import shlex
 import shutil
 
+from app.models import Job as DBJob
+from rq import get_current_job
+
 
 def zip_task(run_dir):
     """ Compress all output data from a given run
@@ -25,6 +28,9 @@ def zip_task(run_dir):
                                 ]
                                )
 
+    redis_job =  get_current_job()
+    dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
+    dbjob.set_status('zip')
 
     proc = subprocess.Popen(shlex.split(zip_command),
                             stdout=subprocess.PIPE,

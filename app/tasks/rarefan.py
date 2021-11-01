@@ -5,6 +5,9 @@ import os, sys, shutil, shlex
 import subprocess
 import logging
 
+from app.models import Job as DBJob
+from rq import get_current_job
+
 JAR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar'))
 mcl_threads = max(os.cpu_count()//4, 1)
 
@@ -38,6 +41,13 @@ def rarefan_task(**kwargs):
                            )
 
     logging.info("Java command: %s", java_command)
+
+    redis_job = get_current_job()
+    logging.debug("In rarefan.py, redis job id = %s", redis_job.id)
+    logging.debug("In rarefan.py, redis job meta = %s", str(redis_job.meta))
+    dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
+    dbjob.set_status('rarefan')
+
 
     proc = subprocess.Popen(shlex.split(java_command),
                             stdout=subprocess.PIPE,

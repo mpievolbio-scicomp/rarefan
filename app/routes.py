@@ -9,10 +9,8 @@ from flask import flash
 
 from werkzeug.utils import secure_filename
 
-from redis import Redis
 import rq
 from rq.job import Job as RQJob
-from rq.exceptions import NoSuchJobError
 
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
@@ -167,6 +165,11 @@ def submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
 
+        logging.debug("tmpdir: %s", tmpdir)
+        logging.debug("tmpdir: %s", session['tmpdir'])
+
+        # If there is already an outdir, this must be a rerun!
+        old_run_id = None
         if os.path.isdir(session['outdir']):
             logging.warning("Rerun, creating new directory")
             rerun_tmpdir = tempfile.mkdtemp(
@@ -175,6 +178,7 @@ def submit():
                 dir=app.config["UPLOAD_DIR"]
             )
             # Copy old run_dir
+            old_run_id = os.path.basename(session['tmpdir'])
             shutil.copytree(session['tmpdir'], rerun_tmpdir, dirs_exist_ok=True)
             # Rm old results
             shutil.rmtree(os.path.join(rerun_tmpdir, 'out'))
@@ -206,9 +210,34 @@ def submit():
 
         # Store session in db.
         run_id = os.path.basename(session['tmpdir'])
-        dbjob = Job(run_id=run_id)
-        dbjob.setup = copy.deepcopy(session)
 
+        # Create new Job instance.
+        dbjob = Job(run_id=run_id,
+                    stages={"rarefan": {"redis_job_id": None,
+                                                           "status": 'setup',
+                                                           "results": {"returncode": None,
+                                                                       "counts": {
+                                                                           "rayts":None,
+                                                                           "nmers":None,
+                                                                           "repins":None},
+                                                                       "data_sanity": {
+                                                                           "rayts":None,
+                                                                           "nmers":None,
+                                                                           "repins":None},
+                                                           }
+                                                 },
+                                               "tree": {"redis_job_id": None,
+                                                        "status": 'setup',
+                                                        "results": {"returncode": None, "log": ""}},
+                                               "zip": {"redis_job_id": None,
+                                                       "status": 'setup',
+                                                       "results": {"returncode": None, "log": ""}}
+                                       },
+                    setup=copy.deepcopy(session),
+                    overall_status="setup",
+                    notification_is_sent=False,
+                    parent_run=old_run_id
+                    )
         dbjob.save()
 
         # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
@@ -228,7 +257,7 @@ def submit():
             connection=app.redis,
             on_success=rarefan_on_success,
             on_failure=on_failure,
-            meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id},
             kwargs={
                 "tmpdir": session['tmpdir'],
                 "outdir": session['outdir'],
@@ -243,13 +272,14 @@ def submit():
         )
 
 
-        run_tree_task = len(strain_names) >= 4
+        run_tree_task = len(dbjob.setup['tree_names']) >= 4
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
                                     depends_on=[rarefan_job],
                                     on_failure=on_failure,
                                     connection=app.redis,
-                                    meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+                                    timeout='24h',
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id},
                                     kwargs={
                                          "run_dir": session['tmpdir'],
                                          "treefile": session['treefile'],
@@ -264,7 +294,7 @@ def submit():
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
                                on_failure=on_failure,
-                               meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+                               meta={'run_id': run_id, 'dbjob_id': dbjob.id},
                                connection=app.redis,
                                kwargs={'run_dir':session['tmpdir']},
                                     )
@@ -273,34 +303,11 @@ def submit():
                                              'tree_job',
                                              'zip_job',
                                              ],
-                                 meta={'run_id': 'run_id', 'dbjob_id': dbjob.id},
+                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id},
                                  connection=app.redis,
                                  kwargs={'dbjob': dbjob},
                                  )
 
-        dbjob.stages = {'rarefan': {'redis_job_id': rarefan_job.get_id(),
-                                    'results': {'returncode': None,
-                                                'counts': {'rayts': None,
-                                                           'seeds': None,
-                                                           'repins': None,
-                                                          },
-                                                'data_sanity': {'rayts': None,
-                                                           'seeds': None,
-                                                           'repins': None,
-                                                          },
-                                    },
-                                    'status': rarefan_job.get_status()
-                                    },
-                      'tree': {'redis_job_id': tree_job.get_id(),
-                               'results': {'returncode': None, 'log': ""},
-                               'status': tree_job.get_status()
-                               },
-                      'zip': {'redis_job_id': zip_job.get_id(),
-                               'results': {'returncode': None, 'log': ""},
-                               'status': zip_job.get_status()
-                              }
-                      }
-        dbjob.save()
 
         # Enqueue the jobs
         app.queue.enqueue_job(rarefan_job)
@@ -308,10 +315,9 @@ def submit():
         app.queue.enqueue_job(zip_job)
         app.queue.enqueue_job(email_job)
 
-        # Enqueue email job.
-        # Emails should be sent out on overall success or failure. It must somehow be a monitoring job, or a callback.
-        # Use a callback. on_success on zip task, on_failure on general. On failure must check dbjob if mail has already been sent.
-       
+        dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -335,44 +341,8 @@ def results():
 
         dbjob = Job.objects.get_or_404(run_id=run_id)
 
-        is_complete = dbjob.notification_is_sent
-
-        stages = dbjob.stages
-
-        stati = {}
-        if is_complete:
-            stati['rarefan'] = stages['rarefan']['status']
-            stati['tree'] = stages['tree']['status']
-            stati['zip'] = stages['zip']['status']
-
-        else:
-
-            for stage in stages.keys():
-                redis_job_id = stages[stage]['redis_job_id']
-                try:
-                    redis_job = rq.job.Job.fetch(redis_job_id, connection=app.redis)
-                    redis_job_status = redis_job.get_status()
-                except NoSuchJobError:
-                    redis_job_status = "complete"
-                except:
-                    redis_job_status = "failed"
-
-                stati[stage] = redis_job_status
-
-            # Update database.
-            dbjob.update(set__stages__rarefan__status=stati['rarefan'])
-            dbjob.update(set__stages__tree__status=stati['tree'])
-            dbjob.update(set__stages__zip__status=stati['zip'])
-
-        if any([stage == "failed" for stage in stati.values()]):
-            stati['overall'] = 'failed'
-        elif all([stage in ['complete', 'finished'] for stage in stati.values()]):
-            stati['overall'] = "complete"
-        elif stati['rarefan'] == "queued":
-            stati['overall'] = "queued"
-        else:
-            stati['overall'] = "running"
-
+        # Update stage status by querying rq.
+        dbjob.set_overall()
 
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
@@ -380,8 +350,7 @@ def results():
                                title="Results for RAREFAN run {}".format(run_id),
                                results_form=results_form,
                                run_id=run_id,
-                               stati=stati,
-                               results_data=dbjob.stages['rarefan']['results'],
+                               job=dbjob,
                                render_plots=render_plots,
                                )
 
@@ -478,27 +447,45 @@ def test_mail():
 def rerun():
     args = request.args
     run_id = request.args['run_id']
-
     dbjob = Job.objects.get_or_404(run_id=run_id)
+    logging.debug("Found job %s", str(dbjob.id))
+    logging.debug("Job run_id = %s", str(dbjob.run_id))
 
     submit_form = SubmitForm()
 
-    strain_names = dbjob.setup.get('strain_names')
-    submit_form.reference_strain.choices.extend(strain_names)
-    submit_form.reference_strain.data=dbjob.setup.get('reference_strain')
-    submit_form.query_rayt.choices.extend(dbjob.setup.get('rayt_names'))
-    submit_form.query_rayt.data = dbjob.setup.get('query_rayt')
-    submit_form.treefile.choices.extend(["None"] + dbjob.setup.get('tree_names'))
-    submit_form.treefile.data = dbjob.setup.get('treefile')
+    session['tmpdir'] = dbjob.setup.get('tmpdir')
+    session['strain_names'] = dbjob.setup.get('strain_names')
+    submit_form.reference_strain.choices.extend(session['strain_names'])
+    session['reference_strain'] = dbjob.setup.get('reference_strain')
+    submit_form.reference_strain.data=session['reference_strain']
+
+    session['rayt_names'] = dbjob.setup.get('rayt_names')
+    submit_form.query_rayt.choices.extend(session['rayt_names'])
+    session['query_rayt'] = dbjob.setup.get('query_rayt')
+    submit_form.query_rayt.data = session['query_rayt']
+
+    session['tree_names'] = dbjob.setup.get('tree_names')
+    submit_form.treefile.choices.extend(["None"] + session['tree_names'])
+
+    session['treefile'] = dbjob.setup.get('treefile')
+    submit_form.treefile.data = session['treefile']
+
+    session['min_nmer_occurence'] = dbjob.setup.get('min_nmer_occurence')
     submit_form.min_nmer_occurence.data = dbjob.setup.get('min_nmer_occurence')
+    session['nmer_length'] = dbjob.setup.get('nmer_length')
     submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
+    session['analyse_repins'] = dbjob.setup.get('analyse_repins')
     submit_form.analyse_repins.data = dbjob.setup.get('analyse_repins')
+    session['e_value_cutoff'] = dbjob.setup.get('e_value_cutoff')
     submit_form.e_value_cutoff.data = dbjob.setup.get('e_value_cutoff')
+    session['email'] = dbjob.setup.get('email')
     submit_form.email.data = dbjob.setup.get('email')
+
+    logging.debug('session = %s', str(session))
 
     return render_template(
                     'submit.html',
                     title='Submit',
-                    submit_form=submit_form
-                    )
+                    submit_form=submit_form,
+    )
     

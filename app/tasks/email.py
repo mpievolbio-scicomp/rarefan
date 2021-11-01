@@ -104,11 +104,11 @@ Job Summary
     We discovered {counts['rayts']} RAYTs using tblastn with
     {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
 
-    Seeds
+    Nmers
     -----
-    Data sanity check: {status_msg[status['seeds']]}.
+    Data sanity check: {status_msg[status['nmers']]}.
 
-    There are {counts['seeds']} {session['nmer_length']}bp long sequences that
+    There are {counts['nmers']} {session['nmer_length']}bp long sequences that
     occur more frequently than {session['min_nmer_occurence']} times.
 
     REPINs

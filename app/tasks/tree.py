@@ -3,6 +3,8 @@ import os
 import sys
 import shlex
 import shutil
+from app.models import Job as DBJob
+from rq import get_current_job
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -41,6 +43,10 @@ def tree_task(run_dir, treefile=None):
 
     # else (no treefile exists.)
     command = "andi -j {} | clustDist > {}".format(" ".join(inputs), out_treefile)
+
+    redis_job =  get_current_job()
+    dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
+    dbjob.set_status('tree')
 
     logging.debug("tree generation command: %s", command)
 

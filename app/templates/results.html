@@ -5,50 +5,61 @@
 </head>
 {% endblock %}
 {% block body %}
-    <body>
-        {{ results_form.hidden_tag() }}
+<body>
+    {{ results_form.hidden_tag() }}
         </p>
-		<p>
-		<h1>{{title}}</h1>
-		</p>
-    <p>
-        <h2>Status:
-            {{ stati['overall'] }}
-        </h2>
-    </p>
-
-        {% if stati['rarefan'] in ['finished', 'complete'] %}
-    <p>
-        <h2>
-            Summary
-        </h2>
-        <table width="20%">
-            <tr>
-                <td> RAYTs</td> <td>{{results_data['counts']['rayts']}}</td>
-            </tr>
-            <tr>
-                <td> Seeds</td> <td>{{results_data['counts']['seeds']}}</td>
-            </tr>
-            <tr>
-                <td> REPINs</td> <td>{{results_data['counts']['repins']}}</td>
-            </tr>
-        </table>
-        <p>
-            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}}>Browse data</a> </h2>
-            {%  if render_plots %}
-            <h2><a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank">Plot data</a></h2>
+		    <p>
+		        <h1>{{title}}</h1>
+            {% if job.parent_run != None %}
+            <p>
+                {{job.run_id}} is a rerun of <a href={{url_for('results')}}?run_id={{job.parent_run}}>{{job.parent_run}}</a>.
+            </p>
             {% endif %}
-        {% endif %}
-        {% if stati['zip'] in ['finished', 'complete'] %}
-            <h2> Download data </h2>
-            <p>
-                <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
-            </p>
-        {% endif %}
-            <p>
-                <h2><a href={{url_for('rerun')}}?run_id={{run_id}}>Rerun this job</a></h2>
-            </p>
+		    </p>
+        <p>
+            <h2>Status:
+                {{ job.overall_status }}
+                {% if job.overall_status == "complete with warnings" %}
+                <p>
+                    There have been warning or errors during the postprocessing of your results. Please inspect the output data and logfile (out/rarefan.log) carefully.
+                </p>
+                {% endif %}
+            </h2>
         </p>
-    </body>
+        {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
+        <p>
+            <h2>
+                Summary
+            </h2>
+            <table width="20%">
+                <tr>
+                    <td> RAYTs</td> <td>{{job.stages['rarefan']['results']['counts']['rayts']}}</td>
+                </tr>
+                <tr>
+                    <td> Nmers </td> <td>{{job.stages['rarefan']['results']['counts']['nmers']}}</td>
+                </tr>
+                <tr>
+                    <td> REPINs</td> <td>{{job.stages['rarefan']['results']['counts']['repins']}}</td>
+                </tr>
+            </table>
+            <p>
+                <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
+
+                {%  if render_plots %}
+                <h2><a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
+                {% endif %}
+        {% endif %}
+
+        {% if job.stages['zip'].status in ['finished', 'complete'] %}
+                <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
+        <p>
+            
+        </p>
+        {% endif %}
+        <p>
+            <h2><a href={{url_for('rerun')}}?run_id={{run_id}} title="Click here modify the parameters of this run and resubmit.">Rerun this job</a></h2>
+        </p>
+    </p>
+</body>
 {% endblock %}
 
