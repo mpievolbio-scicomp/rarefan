@@ -6,7 +6,10 @@ class Config(object):
     MONGODB_SETTINGS = {
         'db': 'rarefan',
         'host': 'localhost',
-        'port': 27017
+        'port': 27017,
+        'username': 'rarefan',
+        'password': '!rarefan$',
+        'authentication_source': 'admin',
     }
     REDIS_URL = os.environ.get("REDIS_URL") or 'redis://'
     MAIL_SERVER = 'zimbra.evolbio.mpg.de'
