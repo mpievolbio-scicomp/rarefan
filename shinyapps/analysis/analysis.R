@@ -1,6 +1,6 @@
 # TODO: Add comment
 #
-# Author: Carsten Fortmann-Grote
+# Author: Carsten Fortmann-Grote, Frederic Bertel
 ###############################################################################
 
 # Load libraries silently.
@@ -41,7 +41,8 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 
 ######################################################################################
-plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
+# Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
+plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -66,20 +67,42 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
+  logging::logdebug("Attempting to read tree file.")
 
-  tree=read.tree(tree_file)
-  tips=tree$tip.label
-  logging::logdebug(str(tree))
+  # Attempt to open the tree file. If not readable (or not existing), return empty plot.
+  tree=tryCatch(read.tree(tree_file),
+		  error=function(e)
+		  logging::logwarn("Tree file %s does not exist or is not readable.", tree_file)
+		  )
 
+  logging::logdebug(tree)
+  tree_file_is_corrupt = typeof(tree) == "logical"
+
+  if(tree_file_is_corrupt) {
+    p = ggplot() +
+            geom_blank() +
+            xlim(c(0, 1)) +
+            ylim(c(0,1)) +
+            annotate(x=0.5, y=0.5, geom='text', label="No REPIN tree found.") +
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + theme
+
+		return(p)
+  }
+
+  # Ok, we have read the tree, now render the plot.
   logging::loginfo("Plotting ggtree...")
+
+  # First facet is the tree itself.
   p=ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
       geom_tiplab(size=fontsize*1/4)
     p=p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
+
   # RAYT population size.
   assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
   logging::logdebug("Read association data fom %s.", assoc_file)
 
+  # Read the REP-RAYT association table.
   association=read.table(assoc_file,header=TRUE)
   logging::logdebug(colnames(association))
 
@@ -237,7 +260,7 @@ determineColor=function(associationFile,repin_rayt_group){
 plotCorrelationSingle=function(folder,
                                rep_rayt_group,
                                theme,
-                               fontsize,
+                               fontsize=16,
                                pvLabelX,
                                pvLabelY,
                                subsetSmooth=F,
@@ -287,7 +310,7 @@ plotCorrelationSingle=function(folder,
     colLegend=cols
     logging::logdebug(colnames(colorDF))
     logging::logdebug(colorDF)
-    
+
     cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
     cols[cols==0]="black"
     colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
@@ -383,7 +406,7 @@ get_rayt_phylogeny=function(data_dir){
 
 
 ######################################################################################
-drawRAYTphylogeny=function(data_dir){
+drawRAYTphylogeny=function(data_dir, fontsize=16){
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)

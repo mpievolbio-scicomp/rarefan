@@ -36,7 +36,7 @@ function(input, output, session) {
 
               logging::logdebug("Calling 'drawRAYTphylogeny'.")
               output$rayt_tree <-  renderPlot({
-                drawRAYTphylogeny(out_dir)
+                drawRAYTphylogeny(out_dir, fontsize)
               })
 
               logging::logdebug("Calling 'plotREPINs'.")
