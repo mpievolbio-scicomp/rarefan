@@ -24,3 +24,5 @@ test/scripts/chlororaphis.log
 test/scripts/dokdonia.log
 test/scripts/neisseria.log
 test/scripts/neisseria_small.log
+.#*.*
+app/config.py

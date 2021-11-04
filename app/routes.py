@@ -8,10 +8,21 @@ from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
-from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
-from app import app
-from app.utilities import checkers
 
+import rq
+from rq.job import Job as RQJob
+
+from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
+from app import app, db
+from app.models import Job
+from app.tasks.rarefan import rarefan_task
+from app.tasks.tree import tree_task, empty_task
+from app.tasks.zip import zip_task
+from app.tasks.email import email_task, email_test
+
+from app.callbacks.callbacks import rarefan_on_success, on_failure
+
+import copy
 import os
 import shlex
 import shutil
@@ -23,7 +34,7 @@ from Bio import SeqIO
 
 import datetime
 import logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 def get_logger():
     logger = logging.getLogger(__name__)
@@ -31,16 +42,12 @@ def get_logger():
     timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
     handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
     handler.setFormatter(formatter)
-    handler.setLevel(logging.INFO)
+    handler.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
     return logger
 
 logger = get_logger()
-
-
-def get_no_cpus():
-    return os.cpu_count()
 
 
 def get_status_code(run_id_path):
@@ -157,22 +164,36 @@ def submit():
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
+
+        logging.debug("tmpdir: %s", tmpdir)
+        logging.debug("tmpdir: %s", session['tmpdir'])
+
+        # If there is already an outdir, this must be a rerun!
+        old_run_id = None
+        if os.path.isdir(session['outdir']):
+            logging.warning("Rerun, creating new directory")
+            rerun_tmpdir = tempfile.mkdtemp(
+                suffix=None,
+                prefix="",
+                dir=app.config["UPLOAD_DIR"]
+            )
+            # Copy old run_dir
+            old_run_id = os.path.basename(session['tmpdir'])
+            shutil.copytree(session['tmpdir'], rerun_tmpdir, dirs_exist_ok=True)
+            # Rm old results
+            shutil.rmtree(os.path.join(rerun_tmpdir, 'out'))
+
+            # Reset values.
+            session['tmpdir'] = rerun_tmpdir
+            session['outdir'] = os.path.join(rerun_tmpdir, 'out')
+
         os.mkdir(session['outdir'])
+
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
         treefile = request.form.get('treefile', None)
         run_id = os.path.basename(session['tmpdir'])
-
-        if len(strain_names) >= 4:
-            if treefile == "None":
-                run_andi_clustdist = True
-                treefile = "tmptree.nwk"
-            else:
-                run_andi_clustdist = False
-        else:
-            treefile = "tmptree.nwk"
-            run_andi_clustdist = False
 
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
@@ -187,158 +208,116 @@ def submit():
         logger.info("treefile: %s", session['treefile'])
         logger.info("email: %s", session['email'])
 
+        # Store session in db.
+        run_id = os.path.basename(session['tmpdir'])
+
+        # Create new Job instance.
+        dbjob = Job(run_id=run_id,
+                    stages={"rarefan": {"redis_job_id": None,
+                                                           "status": 'setup',
+                                                           "results": {"returncode": None,
+                                                                       "counts": {
+                                                                           "rayts":None,
+                                                                           "nmers":None,
+                                                                           "repins":None},
+                                                                       "data_sanity": {
+                                                                           "rayts":None,
+                                                                           "nmers":None,
+                                                                           "repins":None},
+                                                           }
+                                                 },
+                                               "tree": {"redis_job_id": None,
+                                                        "status": 'setup',
+                                                        "results": {"returncode": None, "log": ""}},
+                                               "zip": {"redis_job_id": None,
+                                                       "status": 'setup',
+                                                       "results": {"returncode": None, "log": ""}}
+                                       },
+                    setup=copy.deepcopy(session),
+                    overall_status="setup",
+                    notification_is_sent=False,
+                    parent_run=old_run_id
+                    )
+        dbjob.save()
+
         # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
-            query_rayt_fname = query_rayt_fname+".faa"
-            src = os.path.join(app.static_folder, "rayts", session['query_rayt']+".faa")
+            query_rayt_fname = query_rayt_fname + ".faa"
+            src = os.path.join(app.static_folder, "rayts", session['query_rayt'] + ".faa")
             logging.debug("Copying rayt from %s to %s.", src, query_rayt_fname)
             shutil.copyfile(src, query_rayt_fname)
 
             if not os.path.isfile(query_rayt_fname):
                 raise IOError("Copying %s to %s failed." % (src, query_rayt_fname))
 
-        # Copy R scripts
-        shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..",
-                                     'shinyapps',
-                                     'analysis',
-                                      "analysis.R"
-                                     ),
-                        os.path.join(session['outdir'],
-                                     'analysis.R'
-                                     )
-                        )
-        shutil.copyfile(os.path.join(os.path.dirname(__file__),
-                                     "..",
-                                     'shinyapps',
-                                     'analysis',
-                                     "run_analysis.R"
-                                     ),
-                        os.path.join(session['outdir'],
-                                     'run_analysis.R'
-                                     )
-                        )
+        rarefan_job = RQJob.create(
+            rarefan_task,
+            connection=app.redis,
+            on_success=rarefan_on_success,
+            on_failure=on_failure,
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+            kwargs={
+                "tmpdir": session['tmpdir'],
+                "outdir": session['outdir'],
+                "reference_strain": session['reference_strain'],
+                "min_nmer_occurence": session['min_nmer_occurence'],
+                "nmer_length": session['nmer_length'],
+                "query_rayt_fname": query_rayt_fname,
+                "treefile": session['treefile'],
+                "e_value_cutoff": session['e_value_cutoff'],
+                "analyse_repins": session['analyse_repins'],
+                }
+        )
 
-        oldwd = os.getcwd()
-        os.chdir(tmpdir)
 
-        start_stamp = os.path.join(session['tmpdir'], '.start.stamp')
-
-        mcl_threads = max(get_no_cpus()//4, 1)
-
-        logging.info("Detected %d CPUs, will utilize %d.", 2*mcl_threads, mcl_threads)
-        java_command = " ".join(['java',
-                                     '-Dcom.sun.management.jmxremote',
-                                      '-Dcom.sun.management.jmxremote.port=9010',
-                                      '-Dcom.sun.management.jmxremote.local.only=true',
-                                      '-Dcom.sun.management.jmxremote.authenticate=false',
-                                      '-Dcom.sun.management.jmxremote.ssl=false',
-                                     '-jar',
-                                     '-Xmx10g',
-                                     os.path.abspath(
-                                     os.path.join(os.path.dirname(app.root_path),
-                                     'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar',
-                                     )
-                                     ),
-                                     session['tmpdir'],
-                                     session['outdir'],
-                                     session['reference_strain'],
-                                     '{0:s}'.format(session['min_nmer_occurence']),
-                                     '{0:s}'.format(session['nmer_length']),
-                                     query_rayt_fname,
-                                     treefile,
-                                     '{0:s}'.format(session['e_value_cutoff']),
-                                     {"y": "true", None: "false"}[session['analyse_repins']],
-                                     '{0:d}'.format(mcl_threads),
-                                        ]
-                                )
-
-        logging.info("Java command: %s", java_command)
-        java_stamp = os.path.join(session['tmpdir'], '.java.stamp')
-
-        R_command = " ".join(["Rscript",
-                                  'displayREPINsAndRAYTs.R',
-                                  session['outdir'],
-                                  treefile
-                                     ])
-        logging.info("R command: %s", R_command)
-        R_stamp = os.path.join(session['tmpdir'], '.R.stamp')
-
-        if run_andi_clustdist:
-            andi_inputs = [os.path.join(session['tmpdir'], f) for f in os.listdir() if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
-            distfile = "".join(session['treefile'].split('.')[:-1])+'.dist'
-            distfile = os.path.join(session['outdir'], os.path.basename(distfile))
-            andi_command = "andi -j {} > {}".format(" ".join(andi_inputs), distfile)
-            logging.info("andi command: %s", andi_command)
-            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
-
-            clustdist_command = "clustDist {} > {}".format(distfile, os.path.join(session['outdir'],treefile))
-
+        run_tree_task = len(dbjob.setup['tree_names']) >= 4
+        if run_tree_task:
+            tree_job = RQJob.create(tree_task,
+                                    depends_on=[rarefan_job],
+                                    on_failure=on_failure,
+                                    connection=app.redis,
+                                    timeout='24h',
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                                    kwargs={
+                                         "run_dir": session['tmpdir'],
+                                         "treefile": session['treefile'],
+                                        }
+                                    )
         else:
-            andi_command = "echo 'Not running andi.'"
-            logging.info("andi command: %s", andi_command)
-            andi_stamp = os.path.join(session['tmpdir'], '.andi.stamp')
+            tree_job = RQJob.create(empty_task,
+                                    depends_on=rarefan_job,
+                                    connection=app.redis,
+                                    )
 
-            if len(session.get('strain_names')) > 3:
-                clustdist_command = "ln -s {} {}".format(os.path.join(session['tmpdir'], treefile),
-                                                         os.path.join(session['outdir'], 'tmptree.nwk'))
+        zip_job = RQJob.create(zip_task,
+                               depends_on=[rarefan_job, tree_job],
+                               on_failure=on_failure,
+                               meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                               connection=app.redis,
+                               kwargs={'run_dir':session['tmpdir']},
+                                    )
+        email_job = RQJob.create(email_task,
+                                 depends_on=['rarefan_job',
+                                             'tree_job',
+                                             'zip_job',
+                                             ],
+                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                                 connection=app.redis,
+                                 kwargs={'dbjob': dbjob},
+                                 )
 
-            else:
-                clustdist_command = "echo 'Not running clustDist.'"
 
-        logging.info("clustdist command: %s", clustdist_command)
-        clustdist_stamp = os.path.join(session['tmpdir'], '.clustdist.stamp')
+        # Enqueue the jobs
+        app.queue.enqueue_job(rarefan_job)
+        app.queue.enqueue_job(tree_job)
+        app.queue.enqueue_job(zip_job)
+        app.queue.enqueue_job(email_job)
 
-        # Zip results.
-        zip_command = " ".join(["zip",
-                                "-rv",
-                                os.path.split(session['tmpdir'])[-1] + "_out.zip",
-                                'out'
-                                ]
-                               )
-
-        zip_stamp = os.path.join(session['tmpdir'], '.zip.stamp')
-        logging.info("zip command: %s", zip_command)
-
-        email_command = get_email_command(session)
-        email_stamp = os.path.join(session['tmpdir'], '.email.stamp')
-
-        command_lines = [
-            "touch {} &&".format(start_stamp),
-            "{} && touch {}".format(java_command, java_stamp),
-            "{} && touch {}".format(andi_command, andi_stamp),
-            "{} && touch {}".format(clustdist_command, clustdist_stamp),
-            "{} && touch {}".format(zip_command, zip_stamp),
-            "{} && touch {}".format(email_command, email_stamp)
-        ]
-
-        with open(os.path.join(tmpdir,'job.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write("export LD_LIBRARY_PATH={}".format(os.environ["LD_LIBRARY_PATH"]))
-            fp.write('\n')
-            for line in command_lines:
-                fp.write(line)
-                fp.write('\n')
-            fp.write('\n')
-
-        os.chmod('job.sh', stat.S_IRWXU)
-
-        # Write batch script to submit the job.
-        with open(os.path.join(tmpdir, 'batch.sh'), 'w') as fp:
-            fp.write(r"#! /bin/bash")
-            fp.write('\n')
-            fp.write('echo "./job.sh > out/rarefan.log 2>&1" | batch')
-            fp.write('\n')
-
-        os.chmod('batch.sh', stat.S_IRWXU)
-
-        shell_command = os.path.join(tmpdir, 'batch.sh')
-        proc = subprocess.Popen(shlex.split(shell_command), shell=False)
-
-        os.chdir(oldwd)
+        dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         return redirect(url_for('results', run_id=run_id))
 
@@ -348,78 +327,6 @@ def submit():
                     submit_form=submit_form,
                     )
 
-def get_email_command(session):
-
-    # Aggregate the run path.
-    run_id_path = session["tmpdir"]
-    run_id = os.path.basename(run_id_path)
-
-    # List of recipients. Always send to rarefan.
-    if session['email'] is None or session['email'] == "":
-        logging.debug("No email set.")
-
-    recipients = [session["email"]]
-
-    results = checkers.parse_results(session["outdir"], session["reference_strain"])
-    counts = results['counts']
-    status = results['status']
-
-    status_msg = {0: "OK", 1: "ERROR"}
-
-    # Send email also to support if there was an error.
-    if sum(status.values()) > 0:
-        recipients.append('rarefan@evolbio.mpg.de')
-
-    email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
-    email_body = f"""Hallo,
-your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
-
-Job Summary
-===========
-
-    RAYTs
-    -----
-    Exit status: {status_msg[status['rayts']]}.
-
-    We discovered {counts['rayts']} RAYTs using tblastn with
-    {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
-
-    NMERs
-    -----
-    Exit status: {status_msg[status['overreps']]}.
-
-    There are {counts['overreps']} {session['nmer_length']} bp long sequences that
-    occur more frequently than {session['min_nmer_occurence']} times.
-
-    REPINs
-    ------
-    Exit status: {status_msg[status['repins']]}.
-
-    We detected {sum(counts['repins'].values())} REPINs.
-
-You can browse and download the results at this link:
-http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
-
-In case of problems, please reply to this email and leave the email subject as is.
-
-Thank you for using RAREFAN.
-
-http://rarefan.evolbio.mpg.de
-"""
-
-    email_command = 'printf "Subject: {0:s}\n\n{1:s}" | msmtp {2:s} >> {3:s}'.format(
-        email_subject,
-        email_body,
-        " ".join(recipients),
-        os.path.join(
-            run_id_path,
-            'out',
-            'rarefan.log'
-        )
-    )
-    return email_command
-
-
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
@@ -428,49 +335,30 @@ def results():
     results_form = AnalysisForm()
 
     if 'run_id' in args.keys():
-        
+
         run_id = args['run_id']
-        # Check if this is a valid run id.
+        logging.debug(run_id)
 
-        run_id_path = os.path.join(app.static_folder, "uploads", run_id)
-        is_valid_run_id = os.path.isdir(run_id_path)
+        dbjob = Job.objects.get_or_404(run_id=run_id)
 
-        status = get_status_code(run_id_path)
+        # Update stage status by querying rq.
+        dbjob.set_overall()
 
-        if status < 1:
-            flash("Your job {} is queued, please wait for page to refresh.".format(run_id))
-        elif status == 1:
-            flash("Your job {} is running, please wait for page to refresh.".format(run_id))
-        elif status == 11:
-            flash("Your job {} is finished. Preparing run files for download".format(run_id))
-        elif status == 101:
-            flash("Your job {} has failed. Preparing run files for download.".format(run_id))
-        elif status == 111:
-            flash("Your job {} has finished. Results and download links below.".format(run_id))
-        elif status in [10, 100]:
-            flash("Your job {} has failed. Please inspect the run files and resubmit your data.".format(run_id))
-        else:
-            flash("Your job {} has failed with an unexpected failure.".format(run_id))
+        # Only show plots if more than 3 strains.
+        render_plots = len(dbjob.setup.get('strain_names', [])) > 3
 
-        # Only show plots if more than 3 strains uploaded.
-        strain_names = session.get('strain_names', None)
-        if strain_names is None:
-            render_plots = True
-        else:
-            render_plots = len(strain_names) > 3
         return render_template('results.html',
-                               title="Run {} results".format(run_id),
+                               title="Results for RAREFAN run {}".format(run_id),
                                results_form=results_form,
                                run_id=run_id,
-                               status=status,
+                               job=dbjob,
                                render_plots=render_plots,
                                )
 
-    flash("Not a valid run ID.")
-
     return render_template("results_query.html",
-                       results_form=results_form,
-                           title="Results")
+                           results_form=results_form,
+                           title="Results",
+                           )
 
 @app.route('/files/<path:req_path>')
 def files(req_path):
@@ -482,21 +370,20 @@ def files(req_path):
     nested_file_path = os.path.join(uploads_dir, req_path)
     splits = nested_file_path.split('/')
     uploads_idx = splits.index('uploads')
-    run_id = splits[uploads_idx+1]
-
+    run_id = splits[uploads_idx + 1]
 
     if os.path.isdir(nested_file_path):
         item_list = os.listdir(nested_file_path)
 
         # Move directories to a separate list.
-        dirs = [item_list.pop(i) for (i,d) in enumerate(item_list) if os.path.isdir(os.path.join(nested_file_path, d))]
+        dirs = [item_list.pop(i) for (i, d) in enumerate(item_list) if os.path.isdir(os.path.join(nested_file_path, d))]
 
         # Sort files and dirs.
         item_list.sort()
         dirs.sort()
 
         # Concat dirs and files.
-        item_list = [i for i in item_list if not "stamp" in i]
+        item_list = [i for i in item_list if "stamp" not in i]
 
         # Leading '/'
         if not req_path.startswith("/"):
@@ -530,10 +417,83 @@ def files(req_path):
                                back_link=back_link
                                )
 
-    else:
-        # Serve the file.
-        return send_from_directory(*os.path.split(nested_file_path))
+    # Serve the file.
+    return send_from_directory(*os.path.split(nested_file_path))
+
+
+@app.route('/check_tasks', methods=['GET'])
+def queue():
+    args = request.args
+    job_id = request.args['job_id']
+
+    redis_job = rq.job.Job.fetch(job_id, connection=app.redis)
+
+    redis_job.refresh()
+
+    return("Job with id {} is finished: {}".format(redis_job.id, redis_job.is_finished))
 
 @app.route('/manual', methods=['GET'])
 def manual():
     return render_template('manual.html')
+
+@app.route('/test_mail')
+def test_mail():
+
+    app.queue.enqueue(email_test)
+    return redirect(url_for('index'))
+
+@app.route('/rerun')
+def rerun():
+    args = request.args
+    run_id = request.args['run_id']
+    do_repins = request.args.get('do_repins', None)
+    dbjob = Job.objects.get_or_404(run_id=run_id)
+    logging.debug("Found job %s", str(dbjob.id))
+    logging.debug("Job run_id = %s", str(dbjob.run_id))
+
+    submit_form = SubmitForm()
+
+    session['tmpdir'] = dbjob.setup.get('tmpdir')
+    session['strain_names'] = dbjob.setup.get('strain_names')
+    submit_form.reference_strain.choices.extend(session['strain_names'])
+    session['reference_strain'] = dbjob.setup.get('reference_strain')
+    submit_form.reference_strain.data=session['reference_strain']
+
+    session['rayt_names'] = dbjob.setup.get('rayt_names')
+    submit_form.query_rayt.choices.extend(session['rayt_names'])
+    session['query_rayt'] = dbjob.setup.get('query_rayt')
+    submit_form.query_rayt.data = session['query_rayt']
+
+    session['tree_names'] = dbjob.setup.get('tree_names')
+    submit_form.treefile.choices.extend(["None"] + session['tree_names'])
+
+    session['treefile'] = dbjob.setup.get('treefile')
+    submit_form.treefile.data = session['treefile']
+
+    session['min_nmer_occurence'] = dbjob.setup.get('min_nmer_occurence')
+    submit_form.min_nmer_occurence.data = dbjob.setup.get('min_nmer_occurence')
+    session['nmer_length'] = dbjob.setup.get('nmer_length')
+    submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
+    session['analyse_repins'] = dbjob.setup.get('analyse_repins')
+    submit_form.analyse_repins.data = dbjob.setup.get('analyse_repins')
+    session['e_value_cutoff'] = dbjob.setup.get('e_value_cutoff')
+    submit_form.e_value_cutoff.data = dbjob.setup.get('e_value_cutoff')
+    session['email'] = dbjob.setup.get('email')
+    submit_form.email.data = dbjob.setup.get('email')
+
+    logging.debug("DO_REPINS? %s", do_repins)
+    logging.debug("analyse_repins= %s", submit_form.analyse_repins.data)
+    # Update do_repins if requested.
+    if do_repins is not None:
+        if do_repins in ['y', '1', 1, True]:
+            submit_form.analyse_repins.data = session['analyse_repins'] = 'y'
+        else:
+            submit_form.analyse_repins.data = session['analyse_repins'] = None
+
+    logging.debug('session = %s', str(session))
+
+    return render_template(
+                    'submit.html',
+                    title='Submit',
+                    submit_form=submit_form,
+    )
