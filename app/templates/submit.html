@@ -7,20 +7,20 @@
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ submit_form.hidden_tag() }}
         <p>
-            {{ submit_form.reference_strain.label }}</br>
+            {{ submit_form.reference_strain.label }} <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.reference_strain(title="Select the reference strain from your uploaded genome sequences.") }}</br></br>
         </p>
         <p>
-            {{ submit_form.query_rayt.label }} <span title="{{submit_form.query_rayt.description}}">(?)</span></br>
+            {{ submit_form.query_rayt.label }} <span title="{{submit_form.query_rayt.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.query_rayt() }}</br></br>
         </p>
         <p>
-            {{ submit_form.treefile.label }}</br>
+            {{ submit_form.treefile.label }} <span title="{{submit_form.treefile.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.treefile(title="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes."
             ) }}</br></br>
         </p>
         <p>
-            {{ submit_form.min_nmer_occurence.label }}</br>
+            {{ submit_form.min_nmer_occurence.label }} <span title="{{submit_form.min_nmer_occurence.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.min_nmer_occurence(title="Set the Nmer occurence cutoff. Only Nmers of 'Nmer length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.") }}
             </br>
             {% for error in submit_form.min_nmer_occurence.errors %}
@@ -31,7 +31,7 @@
             </br>
         </p>
         <p>
-            {{ submit_form.nmer_length.label }}</br>
+            {{ submit_form.nmer_length.label }} <span title="{{submit_form.nmer_length.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.nmer_length(title="Set the Nmer length (in basepairs). Only sequences of this length that occur more frequently than 'min. Nmer occurence' (see above) will be considered in the REP/REPIN analysis."
             ) }}
             </br>
@@ -42,21 +42,21 @@
             </br>
         </p>
         <p>
-            {{ submit_form.e_value_cutoff.label }}</br>
+            {{ submit_form.e_value_cutoff.label }} <span title="{{submit_form.e_value_cutoff.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.e_value_cutoff(title="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.") }}</br>
             {% for error in submit_form.e_value_cutoff.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
-            {{ submit_form.analyse_repins.label }}</br>
+            {{ submit_form.analyse_repins.label }} <span title="{{submit_form.analyse_repins.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.analyse_repins(title="Toggle REPIN analysis. If unchecked, only REPs will be analysed.") }}</br>
         </p>
         <p>
-            {{ submit_form.email.label }}</br>
+            {{ submit_form.email.label }} <span title="{{submit_form.email.description}}" style="cursor:default">(?)</span></br>
             {{ submit_form.email(title="Provide your email address to receive a notification when the job is finished." ) }}</br>
             {% for error in submit_form.email.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
         </p>
         <p>
-            {{ submit_form.submit(title="Click here to submit the job.") }}
+            {{ submit_form.submit(title="Click to submit the job.") }} <span title="{{submit_form.submit.description}}" style="cursor:default">(?)</span>
         </p>
     </form>
 {% endblock %}

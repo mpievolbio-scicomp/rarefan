@@ -51,6 +51,7 @@ class SubmitForm(FlaskForm):
     reference_strain = SelectField(
             'Reference sequence',
             choices=[],
+        description="Select the reference strain from your uploaded genome sequences.",
             )
 
     query_rayt = SelectField(
@@ -65,33 +66,40 @@ class SubmitForm(FlaskForm):
     treefile = SelectField(
             "Tree file",
             choices=[],
+        description="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes.",
             )
 
     min_nmer_occurence = IntegerField("Min. nmer occurence", 
                           default=55,
+        description="Set the Nmer occurence cutoff. Only Nmers of 'Nmer length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
                           validators=[validators.DataRequired(message="Please enter the minimal nmer occurence as an integer!")]
                           )
 
     nmer_length = IntegerField("Nmer length", 
                              default=21, 
+        description="Set the Nmer length (in basepairs). Only sequences of this length that occur more frequently than 'min. Nmer occurence' (see above) will be considered in the REP/REPIN analysis.",
                              validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
                              )
 
     e_value_cutoff = FloatField("e value cutoff",
                                 default=1.0e-30,
+        description="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.",
                                 validators=[validators.DataRequired(message="Please enter the e value cutoff in scientific notation (e.g. 1e-30)")]
                                 )
 
     analyse_repins = BooleanField("Analyse REPINs",
                                   default=True,
-                                  description="Leave unchecked to analyse REPs only."
+        description="Toggle REPIN analysis. If unchecked, only REPs will be analysed.",
                                   )
 
     email = StringField("Optional: Your email address.",
-                        validators=[OptionalEmail()]
+                        validators=[OptionalEmail()],
+        description="Provide your email address to receive a notification when the job is finished.",
                         )
 
-    submit = SubmitField("Go!")
+    submit = SubmitField("Go!",
+        description="Click here to submit the job.",
+    )
 
 
 class RunForm(FlaskForm):
