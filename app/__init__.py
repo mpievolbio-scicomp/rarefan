@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 upload_dir = os.path.join(app.static_folder, 'uploads')
 
-app.testing = app.debug = True
+app.testing = app.debug = False
 
 # email
 app.config.from_object(Config)
