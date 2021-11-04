@@ -49,9 +49,7 @@ def email_task(dbjob):
     if status is False:
         recipients.append(app.config["MAIL_USERNAME"])
 
-    # Filter out invalid email addresses.
-    valid_email_pattern = re.compile(r'(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})')
-    recipients = [rec for rec in recipients if isinstance(valid_email_pattern.match(rec), re.Match)]
+    recipients = [rec for rec in recipients if rec != ""]
     logging.debug("Recipients: %s", recipients)
     # Simply return if no recipients configured.
     if len(recipients) == 0:
