@@ -2,6 +2,10 @@
 # Required libraries
 
 suppressMessages(library(shiny))
+suppressMessages(library(here))
+
+uploads_path <- here('app', 'static', 'uploads')
+print(uploads_path)
 
 # Include local definitions
 source("analysis.R")
@@ -26,8 +30,7 @@ function(input, output, session) {
 			  )
               logging::logdebug(session$clientData$url_search)
               logging::logdebug("Still alive")
-              run_dir <- paste0("/home/rarefan/repinpop/app/static/uploads/", query$run_id)
-              # run_dir <- paste0("/home/grotec/Repositories/RepinPop/app/static/uploads/", query$run_id)
+              run_dir <- paste0(uploads_path, '/', query$run_id)
               logging::logdebug(paste0("run_dir = ", run_dir))
               out_dir <- paste0(run_dir, "/out")
               logging::logdebug(paste0("out_dir = ", out_dir))

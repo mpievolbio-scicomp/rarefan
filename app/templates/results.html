@@ -7,7 +7,6 @@
 {% block body %}
 <body>
     {{ results_form.hidden_tag() }}
-        </p>
 		    <p>
 		        <h1>{{title}}</h1>
             {% if job.parent_run  %}
@@ -26,27 +25,27 @@
                 {% endif %}
             </h2>
             {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
-                 <p>
-                     <h3>RAYTs</h3>
-                     Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['rayts']]}}.
+            <p>
+                <h3>RAYTs</h3>
+                Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['rayts']]}}.
                     </br></br>
-                     We discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs using tblastn with
-                {{job.setup["query_rayt"]}} at an e-value threshold of {{job.setup["e_value_cutoff"]}}.
-                </br></br>
-                <h3>Nmers</h3>
-                Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['nmers']]}}.
+                    We discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs using tblastn with
+                    {{job.setup["query_rayt"]}} at an e-value threshold of {{job.setup["e_value_cutoff"]}}.
+                    </br></br>
+                    <h3>Nmers</h3>
+                    Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['nmers']]}}.
                     </br></br>
 
-                There are {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences that
-                occur more frequently than {{job.setup['min_nmer_occurence']}} times.
+                    There are {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences that
+                    occur more frequently than {{job.setup['min_nmer_occurence']}} times.
                     </br></br>
 
                     <h3>REPINs</h3>
-                Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['repins']]}}.
+                    Data sanity check: {{{1: "failed", 0: "passed"}[job.stages['rarefan']['results']['data_sanity']['repins']]}}.
                     </br></br>
 
                     {% if job.setup['analyse_repins'] in ['1', 1, 'y', True] %}
-                     We detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs.
+                    We detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs.
                     {% if job.stages['rarefan']['results']['counts']['repins'] == 0 %}
                     You can <a href={{url_for('rerun')}}?run_id={{run_id}}&do_repins=0 title="Click here rerun this job without REPIN analysis."> rerun this job with "Analyse REPINs" turned off.</a>
                     {% endif %}
@@ -54,24 +53,23 @@
                     We detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs.
                     {% endif %}
                     </br></br>
-                </p>
-                {% endif %}
+            </p>
+            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
+
+            {%  if render_plots %}
+            <h2><a href={{url_for('plot')}}?run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
+            {% endif %}
+            {% endif %}
+
+            {% if job.stages['zip'].status in ['finished', 'complete'] %}
+            <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
             <p>
-                <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
-
-                {%  if render_plots %}
-                <h2><a href=http://rarefan.evolbio.mpg.de/shiny/analysis/run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
-                {% endif %}
-
-        {% if job.stages['zip'].status in ['finished', 'complete'] %}
-                <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
-        <p>
+            </p>
+            {% endif %}
+            <p>
+                <h2><a href={{url_for('rerun')}}?run_id={{run_id}} title="Click here modify the parameters of this run and resubmit.">Rerun this job</a></h2>
+            </p>
         </p>
-        {% endif %}
-        <p>
-            <h2><a href={{url_for('rerun')}}?run_id={{run_id}} title="Click here modify the parameters of this run and resubmit.">Rerun this job</a></h2>
-        </p>
-    </p>
 </body>
 {% endblock %}
 

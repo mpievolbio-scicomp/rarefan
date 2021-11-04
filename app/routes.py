@@ -497,3 +497,15 @@ def rerun():
                     title='Submit',
                     submit_form=submit_form,
     )
+
+@app.route('/plot')
+def plot():
+    """ Redirect to the shiny app for the run id given via the request. """
+
+    run_id = request.args['run_id']
+
+    # Go to port 7238 on localhost if this is a debug run, else use the shiny server endpoint on the production server.
+    if os.environ['FLASK_DEBUG']:
+        return redirect('http://localhost:7238?run_id={}'.format(run_id))
+
+    return redirect(request.host_url+'shiny/analysis/?run_id={}'.format(run_id))
