@@ -58,6 +58,7 @@ class SubmitForm(FlaskForm):
             choices = ['yafM_Ecoli',
                        'yafM_SBW25',
                        ], 
+            description="Select the RAYT protein sequence to use for identfying RAYT sequences in the provided genomes. 'yafM_Ecoli' and 'yafM_SBW25' are provided by default. You can supply your own RAYTs in the 'Upload' step.",
             validators=[validators.DataRequired()]
             )
 

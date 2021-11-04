@@ -11,9 +11,8 @@
             {{ submit_form.reference_strain(title="Select the reference strain from your uploaded genome sequences.") }}</br></br>
         </p>
         <p>
-            {{ submit_form.query_rayt.label }}</br>
-            {{ submit_form.query_rayt(title="Select the RAYT protein sequence to use for identfying RAYT sequences in the provided genomes. 'yafM_Ecoli' and 'yafM_SBW25' are provided by default. You can supply your own RAYTs in the 'Upload' step."
-                    ) }}</br></br>
+            {{ submit_form.query_rayt.label }} <span title="{{submit_form.query_rayt.description}}">(?)</span></br>
+            {{ submit_form.query_rayt() }}</br></br>
         </p>
         <p>
             {{ submit_form.treefile.label }}</br>

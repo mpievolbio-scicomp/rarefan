@@ -4,8 +4,6 @@
 suppressMessages(library(shiny))
 suppressMessages(library(here))
 
-here()
-
 uploads_path <- here('app', 'static', 'uploads')
 print(uploads_path)
 
