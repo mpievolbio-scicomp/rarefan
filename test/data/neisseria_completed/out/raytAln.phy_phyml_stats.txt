@@ -1,0 +1,60 @@
+
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+                                  ---  PhyML 3.3.20200621  ---                                             
+                              http://www.atgc-montpellier.fr/phyml                                          
+                             Copyright CNRS - Universite Montpellier                                 
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+
+. Sequence filename: 			raytAln.phy
+. Data set: 				#1
+. Initial tree: 			BioNJ
+. Model of nucleotides substitution: 	GTR
+. Number of taxa: 			21
+. Log-likelihood: 			-1571.57344
+. Unconstrained log-likelihood: 	-1760.75099
+. Composite log-likelihood: 		-16432.28159
+. Parsimony: 				231
+. Tree size: 				3.83822
+. Discrete gamma model: 		Yes
+  - Number of classes: 			4
+  - Gamma shape parameter: 		0.273
+  - Relative rate in class 1: 		0.00336 [freq=0.250000] 		
+  - Relative rate in class 2: 		0.08370 [freq=0.250000] 		
+  - Relative rate in class 3: 		0.54747 [freq=0.250000] 		
+  - Relative rate in class 4: 		3.36547 [freq=0.250000] 		
+. Nucleotides frequencies:
+  - f(A)=  0.24252
+  - f(C)=  0.21178
+  - f(G)=  0.25618
+  - f(T)=  0.28952
+. GTR relative rate parameters :
+  A <-> C    1.04015
+  A <-> G    6.12576
+  A <-> T    0.01002
+  C <-> G    1.66240
+  C <-> T    4.42227
+  G <-> T    1.00000
+. Instantaneous rate matrix : 
+  [A---------C---------G---------T------]
+  -1.02990   0.12657   0.90167   0.00167  
+   0.14494  -1.12526   0.24469   0.73563  
+   0.85357   0.20229  -1.22220   0.16635  
+   0.00140   0.53812   0.14719  -0.68671  
+
+
+. Run ID:				none
+. Random seed:				1635254987
+. Subtree patterns aliasing:		no
+. Version:				3.3.20200621
+. Time used:				0h0m1s (1 seconds)
+
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ Suggested citations:
+ S. Guindon, JF. Dufayard, V. Lefort, M. Anisimova, W. Hordijk, O. Gascuel
+ "New algorithms and methods to estimate maximum-likelihood phylogenies: assessing the performance of PhyML 3.0."
+ Systematic Biology. 2010. 59(3):307-321.
+
+ S. Guindon & O. Gascuel
+ "A simple, fast, and accurate algorithm to estimate large phylogenies by maximum likelihood"
+ Systematic Biology. 2003. 52(5):696-704.
+ oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
