@@ -11,6 +11,7 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 def rarefan_on_success(job, connection, result, *args, **kwargs):
+    """ Callback for the 'rarefan' task if completed successfully. """
 
     # Get db object.
     run_id = job.meta['run_id']
@@ -39,8 +40,8 @@ def rarefan_on_success(job, connection, result, *args, **kwargs):
     dbjob.save()
 
 
-
 def on_failure(job, connection, type, value, traceback):
+    """ Generic failure callback for all tasks. """
 
     logging.debug(job.id)
     logging.debug(job.meta)

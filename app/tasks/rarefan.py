@@ -48,7 +48,6 @@ def rarefan_task(**kwargs):
     dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
     dbjob.set_status('rarefan')
 
-
     proc = subprocess.Popen(shlex.split(java_command),
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, shell=False)

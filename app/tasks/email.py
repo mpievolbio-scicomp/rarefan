@@ -4,6 +4,7 @@ import os
 import sys
 import shlex
 import shutil
+import re
 import subprocess
 
 from app import app
@@ -11,7 +12,6 @@ from app.utilities import checkers
 from app import mail
 
 from flask_mail import Message
-from flask import g
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -42,16 +42,20 @@ def email_task(dbjob):
     results = checkers.parse_results(dbjob.setup['outdir'],
                                      dbjob.setup['reference_strain'])
     subject, body  = get_email(session, results)
-    recipients = []
-
-    user_email = session['email']
-    if user_email is not None or user_email != "None":
-        recipients.append(user_email)
+    recipients = [session['email']]
 
     status = any([st not in ['finished', 'completed'] for st in [dbjob.stages[stage]['status'] for stage in ['rarefan', 'tree', 'zip']]])
 
     if status is False:
         recipients.append(app.config["MAIL_USERNAME"])
+
+    # Filter out invalid email addresses.
+    valid_email_pattern = re.compile(r'(\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,6})')
+    recipients = [rec for rec in recipients if isinstance(valid_email_pattern.match(rec), re.Match)]
+    logging.debug("Recipients: %s", recipients)
+    # Simply return if no recipients configured.
+    if len(recipients) == 0:
+        return
 
     sender = app.config['DEFAULT_MAIL_SENDER']
 
@@ -81,9 +85,6 @@ def get_email(session, results):
     # Aggregate the run path.
     run_id_path = session['tmpdir']
     run_id = os.path.basename(run_id_path)
-
-    if session['email'] is None or session['email'] == "":
-        logging.debug("No email set.")
 
     counts = results['counts']
     status = results['status']

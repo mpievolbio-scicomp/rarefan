@@ -10,7 +10,7 @@
         </p>
 		    <p>
 		        <h1>{{title}}</h1>
-            {% if job.parent_run != None %}
+            {% if job.parent_run  %}
             <p>
                 {{job.run_id}} is a rerun of <a href={{url_for('results')}}?run_id={{job.parent_run}}>{{job.parent_run}}</a>.
             </p>
@@ -38,9 +38,20 @@
                 <tr>
                     <td> Nmers </td> <td>{{job.stages['rarefan']['results']['counts']['nmers']}}</td>
                 </tr>
+                {% if job.setup['analyse_repins'] in ['1', 1, 'y', True] %}
+                    <tr>
+                        <td> REPINs</td> <td>{{job.stages['rarefan']['results']['counts']['repins']}}</td>
+                    </tr>
+                    {% if job.stages['rarefan']['results']['counts']['repins'] == 0 %}
+                        <p>
+                            No REPINs found. You may <a href={{url_for('rerun')}}?run_id={{run_id}}&do_repins=0 title="Click here rerun this job without REPIN analysis."> rerun this job with "Analyse REPINs" turned off.</a>
+                        </p>
+                    {% endif %}
+                {% else %}
                 <tr>
-                    <td> REPINs</td> <td>{{job.stages['rarefan']['results']['counts']['repins']}}</td>
+                    <td> REPs</td> <td>{{job.stages['rarefan']['results']['counts']['repins']}}</td>
                 </tr>
+                {% endif %}
             </table>
             <p>
                 <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
@@ -53,7 +64,6 @@
         {% if job.stages['zip'].status in ['finished', 'complete'] %}
                 <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
         <p>
-            
         </p>
         {% endif %}
         <p>

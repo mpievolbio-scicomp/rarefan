@@ -346,6 +346,7 @@ def results():
 
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
+
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
                                results_form=results_form,
@@ -369,21 +370,20 @@ def files(req_path):
     nested_file_path = os.path.join(uploads_dir, req_path)
     splits = nested_file_path.split('/')
     uploads_idx = splits.index('uploads')
-    run_id = splits[uploads_idx+1]
-
+    run_id = splits[uploads_idx + 1]
 
     if os.path.isdir(nested_file_path):
         item_list = os.listdir(nested_file_path)
 
         # Move directories to a separate list.
-        dirs = [item_list.pop(i) for (i,d) in enumerate(item_list) if os.path.isdir(os.path.join(nested_file_path, d))]
+        dirs = [item_list.pop(i) for (i, d) in enumerate(item_list) if os.path.isdir(os.path.join(nested_file_path, d))]
 
         # Sort files and dirs.
         item_list.sort()
         dirs.sort()
 
         # Concat dirs and files.
-        item_list = [i for i in item_list if not "stamp" in i]
+        item_list = [i for i in item_list if "stamp" not in i]
 
         # Leading '/'
         if not req_path.startswith("/"):
@@ -417,9 +417,8 @@ def files(req_path):
                                back_link=back_link
                                )
 
-    else:
-        # Serve the file.
-        return send_from_directory(*os.path.split(nested_file_path))
+    # Serve the file.
+    return send_from_directory(*os.path.split(nested_file_path))
 
 
 @app.route('/check_tasks', methods=['GET'])
@@ -447,6 +446,7 @@ def test_mail():
 def rerun():
     args = request.args
     run_id = request.args['run_id']
+    do_repins = request.args.get('do_repins', None)
     dbjob = Job.objects.get_or_404(run_id=run_id)
     logging.debug("Found job %s", str(dbjob.id))
     logging.debug("Job run_id = %s", str(dbjob.run_id))
@@ -481,6 +481,15 @@ def rerun():
     session['email'] = dbjob.setup.get('email')
     submit_form.email.data = dbjob.setup.get('email')
 
+    logging.debug("DO_REPINS? %s", do_repins)
+    logging.debug("analyse_repins= %s", submit_form.analyse_repins.data)
+    # Update do_repins if requested.
+    if do_repins is not None:
+        if do_repins in ['y', '1', 1, True]:
+            submit_form.analyse_repins.data = session['analyse_repins'] = 'y'
+        else:
+            submit_form.analyse_repins.data = session['analyse_repins'] = None
+
     logging.debug('session = %s', str(session))
 
     return render_template(
@@ -488,4 +497,3 @@ def rerun():
                     title='Submit',
                     submit_form=submit_form,
     )
-    
