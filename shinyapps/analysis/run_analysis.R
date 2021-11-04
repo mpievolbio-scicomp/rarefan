@@ -30,7 +30,7 @@ parser$add_argument('-r', '--rayt',
                     type="integer",
                     dest='rayt_type',
                     default=0,
-                    choices=c(0,1,2,3,4,5),
+                    choices=c(0,1,2,3,4,5,6,7),
                     help='The RAYT index to calculate results for.'
 )
 
@@ -95,5 +95,5 @@ phylogeny_plot = drawRAYTphylogeny(data_dir)
 
 figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1)
 
-ggexport(figure, filename=outfile)
+ggexport(figure, filename=outfile,height=30)
 
