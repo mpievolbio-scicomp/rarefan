@@ -60,7 +60,7 @@
                 <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
 
                 {%  if render_plots %}
-                <h2><a href={{url_for('plot')}}?run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
+                <h2><a href=http://rarefan.evolbio.mpg.de/shiny/analysis/run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
                 {% endif %}
 
         {% if job.stages['zip'].status in ['finished', 'complete'] %}
