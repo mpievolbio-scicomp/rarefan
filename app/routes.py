@@ -257,6 +257,7 @@ def submit():
             connection=app.redis,
             on_success=rarefan_on_success,
             on_failure=on_failure,
+            timeout='24h',
             meta={'run_id': run_id, 'dbjob_id': dbjob.id},
             kwargs={
                 "tmpdir": session['tmpdir'],
@@ -278,7 +279,6 @@ def submit():
                                     depends_on=[rarefan_job],
                                     on_failure=on_failure,
                                     connection=app.redis,
-                                    timeout='24h',
                                     meta={'run_id': run_id, 'dbjob_id': dbjob.id},
                                     kwargs={
                                          "run_dir": session['tmpdir'],
