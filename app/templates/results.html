@@ -54,13 +54,11 @@
                     {% endif %}
                     </br></br>
             </p>
-            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
-
             {%  if render_plots %}
             <h2><a href={{url_for('plot')}}?run_id={{run_id}} target="_blank" title="Clicking here will take you to a new page with plots of your results.">Plot data</a></h2>
             {% endif %}
             {% endif %}
-
+            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
             {% if job.stages['zip'].status in ['finished', 'complete'] %}
             <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
             <p>
