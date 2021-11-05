@@ -69,15 +69,15 @@ class SubmitForm(FlaskForm):
         description="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes.",
             )
 
-    min_nmer_occurence = IntegerField("Min. nmer occurence", 
+    min_nmer_occurrence = IntegerField("Min. seed sequence occurrence", 
                           default=55,
-        description="Set the Nmer occurence cutoff. Only Nmers of 'Nmer length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
-                          validators=[validators.DataRequired(message="Please enter the minimal nmer occurence as an integer!")]
+        description="Set the seed sequence occurrence cutoff. Only seeds of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
+                          validators=[validators.DataRequired(message="Please enter the minimal seed occurrence as an integer!")]
                           )
 
-    nmer_length = IntegerField("Nmer length", 
+    nmer_length = IntegerField("Seed length", 
                              default=21, 
-        description="Set the Nmer length (in basepairs). Only sequences of this length that occur more frequently than 'min. Nmer occurence' (see above) will be considered in the REP/REPIN analysis.",
+        description="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence (see above) will be considered in the REP/REPIN analysis.",
                              validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
                              )
 

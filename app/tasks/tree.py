@@ -61,7 +61,12 @@ def tree_task(run_dir, treefile=None):
     with open(os.path.join(outdir, 'rarefan.log'), 'ab') as fh:
         fh.write(log)
 
-    return proc.returncode, log
+    return {'returncode': proc.returncode,
+            'log': log
+            }
+
 
 def empty_task():
-    pass
+    return {'returncode': 0,
+            'log': "No treefile as per job parameters."
+            }

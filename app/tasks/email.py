@@ -9,10 +9,14 @@ import subprocess
 
 from app import app
 from app.utilities import checkers
-from app import mail
+from app import mail, views
 
 from flask_mail import Message
+from flask import render_template
+from app.views import AnalysisForm
+from app.models import Job as DBJob
 
+import jinja2
 import logging
 logging.basicConfig(level=logging.DEBUG)
 
@@ -36,29 +40,46 @@ def email_test():
     return success, message
 
 
-def email_task(dbjob):
+def email_task(run_id):
 
+    dbjob = DBJob.objects.get(run_id=run_id)
+    # Get session.
     session = dbjob.setup
-    results = checkers.parse_results(dbjob.setup['outdir'],
-                                     dbjob.setup['reference_strain'])
-    subject, body  = get_email(session, results)
+
+    # List of recipients
     recipients = [session['email']]
 
-    status = any([st not in ['finished', 'completed'] for st in [dbjob.stages[stage]['status'] for stage in ['rarefan', 'tree', 'zip']]])
+    # Overall status.
+    status = dbjob.overall_status
 
-    if status is False:
+    if status == "failed":
         recipients.append(app.config["MAIL_USERNAME"])
 
+    # Only non-empty strings in recipients list.
     recipients = [rec for rec in recipients if rec != ""]
     logging.debug("Recipients: %s", recipients)
+
     # Simply return if no recipients configured.
     if len(recipients) == 0:
         return
 
+    # Get the email subject.
+    email_subject = "Your RAREFAN run {0:s} is complete.".format(dbjob.run_id)
+
+    # Assemble email body.
+    template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', app.template_folder))
+    templateLoader = jinja2.FileSystemLoader(searchpath=template_dir)
+    templateEnv = jinja2.Environment(loader=templateLoader, autoescape=True)
+    template_file = "email.md"
+    template = templateEnv.get_template(template_file)
+
+    email_body = template.render(job=dbjob)  # this is where to put args to the template renderer
+
+
     sender = app.config['DEFAULT_MAIL_SENDER']
 
-    message = Message(subject=subject,
-                      body=body,
+    message = Message(subject=email_subject,
+                      body=email_body,
                       sender=sender,
                       recipients=recipients,
                       )
@@ -77,56 +98,3 @@ def email_task(dbjob):
     dbjob.save()
 
     logging.debug("Mail sent? %s", str(is_sent))
-
-
-def get_email(session, results):
-    # Aggregate the run path.
-    run_id_path = session['tmpdir']
-    run_id = os.path.basename(run_id_path)
-
-    counts = results['counts']
-    status = results['status']
-
-    status_msg = {0: "passed", 1: "failed"}
-
-    email_subject = "Your RAREFAN run {0:s} is complete.".format(run_id)
-    email_body = f"""Hallo,
-your job on rarefan.evolbio.mpg.de with ID {run_id} is complete.
-
-Job Summary
-===========
-
-    RAYTs
-    -----
-    Data sanity check: {status_msg[status['rayts']]}.
-
-    We discovered {counts['rayts']} RAYTs using tblastn with
-    {session["query_rayt"]} at an e-value threshold of {session["e_value_cutoff"]}.
-
-    Nmers
-    -----
-    Data sanity check: {status_msg[status['nmers']]}.
-
-    There are {counts['nmers']} {session['nmer_length']}bp long sequences that
-    occur more frequently than {session['min_nmer_occurence']} times.
-
-    REPINs
-    ------
-    Data sanity check: {status_msg[status['repins']]}.
-
-    We detected {sum(counts['repins'].values())} REPINs.
-
-You can browse and download the results at http://rarefan.evolbio.mpg.de/results?run_id={run_id}.
-
-In case of problems, please reply to this email and leave the email subject as is.
-
-Thank you for using RAREFAN.
-
-http://rarefan.evolbio.mpg.de
-"""
-
-    return email_subject, email_body
-
-
-if __name__ == "__main__":
-    print(email_test())

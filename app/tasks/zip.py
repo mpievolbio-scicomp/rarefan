@@ -45,5 +45,5 @@ def zip_task(run_dir):
 
     os.chdir(oldwd)
 
-    return proc.returncode, err
+    return {'returncode': proc.returncode, "log": log}
 

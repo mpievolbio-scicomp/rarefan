@@ -14,13 +14,13 @@ from rq.job import Job as RQJob
 
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
-from app.models import Job
+from app.models import Job as DBJob
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task, empty_task
 from app.tasks.zip import zip_task
-from app.tasks.email import email_task, email_test
+from app.tasks.email import email_task
 
-from app.callbacks.callbacks import rarefan_on_success, on_failure
+from app.callbacks.callbacks import on_success, on_failure
 
 import copy
 import os
@@ -137,7 +137,7 @@ def upload():
         session['reference_strain'] = None
         session['query_rayt'] = None
         session['treefile'] = None
-        session['min_nmer_occurence'] = None
+        session['min_nmer_occurrence'] = None
         session['nmer_length'] = None
         session['e_value_cutoff'] = None
         session['analyse_repins'] = None
@@ -191,7 +191,7 @@ def submit():
 
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
-        session['min_nmer_occurence'] = request.form.get('min_nmer_occurence')
+        session['min_nmer_occurrence'] = request.form.get('min_nmer_occurrence')
         treefile = request.form.get('treefile', None)
         run_id = os.path.basename(session['tmpdir'])
 
@@ -212,7 +212,7 @@ def submit():
         run_id = os.path.basename(session['tmpdir'])
 
         # Create new Job instance.
-        dbjob = Job(run_id=run_id,
+        dbjob = DBJob(run_id=run_id,
                     stages={"rarefan": {"redis_job_id": None,
                                                            "status": 'setup',
                                                            "results": {"returncode": None,
@@ -255,15 +255,15 @@ def submit():
         rarefan_job = RQJob.create(
             rarefan_task,
             connection=app.redis,
-            on_success=rarefan_on_success,
+            on_success=on_success,
             on_failure=on_failure,
             timeout='24h',
-            meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id, 'stage':'rarefan'},
             kwargs={
                 "tmpdir": session['tmpdir'],
                 "outdir": session['outdir'],
                 "reference_strain": session['reference_strain'],
-                "min_nmer_occurence": session['min_nmer_occurence'],
+                "min_nmer_occurrence": session['min_nmer_occurrence'],
                 "nmer_length": session['nmer_length'],
                 "query_rayt_fname": query_rayt_fname,
                 "treefile": session['treefile'],
@@ -277,35 +277,42 @@ def submit():
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
                                     depends_on=[rarefan_job],
+                                    on_success=on_success,
                                     on_failure=on_failure,
                                     connection=app.redis,
-                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'tree'},
                                     kwargs={
                                          "run_dir": session['tmpdir'],
                                          "treefile": session['treefile'],
                                         }
-                                    )
+            )
+
         else:
             tree_job = RQJob.create(empty_task,
+                                    on_success=on_success,
+                                    on_failure=on_failure,
                                     depends_on=rarefan_job,
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'tree'},
                                     connection=app.redis,
-                                    )
+            )
 
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
+                               on_success=on_success,
                                on_failure=on_failure,
-                               meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                               meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'zip'},
                                connection=app.redis,
                                kwargs={'run_dir':session['tmpdir']},
-                                    )
+        )
+
         email_job = RQJob.create(email_task,
                                  depends_on=['rarefan_job',
                                              'tree_job',
                                              'zip_job',
                                              ],
-                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id},
+                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'email'},
                                  connection=app.redis,
-                                 kwargs={'dbjob': dbjob},
+                                 kwargs={'run_id': run_id},
                                  )
 
 
@@ -319,7 +326,9 @@ def submit():
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
-        return redirect(url_for('results', run_id=run_id))
+        return redirect(url_for('results',
+                                run_id=run_id),
+        )
 
     return render_template(
                     'submit.html',
@@ -339,7 +348,7 @@ def results():
         run_id = args['run_id']
         logging.debug(run_id)
 
-        dbjob = Job.objects.get_or_404(run_id=run_id)
+        dbjob = DBJob.objects.get_or_404(run_id=run_id)
 
         # Update stage status by querying rq.
         dbjob.set_overall()
@@ -349,7 +358,6 @@ def results():
 
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
-                               results_form=results_form,
                                run_id=run_id,
                                job=dbjob,
                                render_plots=render_plots,
@@ -436,18 +444,12 @@ def queue():
 def manual():
     return render_template('manual.html')
 
-@app.route('/test_mail')
-def test_mail():
-
-    app.queue.enqueue(email_test)
-    return redirect(url_for('index'))
-
 @app.route('/rerun')
 def rerun():
     args = request.args
     run_id = request.args['run_id']
     do_repins = request.args.get('do_repins', None)
-    dbjob = Job.objects.get_or_404(run_id=run_id)
+    dbjob = DBJob.objects.get_or_404(run_id=run_id)
     logging.debug("Found job %s", str(dbjob.id))
     logging.debug("Job run_id = %s", str(dbjob.run_id))
 
@@ -470,8 +472,8 @@ def rerun():
     session['treefile'] = dbjob.setup.get('treefile')
     submit_form.treefile.data = session['treefile']
 
-    session['min_nmer_occurence'] = dbjob.setup.get('min_nmer_occurence')
-    submit_form.min_nmer_occurence.data = dbjob.setup.get('min_nmer_occurence')
+    session['min_nmer_occurrence'] = dbjob.setup.get('min_nmer_occurrence')
+    submit_form.min_nmer_occurrence.data = dbjob.setup.get('min_nmer_occurrence')
     session['nmer_length'] = dbjob.setup.get('nmer_length')
     submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
     session['analyse_repins'] = dbjob.setup.get('analyse_repins')

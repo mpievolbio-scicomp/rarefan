@@ -20,10 +20,10 @@
             ) }}</br></br>
         </p>
         <p>
-            {{ submit_form.min_nmer_occurence.label }} <span title="{{submit_form.min_nmer_occurence.description}}" style="cursor:default">(?)</span></br>
-            {{ submit_form.min_nmer_occurence(title="Set the Nmer occurence cutoff. Only Nmers of 'Nmer length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.") }}
+            {{ submit_form.min_nmer_occurrence.label }} <span title="{{submit_form.min_nmer_occurrence.description}}" style="cursor:default">(?)</span></br>
+            {{ submit_form.min_nmer_occurrence(title="Set the seed sequence occurrence cutoff. Only seed sequences of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.") }}
             </br>
-            {% for error in submit_form.min_nmer_occurence.errors %}
+            {% for error in submit_form.min_nmer_occurrence.errors %}
             <span style="color: red;">
                 [{{ error }}]
             </span>
@@ -32,7 +32,7 @@
         </p>
         <p>
             {{ submit_form.nmer_length.label }} <span title="{{submit_form.nmer_length.description}}" style="cursor:default">(?)</span></br>
-            {{ submit_form.nmer_length(title="Set the Nmer length (in basepairs). Only sequences of this length that occur more frequently than 'min. Nmer occurence' (see above) will be considered in the REP/REPIN analysis."
+            {{ submit_form.nmer_length(title="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence' (see above) will be considered in the REP/REPIN analysis."
             ) }}
             </br>
             {% for error in submit_form.nmer_length.errors %}

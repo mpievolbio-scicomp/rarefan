@@ -30,7 +30,7 @@ def rarefan_task(**kwargs):
                             kwargs['tmpdir'],
                             kwargs['outdir'],
                             kwargs['reference_strain'],
-                            '{0:s}'.format(kwargs['min_nmer_occurence']),
+                            '{0:s}'.format(kwargs['min_nmer_occurrence']),
                             '{0:s}'.format(kwargs['nmer_length']),
                             kwargs['query_rayt_fname'],
                             kwargs['treefile'],
