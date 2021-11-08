@@ -273,7 +273,7 @@ def submit():
         )
 
 
-        run_tree_task = len(dbjob.setup['tree_names']) >= 4
+        run_tree_task = len(dbjob.setup['strain_names']) >= 4
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
                                     depends_on=[rarefan_job],
