@@ -20,7 +20,7 @@ logging::basicConfig()
 logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
 
 # 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
-colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6","#FF0022","#11FF22")
+colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
 
 # Set theme for all plots
 logging::logdebug("defining theme")
@@ -159,9 +159,9 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
     # Construct new data frame holding the data to plot in facets.
     popSize=data.frame(name=t[,1],
                        rayts=t[,2],
-                       repins=t[,3],
-                       prop=(t[,5]/t[,3]),
-                       propAll=(t[,3]/t[,6]),
+                       repins=t[,9],
+                       prop=(t[,5]/t[,9]),
+                       propAll=(t[,9]/t[,6]),
                        numClus=t[,7],
                        diffRAYTCluster=t[,7]-t[,2])
 
@@ -441,7 +441,7 @@ drawRAYTphylogeny=function(data_dir, fontsize=16){
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
-  #logging::logdebug(cols)
+  logging::logdebug(cols)
   print(cols)
   # Add colors
   p <-  p + scale_color_manual(values=cols,guide="none")
