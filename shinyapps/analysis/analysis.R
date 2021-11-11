@@ -1,6 +1,6 @@
 # TODO: Add comment
 #
-# Author: Carsten Fortmann-Grote, Frederic Bertel
+# Author: Carsten Fortmann-Grote, Frederic Bertels
 ###############################################################################
 
 # Load libraries silently.
