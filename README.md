@@ -72,7 +72,48 @@ source setenv.sh
 ```
 
 ## Running RAREFAN from the commandline
-TODO
+The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory that contains genome sequences and rayt protein fasta files.
+
+The syntax of is
+```
+$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] -q QUERY_RAYT
+               [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i]
+               DIR
+```
+where the commandline arguments are explained as follows:
+```
+positional arguments:
+  DIR                   Contains the genome DNA sequences and RAYT AA sequences to be analyzed.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTDIR, --outdir OUTDIR
+                        Results will be written to OUTDIR. OUTDIR will be created if not existing
+                        (default: ./rarefan_out).
+  -r REFERENCE, --reference REFERENCE
+                        Filename of the reference genome sequence
+  -c MIN_NMER_OCCURRENCE, --min_nmer_occurrence MIN_NMER_OCCURRENCE
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
+                        will be taken into account (default: 55). See RAREFAN manual for details.
+  -l NMER_LENGTH, --min_nmer_length NMER_LENGTH
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
+                        will be taken into account (default: 21). See RAREFAN manual for details.)
+  -q QUERY_RAYT, --query_rayt QUERY_RAYT
+                        Filename or path of the amino acid sequence file containing the RAYT protein
+                        sequence (default: None).
+  -e E_VALUE_CUTOFF, --e_value_cutoff E_VALUE_CUTOFF
+                        e-value cutoff for tblastn of the query rayt sequence against the submitted
+                        genomes (default: 1e-30).
+  -R, --no-repins       Do not analyse REPINS (default: False).
+  -j THREADS, --num_threads THREADS
+                        Number of threads for parallel cluster analysis with MCL (default: 24).
+  -t TREEFILE, --treefile TREEFILE
+                        Filename or path of the phylogenetic tree of submitted genomes (newik format,
+                        '.nwk' extension). If none given and more than four genomes are submitted, the
+                        tree will be calculated and written to OUTDIR/tmptree.nwk (default:
+                        tmptree.nwk).
+  -i, --interactive     Interactive mode. Ask for confirmation before starting the analysis run.
+```
 
 ## Runing the RAREFAN web server
 ### Database backend
@@ -92,7 +133,7 @@ import os
 
 class Config(object):
     SECRET_KEY = 'supersecretkey'
-    SERVER_NAME = 'my.server.com'
+    SERVER_NAME = 'localhost:5000'
     MONGODB_SETTINGS = {
         'db': 'rarefan',
         'host': 'localhost',
@@ -119,7 +160,10 @@ To launch the server, run
 $> flask run 
 ```
 
-And navigate your browser to localhost:5000 .
+And navigate your browser to http://localhost:5000 .
+
+#### NOTE
+Data visualisation on a local deployment server is currently not working.
 
 ##  Testing
 The directory *test/scripts/* contains two scripts:
@@ -157,6 +201,7 @@ Syntax:
 
 ### Docker
 We provide a docker container that packs all dependencies of the java backengine (java code).
+
 
 ### Pull the container
 To pull the most recent docker container, run (in a terminal)
