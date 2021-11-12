@@ -55,16 +55,18 @@ if __name__ == '__main__':
     greeting = """
 ***************************************************************************
 *                                                                         *
-*                              WELCOME TO RAREFAN                         *
+*                          WELCOME TO RAREFAN                             *
 *                                                                         *
-*                            RAyt And REpin ANalyzer                      *
+*                        RAyt And REpin ANalyzer                          *
 *                                                                         *
 * RAREFAN is released under the terms of the MIT License.                 *
 * See LICENSE for details.                                                *
 *                                                                         *
 * Copyright (c) 2020 - 2021 Max Planck Institute for Evolutionary Biology *
 *                                                                         *
-***************************************************************************"""
+***************************************************************************
+
+"""
     print(greeting)
 
     parser = argparse.ArgumentParser()
