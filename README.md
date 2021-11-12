@@ -2,18 +2,19 @@
 
 ## Installation
 
-## Compilers and build system
+## Compilers, build system and dependencies.
 The following packages (linux, debian based distro) are required:
-* java (version >= 11)
+* java (>=11)
 * gcc (or alternativ C compiler)
 * libgsl-dev 
 * andi
 * build-essential
+* cmake (>=3.11)
 * phyloml
 
 ### Install dependencies on debian based linux distros (debian, *ubuntu, mint, ...)
 ```
-sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip phyloml
+sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip phyml
 ```
 
 ### Create the conda environment
@@ -52,27 +53,27 @@ conda deactivate
 ```
 $> mkdir build
 $> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=`cat conda_prefix.txt` ..
+$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..
 ```
-The last line instructs cmake to setup the `$CONDA_PREFIX` as the installation prefix for the third party libraries to be installed.
+The last line instructs sets the installation prefix to $CONDA_PREFIX.
 ```
  $> make
 ```
 
-This will download the required source codes for all three dependencies, build,
-and install the executables into the `conda` environment created in the first
+This fetch, build,
+and install the dependencies into the `conda` environment created in the first
 step.
 
 ### Set library path.
 Some environment variables (in particular `LD_LIBRARY_PATH`) have to be set
-explicitely. 
+explicitly. 
 
 ```
 source setenv.sh
 ```
 
 ## Running RAREFAN from the commandline
-The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory that contains genome sequences and rayt protein fasta files.
+The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory DIR that contains genome sequences and rayt protein fasta files.
 
 The syntax of is
 ```
