@@ -5,6 +5,7 @@ import os, sys
 import subprocess
 from io import StringIO
 import shlex
+from checkers import parse_results
 
 JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
 MCL_THREADS = max(os.cpu_count()//2, 1)
@@ -200,6 +201,8 @@ if __name__ == '__main__':
                                 )
 
     # Log the command.
+    print("RAYT/REPIN analysis")
+    print("===================")
     print(java_command)
 
     # Start the subprocess.
@@ -218,8 +221,22 @@ if __name__ == '__main__':
     if proc.returncode != 0:
         sys.exit(proc.returncode)
 
+    ### Collect results.
+    results = parse_results(args.outdir, os.path.basename(args.reference))
+    counts = results['counts']
+
+
+    print("")
+    print("Results")
+    print("-------")
+    print(f"{counts['rayts']} RAYTs across all submitted genomes using tblastn with {args.query_rayt} at an e-value threshold of {args.e_value_cutoff}.")
+    print(f"{counts['nmers']} {args.nmer_length}bp long sequences in the reference genome that occur more frequently than {args.min_nmer_occurrence} times.")
+    print(f"{sum(counts['repins'].values())} REPINs in the reference genome.")
+    print("")
 
     ### Generate tree.
+    print("Tree generation")
+    print("===============")
     tree_command = tree_command(args.indir, args.outdir, args.treefile)
 
     with subprocess.Popen(tree_command,
@@ -240,6 +257,6 @@ if __name__ == '__main__':
 
 Your RAREFAN run is complete. Data was written to {args.outdir} You can now visualize your results with the command
 
-    $> run_analysis.R -d DIR -r QUERY_RAYT_ID -t TREEFILE -o OUTFILE
+    $> rarefan_plots -d DIR -r QUERY_RAYT_ID -t TREEFILE -o OUTFILE
 
     """)
