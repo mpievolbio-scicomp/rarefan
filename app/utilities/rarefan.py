@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import argparse
 import os, sys
 import subprocess
@@ -8,7 +10,6 @@ JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
-
     cmd = " ".join(['java',
                             '-Xmx10g',
                             '-jar',
@@ -27,7 +28,27 @@ def rarefan_command(**kwargs):
                            )
     return cmd
 
-    # java -jar REPIN_ecology.jar IN_DIR OUT_DIR REFERENCE_STRAIN NMER_OCCURENCE MIN_NMER_LENGTH QUERY_RAYT TREEFILE E_VALUE_CUTOFF ANALYZE_REPINS
+
+def tree_command(dir, outdir, treefile):
+
+    # Check if treefile exists.
+    in_treefile = os.path.join(dir, treefile)
+    out_treefile = os.path.join(outdir, treefile)
+    if os.path.isfile(in_treefile):
+        return "cp {} {}".format(in_treefile, out_treefile)
+
+    # List of genome sequence files in input directory.
+    inputs = [os.path.join(dir, f) for f in os.listdir(dir) if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
+
+    # Only proceed if >= 4 genomes provided.
+    if len(inputs) < 4:
+        return "echo 'Tree generation skipped since < 4 genomes in the input data.'"
+
+    # else (no treefile exists.)
+    command = "andi -j {} | clustDist > {}".format(" ".join(inputs), out_treefile)
+
+    return command
+
 
 if __name__ == '__main__':
 
@@ -164,7 +185,7 @@ if __name__ == '__main__':
             sys.exit(1)
 
     # Assembla java command.
-    command = rarefan_command(tmpdir=args.indir,
+    java_command = rarefan_command(tmpdir=args.indir,
                                 outdir=args.outdir,
                                 reference_strain=args.reference,
                                 min_nmer_occurrence=args.min_nmer_occurrence,
@@ -177,10 +198,10 @@ if __name__ == '__main__':
                                 )
 
     # Log the command.
-    print(command)
+    print(java_command)
 
     # Start the subprocess.
-    with subprocess.Popen(shlex.split(command),
+    with subprocess.Popen(shlex.split(java_command),
                           shell=False,
                           stdout=subprocess.PIPE,
                           # stderr=subprocess.STDOUT,
@@ -192,4 +213,31 @@ if __name__ == '__main__':
         for line in proc.stdout:
             print(line, end="")
 
+    if proc.returncode != 0:
+        sys.exit(proc.returncode)
 
+
+    ### Generate tree.
+    tree_command = tree_command(args.indir, args.outdir, args.treefile)
+
+    with subprocess.Popen(tree_command,
+                          shell=True,
+                          stdout=subprocess.PIPE,
+                          bufsize=1,
+                          universal_newlines=True,
+                            ) as proc:
+
+        # Print output directly to stdout.
+        for line in proc.stdout:
+            print(line, end="")
+
+    if proc.returncode != 0:
+        sys.exit(proc.returncode)
+
+    print(f"""
+
+Your RAREFAN run is complete. Data was written to {args.outdir} You can now visualize your results with the command
+
+    $> run_analysis.R -d DIR -r QUERY_RAYT_ID -t TREEFILE -o OUTFILE
+
+    """)
