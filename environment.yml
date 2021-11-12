@@ -41,3 +41,4 @@ dependencies:
       - flask-pymongo
       - flask-wtf
       - flask-autoindex
+      - flask-mail

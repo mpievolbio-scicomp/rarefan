@@ -1,18 +1,22 @@
 # RepinPop
 
+## Installation
+
 ## Compilers and build system
 The following packages (linux, debian based distro) are required:
+* java (version >= 11)
 * gcc (or alternativ C compiler)
 * libgsl-dev 
 * andi
 * build-essential
+* phyloml
 
 ### Install dependencies on debian based linux distros (debian, *ubuntu, mint, ...)
 ```
-sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip
+sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip phyloml
 ```
 
-## Create the conda environment
+### Create the conda environment
 
 ```
 $> conda env create -n repinpop --file=environment.yml
@@ -28,12 +32,9 @@ Activate the new environment:
 $> conda activate repinpop
 ```
 
+### Build and install cmake targets.
+RAREFAN uses cmake to configure, build, and install most of its non-python dependencies including the RAREFAN java code and`clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) for phylogenetic analysis. The installation target directory is the $CONDA_PREFIX directory.
 
-## Install 3rd party libraries through cmake.
-Not all dependencies are available on the conda archives. `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git)
-is handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility.
-
-### Issues when building `clustDist` inside the conda env.
 We observed that `clustDist` produces faulty results if compiled inside the conda environment. As a workaround, we recommend to build `clustDist` with deactivated conda environment. Nevertheless, we *install* `clustDist` and other build products into the conda environment. 
 
 Record the value of the `$CONDA_PREFIX` environment variable, e.g.
@@ -62,24 +63,7 @@ This will download the required source codes for all three dependencies, build,
 and install the executables into the `conda` environment created in the first
 step.
 
-## Build the java code:
-Change back into the project's root directory
-```shell
-cd ..
-```
-Activate the conda environment again:
-```
-conda activate repinpop
-```
-`RepinPop` requires at least java version 11. Building is done by
-[`gradle`](https://gradle.org).
-
-```
-$> cd REPIN_ecology/REPIN_ecology
-$> gradle build
-```
-
-## Set library path.
+### Set library path.
 Some environment variables (in particular `LD_LIBRARY_PATH`) have to be set
 explicitely. 
 
@@ -87,7 +71,48 @@ explicitely.
 source setenv.sh
 ```
 
-## Launch the server
+## Running RAREFAN from the commandline
+TODO
+
+## Runing the RAREFAN web server
+### Database backend
+The webserver uses MongoDB as a backend. Install mongodb-server, create a database user named 'rarefan', secured by password, and a database 'rarefan'. Assign the 'dbAdmin' role for the database 'rarefan' to the 'rarefan' user. Consult the [mongodb manual](https://docs.mongodb.com/manual/tutorial/manage-users-and-roles/) if unsure how to do this.
+
+### Configuration
+Copy the configuration template *app/config_template.py* to  *app/config.py* and edit the settings. An example is given below.
+
+Jobs submitted to RAREFAN are processed by redis. In your conda environmont, install `rq` and `redis`.
+
+```shell
+$> conda install rq redis
+```
+
+```python
+import os
+
+class Config(object):
+    SECRET_KEY = 'supersecretkey'
+    SERVER_NAME = 'my.server.com'
+    MONGODB_SETTINGS = {
+        'db': 'rarefan',
+        'host': 'localhost',
+        'port': 27017,
+        'username': 'rarefan',
+        'password': 'RaReF@npw01'
+    }
+    REDIS_URL = os.environ.get("REDIS_URL") or 'redis://'
+    MAIL_SERVER = 'zimbra.evolbio.mpg.de'
+    MAIL_USERNAME='rarefan@evolbio.mpg.de'
+    MAIL_PASSWORD='7SaaZv34Xw5isyu'
+
+    MAIL_USE_TLS=True
+    MAIL_USE_SSL=False
+    MAIL_PORT=25
+
+    MAIL_DEBUG=False
+    DEFAULT_MAIL_SENDER='rarefan@evolbio.mpg.de'
+```
+
 To launch the server, run
 
 ```
@@ -96,7 +121,7 @@ $> flask run
 
 And navigate your browser to localhost:5000 .
 
-## Command line interface and  testing
+##  Testing
 The directory *test/scripts/* contains two scripts:
 ### *dl_zenodo.sh*
 *dl_zenodo.sh* may be used to download reference datasets from zenodo, and unpack the data into the directory *test/data/datasets/*. Datasets can be downloaded individually or together. 
@@ -128,8 +153,6 @@ Syntax:
 * `test_plots`: Checks if all plots were generated.
 * `test_ref_plots`: Checks if all plots were generated from the reference output data.
 * `test_md5`: Computes md5 checksums for all datafiles  in the output directory (except subdirectories) and compares to checksums in the directory *test/md5/*.
-
-
 
 
 ### Docker
