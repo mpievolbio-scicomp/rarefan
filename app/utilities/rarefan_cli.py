@@ -106,7 +106,7 @@ if __name__ == '__main__':
     parser.add_argument("-l", "--min_nmer_length",
                         dest="nmer_length",
                         metavar="NMER_LENGTH",
-                        help="Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE will be taken into account (default: %(default)d). See RAREFAN manual for details.)",
+                        help="Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE will be taken into account (default: %(default)d). See RAREFAN manual for details.",
                         required=False,
                         default=21,
                         type=int,
@@ -130,7 +130,7 @@ if __name__ == '__main__':
 
     parser.add_argument("-R", "--no-repins",
                         dest="no_repins",
-                        help="Do not analyse REPINS (default: %(default)b).",
+                        help="Do not analyse REPINS (default: %(default)r).",
                         required=False,
                         action='store_true',
                         default=False,
