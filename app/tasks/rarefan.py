@@ -8,7 +8,7 @@ import logging
 from app.models import Job as DBJob
 from rq import get_current_job
 
-from app.utilities.rarefan import rarefan_command
+from app.utilities.rarefan_cli import rarefan_command
 
 def rarefan_task(**kwargs):
     """Run the rarefan java code with arguments."""
