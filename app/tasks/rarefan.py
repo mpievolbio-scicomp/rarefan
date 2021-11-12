@@ -16,7 +16,7 @@ def rarefan_task(**kwargs):
     for k,v in kwargs.items():
         logging.debug("%s = %s", k, str(v))
 
-    java_command = rarefan_command(kwargs) 
+    java_command = rarefan_command(**kwargs) 
 
     logging.info("Java command: %s", java_command)
 

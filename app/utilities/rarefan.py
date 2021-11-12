@@ -8,6 +8,7 @@ JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
+
     cmd = " ".join(['java',
                             '-Xmx10g',
                             '-jar',
@@ -21,7 +22,7 @@ def rarefan_command(**kwargs):
                             kwargs['treefile'],
                             '{}'.format(kwargs['e_value_cutoff']),
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
-                            '{}'.format(args.num_threads),
+                            '{}'.format(kwargs.get('num_threads', MCL_THREADS)),
                             ]
                            )
     return cmd
