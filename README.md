@@ -143,16 +143,16 @@ class Config(object):
         'password': 'RaReF@npw01'
     }
     REDIS_URL = os.environ.get("REDIS_URL") or 'redis://'
-    MAIL_SERVER = 'zimbra.evolbio.mpg.de'
-    MAIL_USERNAME='rarefan@evolbio.mpg.de'
-    MAIL_PASSWORD='7SaaZv34Xw5isyu'
+    MAIL_SERVER = 'mail.my.server.com'
+    MAIL_USERNAME='rarefan@mail.my.server.com'
+    MAIL_PASSWORD='mailpass'
 
     MAIL_USE_TLS=True
     MAIL_USE_SSL=False
     MAIL_PORT=25
 
     MAIL_DEBUG=False
-    DEFAULT_MAIL_SENDER='rarefan@evolbio.mpg.de'
+    DEFAULT_MAIL_SENDER='rarefan@mail.my.server.com'
 ```
 
 To launch the server, run

@@ -5,7 +5,6 @@ import os, sys
 import subprocess
 from io import StringIO
 import shlex
-from checkers import parse_results
 
 JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
 MCL_THREADS = max(os.cpu_count()//2, 1)
@@ -52,6 +51,9 @@ def tree_command(dir, outdir, treefile):
 
 
 if __name__ == '__main__':
+
+    # Local import needed here.
+    from checkers import parse_results
 
     greeting = """
 ***************************************************************************
