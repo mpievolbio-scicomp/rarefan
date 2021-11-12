@@ -38,6 +38,13 @@ add_custom_target(patch_blast ALL
 
 # provide libRlapack requested by r-ape.
 add_custom_target(link_lapack ALL
-	COMMAND ln -s ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so
+	COMMAND ln -sf ${CMAKE_INSTALL_PREFIX}/lib/R/modules/lapack.so ${CMAKE_INSTALL_PREFIX}/lib/libRlapack.so
 )
 
+# java code
+ExternalProject_Add(repin_ecology
+  DOWNLOAD_COMMAND cp -ar ${PROJECT_SOURCE_DIR}/REPIN_ecology/REPIN_ecology/ . && pwd
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND cd ../REPIN_ecology && gradle build
+  INSTALL_COMMAND install ../REPIN_ecology/build/libs/REPIN_ecology.jar ${CMAKE_INSTALL_PREFIX}/lib/REPIN_ecology.jar
+  )

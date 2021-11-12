@@ -8,9 +8,7 @@ import logging
 from app.models import Job as DBJob
 from rq import get_current_job
 
-JAR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar'))
-mcl_threads = max(os.cpu_count()//4, 1)
-
+from app.utilities.rarefan import rarefan_command
 
 def rarefan_task(**kwargs):
     """Run the rarefan java code with arguments."""
@@ -18,27 +16,7 @@ def rarefan_task(**kwargs):
     for k,v in kwargs.items():
         logging.debug("%s = %s", k, str(v))
 
-    java_command = " ".join(['java',
-                            '-Dcom.sun.management.jmxremote',
-                            '-Dcom.sun.management.jmxremote.port=9010',
-                            '-Dcom.sun.management.jmxremote.local.only=true',
-                            '-Dcom.sun.management.jmxremote.authenticate=false',
-                            '-Dcom.sun.management.jmxremote.ssl=false',
-                            '-Xmx10g',
-                            '-jar',
-                            JAR,
-                            kwargs['tmpdir'],
-                            kwargs['outdir'],
-                            kwargs['reference_strain'],
-                            '{0:s}'.format(kwargs['min_nmer_occurrence']),
-                            '{0:s}'.format(kwargs['nmer_length']),
-                            kwargs['query_rayt_fname'],
-                            kwargs['treefile'],
-                            '{0:s}'.format(kwargs['e_value_cutoff']),
-                            {"y": "true", None: "false"}[kwargs['analyse_repins']],
-                            '{0:d}'.format(mcl_threads),
-                            ]
-                           )
+    java_command = rarefan_command(kwargs) 
 
     logging.info("Java command: %s", java_command)
 
@@ -62,6 +40,3 @@ def rarefan_task(**kwargs):
             'log': log
             }
 
-
-if __name__ == "main":
-    rarefan_task(*sys.argv)
