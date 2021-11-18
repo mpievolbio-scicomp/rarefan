@@ -125,7 +125,6 @@ def upload():
 
         return redirect(url_for('submit', _method='GET'))
 
-        logging.error("How on earth did you get here?????")
 
     else:
         form = RunForm()
