@@ -8,29 +8,28 @@
         {{ submit_form.hidden_tag() }}
         <p>
             {{ submit_form.reference_strain.label }}
-            <!-- <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span> -->
+            <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span>
     </br>
     {{ submit_form.reference_strain(title=submit_form.reference_strain.description) }}
     </br></br>
         </p>
         <p>
             {{ submit_form.query_rayt.label }}
-            <!-- <span title="{{submit_form.query_rayt.description}}" style="cursor:default">(?)</span> -->
-        </br>
-            {{ submit_form.query_rayt() }}</br></br>
+            <span title="{{submit_form.query_rayt.description}}" style="cursor:default">(?)</span>
+    </br>
+            {{ submit_form.query_rayt(title=submit_form.query_rayt.description) }}</br></br>
         </p>
         <p>
             {{ submit_form.treefile.label }}
-            <!-- <span title="{{submit_form.treefile.description}}" style="cursor:default">(?)</span> -->
+            <span title="{{submit_form.treefile.description}}" style="cursor:default">(?)</span>
     </br>
-            {{ submit_form.treefile(title="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes."
-            ) }}</br></br>
+            {{ submit_form.treefile(title=submit_form.treefile.description) }}</br></br>
         </p>
         <p>
             {{ submit_form.min_nmer_occurrence.label }}
-            <!-- <span title="{{submit_form.min_nmer_occurrence.description}}" style="cursor:default">(?)</span> -->
-            </br>
-            {{ submit_form.min_nmer_occurrence(title="Set the seed sequence occurrence cutoff. Only seed sequences of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.") }}
+            <span title="{{submit_form.min_nmer_occurrence.description}}" style="cursor:default">(?)</span>
+    </br>
+    {{ submit_form.min_nmer_occurrence(title=submit_form.min_nmer_occurrence.description) }}
             </br>
             {% for error in submit_form.min_nmer_occurrence.errors %}
             <span style="color: red;">
@@ -41,10 +40,9 @@
         </p>
         <p>
             {{ submit_form.nmer_length.label }}
-            <!-- <span title="{{submit_form.nmer_length.description}}" style="cursor:default">(?)</span> -->
-            </br>
-            {{ submit_form.nmer_length(title="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence' (see above) will be considered in the REP/REPIN analysis."
-            ) }}
+            <span title="{{submit_form.nmer_length.description}}" style="cursor:default">(?)</span>
+    </br>
+    {{ submit_form.nmer_length(title=submit_form.nmer_length.description) }}
             </br>
             {% for error in submit_form.nmer_length.errors %}
             <span style="color: red;">
@@ -54,30 +52,37 @@
         </p>
         <p>
             {{ submit_form.e_value_cutoff.label }}
-            <!-- <span title="{{submit_form.e_value_cutoff.description}}" style="cursor:default">(?)</span> -->
+            <span title="{{submit_form.e_value_cutoff.description}}" style="cursor:default">(?)</span>
     </br>
-            {{ submit_form.e_value_cutoff(title="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.") }}</br>
-            {% for error in submit_form.e_value_cutoff.errors %} <span style="color: red;">[{{ error }}]</span> {% endfor %}</br>
-        </p>
-        <p>
-            {{ submit_form.analyse_repins.label }}
-            <!-- <span title="{{submit_form.analyse_repins.description}}" style="cursor:default">(?)</span> -->
-        </br>
-            {{ submit_form.analyse_repins(title="Toggle REPIN analysis. If unchecked, only REPs will be analysed.") }}</br>
-        </p>
-        <p>
-            {{ submit_form.email.label }}
-            <!-- <span title="{{submit_form.email.description}}" style="cursor:default">(?)</span> -->
-    </br>
-            {{ submit_form.email(title="Provide your email address to receive a notification when the job is finished." ) }}</br>
-    {% for error in submit_form.email.errors %}
-    <!-- <span style="color: red;">[{{ error }}]</span> -->
+    {{ submit_form.e_value_cutoff(title=submit_form.e_value_cutoff.description) }}</br>
+    {% for error in submit_form.e_value_cutoff.errors %}
+    <span style="color: red;">
+        [{{ error }}]
+    </span>
     {% endfor %}
     </br>
         </p>
         <p>
-            {{ submit_form.submit(title="Click to submit the job.") }}
-            <!-- <span title="{{submit_form.submit.description}}" style="cursor:default">(?)</span> -->
+            {{ submit_form.analyse_repins.label }}
+            <span title="{{submit_form.analyse_repins.description}}" style="cursor:default">(?)</span>
+    </br>
+    {{ submit_form.analyse_repins(title=submit_form.analyse_repins.description) }}</br>
+        </p>
+        <p>
+            {{ submit_form.email.label }}
+            <span title="{{submit_form.email.description}}" style="cursor:default">(?)</span>
+    </br>
+    {{ submit_form.email(title=submit_form.email.description) }}</br>
+    {% for error in submit_form.email.errors %}
+    <span style="color: red;">
+        [{{ error }}]
+    </span>
+    {% endfor %}
+    </br>
+        </p>
+        <p>
+            {{ submit_form.submit(title=submit_form.submit.description) }}
+            <span title="{{submit_form.submit.description}}" style="cursor:default">(?)</span>
         </p>
     </form>
 {% endblock %}
