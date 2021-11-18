@@ -8,7 +8,7 @@
         {{ submit_form.hidden_tag() }}
         <p>
             {{ submit_form.reference_strain.label }} <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span></br>
-            {{ submit_form.reference_strain(title="Select the reference strain from your uploaded genome sequences.") }}</br></br>
+            {{ submit_form.reference_strain() }}</br></br>
         </p>
         <p>
             {{ submit_form.query_rayt.label }} <span title="{{submit_form.query_rayt.description}}" style="cursor:default">(?)</span></br>
