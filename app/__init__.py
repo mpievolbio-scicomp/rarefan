@@ -1,14 +1,11 @@
-from flask import Flask
-from flask_wtf import CSRFProtect
-from flask_mongoengine import MongoEngine, MongoEngineSessionInterface
-from .config import Config
-import os
-from redis import Redis
-import rq
-
 import logging
-from flask_debugtoolbar import DebugToolbarExtension
+import os
+import rq
+from .config import Config
+from flask import Flask
 from flask_mail import Mail
+from flask_mongoengine import MongoEngine, MongoEngineSessionInterface
+from redis import Redis
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -30,6 +27,5 @@ mail = Mail(app)
 app.redis = Redis.from_url(app.config['REDIS_URL'])
 app.queue = rq.Queue('rarefan', connection=app.redis)
 
-csrf = CSRFProtect(app)
+# Has to be the last import to avoid cyclic dependencies.
 from app import views, routes
-
