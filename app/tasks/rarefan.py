@@ -1,5 +1,6 @@
-"""module rarefan: Implementation of the function that runs the rarefan java code as a system process. Can be called as a script with arguments or from a python session including
-   as a redis task."""
+"""
+module rarefan: Implementation of the function that runs the rarefan java code as a system process.
+"""
 
 import os, sys, shutil, shlex
 import subprocess
