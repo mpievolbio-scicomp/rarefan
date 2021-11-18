@@ -30,6 +30,5 @@ mail = Mail(app)
 app.redis = Redis.from_url(app.config['REDIS_URL'])
 app.queue = rq.Queue('rarefan', connection=app.redis)
 
-csrf = CSRFProtect(app)
 from app import views, routes
 
