@@ -10,7 +10,8 @@
             {{ submit_form.reference_strain.label }}
             <!-- <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span> -->
     </br>
-            {{ submit_form.reference_strain() }}</br></br>
+    {{ submit_form.reference_strain(title=submit_form.reference_strain.description) }}
+    </br></br>
         </p>
         <p>
             {{ submit_form.query_rayt.label }}
