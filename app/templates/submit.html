@@ -70,7 +70,8 @@
     </br>
             {{ submit_form.email(title="Provide your email address to receive a notification when the job is finished." ) }}</br>
     {% for error in submit_form.email.errors %}
-    <!-- <span style="color: red;">[{{ error }}]</span> {% endfor %} -->
+    <!-- <span style="color: red;">[{{ error }}]</span> -->
+    {% endfor %}
     </br>
         </p>
         <p>
