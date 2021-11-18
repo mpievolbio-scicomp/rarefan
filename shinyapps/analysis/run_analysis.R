@@ -1,6 +1,8 @@
 #! /usr/bin/env R
 
-source("analysis.R")
+suppressMessages(library(here))
+r_src_dir <- here('shinyapps/analysis')
+source(paste0(r_src_dir, "/analysis.R"))
 
 packages=c("ggpubr", "argparse", "filenamer")
 
@@ -40,7 +42,7 @@ parser$add_argument('-t', '--tree',
                     type="character",
                     dest='treefile',
                     default='tmptree.nwk',
-                    help='The treefile to use (default "DIR/tmptree.nwk")'
+                    help='The name of the treefile to use for plotting the genome phylogenies.'
 )
 
 # tree file
@@ -82,7 +84,7 @@ correlation_plot = plotCorrelationSingle(
 		)
 
 repin_facet_plot = plotREPINs(
-           data_dir,
+       data_dir,
 		   treefile,
 		   rayt_type,
 		   barcolor,
@@ -95,5 +97,5 @@ phylogeny_plot = drawRAYTphylogeny(data_dir)
 
 figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1)
 
-ggexport(figure, filename=outfile,height=30)
+ggexport(figure, filename=outfile ,height=30)
 

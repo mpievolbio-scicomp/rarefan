@@ -1,18 +1,23 @@
 # RepinPop
 
-## Compilers and build system
+## Installation
+
+## Compilers, build system and dependencies.
 The following packages (linux, debian based distro) are required:
+* java (>=11)
 * gcc (or alternativ C compiler)
 * libgsl-dev 
 * andi
 * build-essential
+* cmake (>=3.11)
+* phyloml
 
 ### Install dependencies on debian based linux distros (debian, *ubuntu, mint, ...)
 ```
-sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip
+sudo apt install linux-libc-dev util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip phyml
 ```
 
-## Create the conda environment
+### Create the conda environment
 
 ```
 $> conda env create -n repinpop --file=environment.yml
@@ -28,12 +33,9 @@ Activate the new environment:
 $> conda activate repinpop
 ```
 
+### Build and install cmake targets.
+RAREFAN uses cmake to configure, build, and install most of its non-python dependencies including the RAREFAN java code and`clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git) for phylogenetic analysis. The installation target directory is the $CONDA_PREFIX directory.
 
-## Install 3rd party libraries through cmake.
-Not all dependencies are available on the conda archives. `clustDist` [Cluster Distances into Phylogenies](https://github.com/EvolBioInf/clustDist.git)
-is handled by a the script `CMakeLists.txt` to be consumed by the `cmake` utility.
-
-### Issues when building `clustDist` inside the conda env.
 We observed that `clustDist` produces faulty results if compiled inside the conda environment. As a workaround, we recommend to build `clustDist` with deactivated conda environment. Nevertheless, we *install* `clustDist` and other build products into the conda environment. 
 
 Record the value of the `$CONDA_PREFIX` environment variable, e.g.
@@ -51,52 +53,120 @@ conda deactivate
 ```
 $> mkdir build
 $> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=`cat conda_prefix.txt` ..
+$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..
 ```
-The last line instructs cmake to setup the `$CONDA_PREFIX` as the installation prefix for the third party libraries to be installed.
+The last line instructs sets the installation prefix to $CONDA_PREFIX.
 ```
  $> make
 ```
 
-This will download the required source codes for all three dependencies, build,
-and install the executables into the `conda` environment created in the first
+This fetch, build,
+and install the dependencies into the `conda` environment created in the first
 step.
 
-## Build the java code:
-Change back into the project's root directory
-```shell
-cd ..
-```
-Activate the conda environment again:
-```
-conda activate repinpop
-```
-`RepinPop` requires at least java version 11. Building is done by
-[`gradle`](https://gradle.org).
-
-```
-$> cd REPIN_ecology/REPIN_ecology
-$> gradle build
-```
-
-## Set library path.
+### Set library path.
 Some environment variables (in particular `LD_LIBRARY_PATH`) have to be set
-explicitely. 
+explicitly. 
 
 ```
 source setenv.sh
 ```
 
-## Launch the server
+## Running RAREFAN from the commandline
+The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory DIR that contains genome sequences and rayt protein fasta files.
+
+The syntax of is
+```
+$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] -q QUERY_RAYT
+               [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i]
+               DIR
+```
+where the commandline arguments are explained as follows:
+```
+positional arguments:
+  DIR                   Contains the genome DNA sequences and RAYT AA sequences to be analyzed.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -o OUTDIR, --outdir OUTDIR
+                        Results will be written to OUTDIR. OUTDIR will be created if not existing
+                        (default: ./rarefan_out).
+  -r REFERENCE, --reference REFERENCE
+                        Filename of the reference genome sequence
+  -c MIN_NMER_OCCURRENCE, --min_nmer_occurrence MIN_NMER_OCCURRENCE
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
+                        will be taken into account (default: 55). See RAREFAN manual for details.
+  -l NMER_LENGTH, --min_nmer_length NMER_LENGTH
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
+                        will be taken into account (default: 21). See RAREFAN manual for details.)
+  -q QUERY_RAYT, --query_rayt QUERY_RAYT
+                        Filename or path of the amino acid sequence file containing the RAYT protein
+                        sequence (default: None).
+  -e E_VALUE_CUTOFF, --e_value_cutoff E_VALUE_CUTOFF
+                        e-value cutoff for tblastn of the query rayt sequence against the submitted
+                        genomes (default: 1e-30).
+  -R, --no-repins       Do not analyse REPINS (default: False).
+  -j THREADS, --num_threads THREADS
+                        Number of threads for parallel cluster analysis with MCL (default: 24).
+  -t TREEFILE, --treefile TREEFILE
+                        Filename or path of the phylogenetic tree of submitted genomes (newik format,
+                        '.nwk' extension). If none given and more than four genomes are submitted, the
+                        tree will be calculated and written to OUTDIR/tmptree.nwk (default:
+                        tmptree.nwk).
+  -i, --interactive     Interactive mode. Ask for confirmation before starting the analysis run.
+```
+
+## Runing the RAREFAN web server
+### Database backend
+The webserver uses MongoDB as a backend. Install mongodb-server, create a database user named 'rarefan', secured by password, and a database 'rarefan'. Assign the 'dbAdmin' role for the database 'rarefan' to the 'rarefan' user. Consult the [mongodb manual](https://docs.mongodb.com/manual/tutorial/manage-users-and-roles/) if unsure how to do this.
+
+### Configuration
+Copy the configuration template *app/config_template.py* to  *app/config.py* and edit the settings. An example is given below.
+
+Jobs submitted to RAREFAN are processed by redis. In your conda environmont, install `rq` and `redis`.
+
+```shell
+$> conda install rq redis
+```
+
+```python
+import os
+
+class Config(object):
+    SECRET_KEY = 'supersecretkey'
+    SERVER_NAME = 'localhost:5000'
+    MONGODB_SETTINGS = {
+        'db': 'rarefan',
+        'host': 'localhost',
+        'port': 27017,
+        'username': 'rarefan',
+        'password': 'RaReF@npw01'
+    }
+    REDIS_URL = os.environ.get("REDIS_URL") or 'redis://'
+    MAIL_SERVER = 'mail.my.server.com'
+    MAIL_USERNAME='rarefan@mail.my.server.com'
+    MAIL_PASSWORD='mailpass'
+
+    MAIL_USE_TLS=True
+    MAIL_USE_SSL=False
+    MAIL_PORT=25
+
+    MAIL_DEBUG=False
+    DEFAULT_MAIL_SENDER='rarefan@mail.my.server.com'
+```
+
 To launch the server, run
 
 ```
 $> flask run 
 ```
 
-And navigate your browser to localhost:5000 .
+And navigate your browser to http://localhost:5000 .
 
-## Command line interface and  testing
+#### NOTE
+Data visualisation on a local deployment server is currently not working.
+
+##  Testing
 The directory *test/scripts/* contains two scripts:
 ### *dl_zenodo.sh*
 *dl_zenodo.sh* may be used to download reference datasets from zenodo, and unpack the data into the directory *test/data/datasets/*. Datasets can be downloaded individually or together. 
@@ -130,10 +200,9 @@ Syntax:
 * `test_md5`: Computes md5 checksums for all datafiles  in the output directory (except subdirectories) and compares to checksums in the directory *test/md5/*.
 
 
-
-
 ### Docker
 We provide a docker container that packs all dependencies of the java backengine (java code).
+
 
 ### Pull the container
 To pull the most recent docker container, run (in a terminal)
