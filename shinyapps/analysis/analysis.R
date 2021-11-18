@@ -320,6 +320,30 @@ plotCorrelationSingle=function(folder,
   logging::logdebug(str(cols))
   logging::logdebug("Setting up ggplots.")
 
+  # Set up the shapes for RAYT[0-5] and "no RAYT".
+  # Have to treat the cases when there are either only "no RAYTs" or only "RAYT [0-5].
+  # In general, both cases are present, so setup as length 2 vector representing the two
+  # shapes.
+  shapes = c(1,16)
+
+  # If there's only one value in 'cols', treat special.
+  if(length(cols) == 1) {
+    # only no-RAYTs
+    if(cols[[1]]=='black') {
+      shapes=c(1)
+    }
+    # All other cases.
+    else {
+      shapes=c(16)
+    }
+  }
+
+  # Setup the plot.
+  # x-axis: REPIN proportion of master sequence
+  # y-axis REPIN population size
+  # color: RAYT type [0-5]
+  # shape: RAYT type (will be manually set to the configured shapes)
+  # Symbol size = 3
   p <- ggplot(t) +
     geom_point(
            aes(x=propMaster,
@@ -328,15 +352,16 @@ plotCorrelationSingle=function(folder,
                shape=as.factor(color),
            ),
                size=3,
-       ) +
-      scale_shape_manual(values=c(1,16),
-                       labels=colLegend,
-                       guide="legend"
-                         ) +
+       ) + # Manually set the shapes
+      scale_shape_manual(values=shapes,
+                       # labels=colLegend,
+                       guide="none"
+                         ) + # Manually set the colors and insert legend.
       scale_color_manual(values=cols,
                        labels=colLegend,
                        guide="legend"
                        )
+
   logging::logdebug("Adding limits, theme, and axis labels.")
   p <- p +
         xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
