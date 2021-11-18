@@ -301,42 +301,48 @@ plotCorrelationSingle=function(folder,
   association=association[association$repintype==rep_rayt_group,]
   t$numRAYT=association[match(t[,1],association[,1]),]$rayts
   logging::logdebug("t=%s", str(t))
-    t$color=t$numRAYT
-    t$color[t$color>0]=1
-    t$color[t$color==0]=0
-    cols=t$color
-    names(cols)=cols
+  t$color=t$numRAYT
+  t$color[t$color>0]=1
+  t$color[t$color==0]=0
+  cols=t$color
+  names(cols)=cols
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
-    colLegend=cols
-    logging::logdebug(colnames(colorDF))
-    logging::logdebug(colorDF)
+  colLegend=cols
+  logging::logdebug(colnames(colorDF))
+  logging::logdebug(colorDF)
 
-    cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
-    cols[cols==0]="black"
-    colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
-    colLegend[colLegend==0]="no RAYT"
-    colLegend=colLegend[!duplicated(colLegend)]
-    cols=cols[!duplicated(cols)]
-    logging::logdebug("Setting up ggplots.")
-    p <- ggplot(t) +
-      geom_point(
-             aes(x=propMaster,
-                 y=numRepin,
-                 col=as.factor(color),
-                 size=numRAYT
-             )
-         ) +
-        scale_size_continuous(guide="none",range=c(1,max(t$numRAYT)))+
-        scale_color_manual(values=cols,
-                         labels=colLegend,
-                         guide="legend"
-                         )
-	logging::logdebug("Adding limits, theme, and axis labels.")
-    p <- p +
-          xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
-          theme +
-          xlab("Proportion master sequence (~Replication rate)") +
-          ylab("REPIN population size")
+  cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
+  cols[cols==0]="black"
+  colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
+  colLegend[colLegend==0]="no RAYT"
+  colLegend=colLegend[!duplicated(colLegend)]
+  cols=cols[!duplicated(cols)]
+  logging::logdebug(str(cols))
+  logging::logdebug("Setting up ggplots.")
+
+  p <- ggplot(t) +
+    geom_point(
+           aes(x=propMaster,
+               y=numRepin,
+               col=as.factor(color),
+               shape=as.factor(color),
+           ),
+               size=3,
+       ) +
+      scale_shape_manual(values=c(1,16),
+                       labels=colLegend,
+                       guide="legend"
+                         ) +
+      scale_color_manual(values=cols,
+                       labels=colLegend,
+                       guide="legend"
+                       )
+  logging::logdebug("Adding limits, theme, and axis labels.")
+  p <- p +
+        xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
+        theme +
+        xlab("Proportion master sequence (~Replication rate)") +
+        ylab("REPIN population size")
 
 	logging::logdebug("Adding theme.")
   p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
