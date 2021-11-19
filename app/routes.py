@@ -126,27 +126,27 @@ def upload():
         return redirect(url_for('submit', _method='GET'))
 
 
-    else:
-        form = RunForm()
-        session['tmpdir'] = None
-        session['strain_names'] = None
-        session['rayt_names'] = None
-        session['tree_names'] = None
-        session['outdir'] = None
-        session['reference_strain'] = None
-        session['query_rayt'] = None
-        session['treefile'] = None
-        session['min_nmer_occurrence'] = None
-        session['nmer_length'] = None
-        session['e_value_cutoff'] = None
-        session['analyse_repins'] = None
-        session['email'] = None
+    form = RunForm()
+    session['tmpdir'] = None
+    session['strain_names'] = None
+    session['rayt_names'] = None
+    session['tree_names'] = None
+    session['outdir'] = None
+    session['reference_strain'] = None
+    session['query_rayt'] = None
+    session['treefile'] = None
+    session['min_nmer_occurrence'] = None
+    session['nmer_length'] = None
+    session['e_value_cutoff'] = None
+    session['analyse_repins'] = None
+    session['email'] = None
 
-        return render_template(
-            'upload.html',
-            title="Upload sequences",
-            confirmation_form=form
-        )
+    return render_template(
+        'upload.html',
+        title="Upload sequences",
+        confirmation_form=form
+    )
+
 
 
 @app.route('/submit', methods=['GET', 'POST'])
@@ -339,12 +339,17 @@ def submit():
 @app.route('/results', methods=['GET', 'POST'])
 def results():
 
-    args = request.args
+
     results_form = AnalysisForm()
 
-    if 'run_id' in args.keys():
+    if request.method == 'GET':
+        run_id = request.args.get('run_id', None)
 
-        run_id = args['run_id']
+    else:
+        if results_form.validate_on_submit():
+            run_id = request.form.get('run_id')
+
+    if run_id is not None:
         logging.debug(run_id)
 
         dbjob = DBJob.objects.get_or_404(run_id=run_id)
