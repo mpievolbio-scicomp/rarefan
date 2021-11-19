@@ -1,5 +1,8 @@
 {%  extends 'base.html' %}
 {%  block body %}
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+</form>
 <div>
     <p>
         <a href="{{back_link}}">

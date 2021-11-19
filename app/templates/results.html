@@ -6,6 +6,9 @@
 {% endblock %}
 {% block body %}
 <body>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
 		    <p>
 		        <h1>{{title}}</h1>
             {% if job.parent_run  %}

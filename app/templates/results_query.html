@@ -5,6 +5,7 @@
     <h2>Query RareFan results</h2>
     </p>
         <form action="{{url_for('results') }}" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         {{ results_form.hidden_tag() }}
         <p>
             {{ results_form.run_id.label }}
