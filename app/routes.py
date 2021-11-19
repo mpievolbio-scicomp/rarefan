@@ -12,6 +12,8 @@ from werkzeug.utils import secure_filename
 import rq
 from rq.job import Job as RQJob
 
+import time
+
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
 from app.models import Job as DBJob
@@ -314,7 +316,6 @@ def submit():
                                  kwargs={'run_id': run_id},
                                  )
 
-
         # Enqueue the jobs
         app.queue.enqueue_job(rarefan_job)
         app.queue.enqueue_job(tree_job)
@@ -325,8 +326,11 @@ def submit():
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
+        time.sleep(2)
+
         return redirect(url_for('results',
-                                run_id=run_id),
+                                run_id=run_id,
+                                _method='GET',)
         )
 
     return render_template(

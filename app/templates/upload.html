@@ -27,6 +27,8 @@
     </form>
     </p>
     <script>
+     var csrf_token = "{{ csrf_token() }}";
+
         Dropzone.options.myDropzone = {
             addRemoveLinks: true,
             paramName: "file", // The name that will be used to transfer the file
