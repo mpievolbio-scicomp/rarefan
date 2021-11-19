@@ -20,7 +20,7 @@ app.config.from_object(Config)
 app.config['UPLOAD_DIR'] = upload_dir
 
 csrf = CSRFProtect()
-csrf.init(app)
+csrf.init_app(app)
 
 db = MongoEngine()
 app.session_interface = MongoEngineSessionInterface(db)
