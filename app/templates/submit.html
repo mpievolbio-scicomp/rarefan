@@ -6,7 +6,6 @@
     </p>
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         {{ submit_form.hidden_tag() }}
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <p>
             {{ submit_form.reference_strain.label }}
             <!-- <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span> -->

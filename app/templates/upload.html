@@ -14,14 +14,13 @@
     </p>
     <p style="margin: 10px">
      <form action="{{ url_for('upload') }}" class="dropzone" id="my_dropzone" method="post" enctype="multipart/form-data">
-         {{ confirmation_form.hidden_tag() }}
          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     </form>
     </p>
     <p style="margin: 10px">
     <form method="post" enctype="multipart/form-data" id="confirm_upload">
-        {{ confirmation_form.hidden_tag() }}
         {{ confirmation_form.confirm(title="Confirm file uploads") }}
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <button type="button" id="cancel" class="btn btn-secondary">Cancel all uploads</button>
         <button type="button" id="remove" class="btn btn-secondary">Remove all files</button>
     </form>
