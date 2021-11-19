@@ -8,6 +8,7 @@
     <form method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     </form>
+    {{csrf_token() }}
 		    <p>
 		        <h1>{{title}}</h1>
             {% if job.parent_run  %}
