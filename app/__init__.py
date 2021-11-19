@@ -19,6 +19,9 @@ app.testing = app.debug = False
 app.config.from_object(Config)
 app.config['UPLOAD_DIR'] = upload_dir
 
+csrf = CSRFProtect()
+csrf.init(app)
+
 db = MongoEngine()
 app.session_interface = MongoEngineSessionInterface(db)
 db.init_app(app)
@@ -28,7 +31,6 @@ mail = Mail(app)
 app.redis = Redis.from_url(app.config['REDIS_URL'])
 app.queue = rq.Queue('rarefan', connection=app.redis)
 
-csrf = CSRFProtect(app)
 
 # Has to be the last import to avoid cyclic dependencies.
 from app import views, routes
