@@ -23,7 +23,7 @@ csrf = CSRFProtect()
 csrf.init_app(app)
 
 db = MongoEngine()
-app.session_interface = MongoEngineSessionInterface(db)
+# app.session_interface = MongoEngineSessionInterface(db)
 db.init_app(app)
 
 mail = Mail(app)
