@@ -5,16 +5,10 @@
     <h2>Query RareFan results</h2>
     </p>
         <form action="{{url_for('results') }}" method="post" enctype="multipart/form-data">
-        {{ results_form.hidden_tag() }}
-        {{ results_form.csrf_token }}
         <p>
             {{ results_form.run_id.label }}
             {{ results_form.run_id(title="Enter your run ID.") }}
             {{ results_form.go(title=results_form.go.description) }}
         </p>
-        --> {{ csrf_token() }}
-        </form>
-        <form method="post">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
 {% endblock %}

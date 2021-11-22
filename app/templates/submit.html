@@ -5,7 +5,6 @@
         Please fill in the form below. Hover your cursor on the input field to view a tooltip.
     </p>
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
-        {{ submit_form.hidden_tag() }}
         <p>
             {{ submit_form.reference_strain.label }}
             <!-- <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span> -->

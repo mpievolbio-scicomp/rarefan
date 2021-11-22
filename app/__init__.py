@@ -19,8 +19,8 @@ app.testing = app.debug = False
 app.config.from_object(Config)
 app.config['UPLOAD_DIR'] = upload_dir
 
-csrf = CSRFProtect()
-csrf.init_app(app)
+# csrf = CSRFProtect()
+# csrf.init_app(app)
 
 db = MongoEngine()
 # app.session_interface = MongoEngineSessionInterface(db)
