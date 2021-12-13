@@ -35,21 +35,14 @@ import logging
 from Bio import SeqIO
 
 import datetime
-import logging
-logging.basicConfig(level=logging.DEBUG)
 
-def get_logger():
-    logger = logging.getLogger(__name__)
-    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
-    timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
-    handler = logging.FileHandler("/tmp/rarefan_{}.log".format(timestamp))
-    handler.setFormatter(formatter)
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-
-    return logger
-
-logger = get_logger()
+logger = logging.getLogger(__name__)
+formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
+timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
+handler = logging.FileHandler("/tmp/rarefan.log".format(timestamp))
+handler.setFormatter(formatter)
+handler.setLevel(logging.DEBUG)
+logger.addHandler(handler)
 
 
 def get_status_code(run_id_path):
@@ -69,13 +62,13 @@ def validate_fasta(filename):
     :param filename: The filename of the file to validate.
 
     """
-    logger.info("Validating fasta file %s.", filename)
+    logging.info("Validating fasta file %s.", filename)
     with open(filename, 'r') as fp:
         fasta = SeqIO.parse(fp, "fasta")
         is_fasta = any(fasta)
 
         if not is_fasta:
-            logger.warning("%s is not a valid fasta file.", filename)
+            logging.warning("%s is not a valid fasta file.", filename)
         return is_fasta
 
 
@@ -95,7 +88,7 @@ def upload():
         )
 
         seqs = [v for k,v in request.files.items() if k.startswith('file')]
-        logger.info("Uploading %s.", str(seqs))
+        logging.info("Uploading %s.", str(seqs))
 
         dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
         aa_extensions = ['fa', 'faa']
@@ -202,12 +195,12 @@ def submit():
         session['analyse_repins'] = request.form.get('analyse_repins')
         session['email'] = request.form.get('email', None)
 
-        logger.info("Session parameters:")
-        logger.info("tmpdir: %s", session['tmpdir'])
-        logger.info("outdir: %s", session['outdir'])
-        logger.info("reference_strain: %s", session['reference_strain'])
-        logger.info("treefile: %s", session['treefile'])
-        logger.info("email: %s", session['email'])
+        logging.info("Session parameters:")
+        logging.info("tmpdir: %s", session['tmpdir'])
+        logging.info("outdir: %s", session['outdir'])
+        logging.info("reference_strain: %s", session['reference_strain'])
+        logging.info("treefile: %s", session['treefile'])
+        logging.info("email: %s", session['email'])
 
         # Store session in db.
         run_id = os.path.basename(session['tmpdir'])
@@ -408,7 +401,7 @@ def files(req_path):
         # Remove trailing '/'
         if req_path.endswith('/'):
             req_path = req_path[:-1]
-        logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
+        logging.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
         # Save the target for the 'back to results' link.
         tmp_dir = session.get('tmpdir', None)
