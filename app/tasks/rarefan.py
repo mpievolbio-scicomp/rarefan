@@ -4,10 +4,11 @@ module rarefan: Implementation of the function that runs the rarefan java code a
 
 import os, sys, shutil, shlex
 import subprocess
-import logging
 
 from app.models import Job as DBJob
 from rq import get_current_job
+import logging
+logging.getLogger('rarefan')
 
 from app.utilities.rarefan_cli import rarefan_command
 

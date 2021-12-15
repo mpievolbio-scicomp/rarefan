@@ -1,13 +1,11 @@
 import time
+
 import logging
-
-
-logging.basicConfig(level=logging.DEBUG)
-
+logger = logging.getLogger()
 def example(seconds):
-    logging.info("************ Starting task *****************")
-
+    seconds=int(seconds)
     for i in range(seconds):
-        logging.debug(i)
+        logger.debug(i)
         time.sleep(1)
-    logging.info("************ Task complete *****************")
+    logging.debug("Done")
+# example(10)

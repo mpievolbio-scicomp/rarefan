@@ -7,7 +7,7 @@ from app.models import Job as DBJob
 from rq import get_current_job
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.getLogger('rarefan')
 
 def tree_task(run_dir, treefile=None):
     """ Generate a phylogenetic tree from all DNA sequence files in given directory.
