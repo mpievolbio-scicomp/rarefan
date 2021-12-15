@@ -7,7 +7,7 @@ from app.models import Job as DBJob
 from rq import get_current_job
 
 import logging
-logging.getLogger('rarefan')
+logger = logging.getLogger('rarefan')
 
 def tree_task(run_dir, treefile=None):
     """ Generate a phylogenetic tree from all DNA sequence files in given directory.
@@ -28,7 +28,7 @@ def tree_task(run_dir, treefile=None):
     inputs = [os.path.join(run_dir, f) for f in os.listdir(run_dir) if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
 
     for f in inputs:
-        logging.debug("Found sequence file %s.", f)
+        logger.debug("Found sequence file %s.", f)
 
     # Check if treefile exists.
     if treefile is None or treefile == "None":
@@ -48,7 +48,7 @@ def tree_task(run_dir, treefile=None):
     dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
     dbjob.set_status('tree')
 
-    logging.debug("tree generation command: %s", command)
+    logger.debug("tree generation command: %s", command)
 
     proc = subprocess.Popen(command,
                             stdout=subprocess.PIPE,

@@ -8,7 +8,7 @@ import subprocess
 from app.models import Job as DBJob
 from rq import get_current_job
 import logging
-logging.getLogger('rarefan')
+logger = logging.getLogger('rarefan')
 
 from app.utilities.rarefan_cli import rarefan_command
 
@@ -16,15 +16,15 @@ def rarefan_task(**kwargs):
     """Run the rarefan java code with arguments."""
 
     for k,v in kwargs.items():
-        logging.debug("%s = %s", k, str(v))
+        logger.debug("%s = %s", k, str(v))
 
     java_command = rarefan_command(**kwargs) 
 
-    logging.info("Java command: %s", java_command)
+    logger.info("Java command: %s", java_command)
 
     redis_job = get_current_job()
-    logging.debug("In rarefan.py, redis job id = %s", redis_job.id)
-    logging.debug("In rarefan.py, redis job meta = %s", str(redis_job.meta))
+    logger.debug("In rarefan.py, redis job id = %s", redis_job.id)
+    logger.debug("In rarefan.py, redis job meta = %s", str(redis_job.meta))
     dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
     dbjob.set_status('rarefan')
 

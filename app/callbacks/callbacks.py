@@ -6,8 +6,7 @@ from app.tasks.email import email_task
 from app.tasks.zip import zip_task
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
-
+logger = logging.getLogger('rarefan')
 
 def rarefan_on_success(job, result):
     """ Callback for the 'rarefan' task if completed successfully. """
@@ -55,11 +54,11 @@ def on_success(job, connection, result, *args, **kwargs):
 def on_failure(job, connection, type, value, traceback):
     """ Generic failure callback for all tasks. """
 
-    logging.debug(job.id)
-    logging.debug(job.meta)
-    logging.debug(type)
-    logging.debug(value)
-    logging.debug(traceback)
+    logger.debug(job.id)
+    logger.debug(job.meta)
+    logger.debug(type)
+    logger.debug(value)
+    logger.debug(traceback)
 
     dbjob_id = job.meta['dbjob_id']
     stage = job.meta['stage']

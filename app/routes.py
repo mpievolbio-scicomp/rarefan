@@ -12,8 +12,6 @@ from werkzeug.utils import secure_filename
 import rq
 from rq.job import Job as RQJob
 
-import time
-
 from app.views import SubmitForm, AnalysisForm, UploadForm, ReturnToResultsForm, RunForm
 from app import app, db
 from app.models import Job as DBJob
@@ -22,19 +20,19 @@ from app.tasks.tree import tree_task, empty_task
 from app.tasks.zip import zip_task
 from app.tasks.email import email_task
 from app.tasks.redis_tests import example
-
 from app.callbacks.callbacks import on_success, on_failure
 
-import logging
-import datetime
+from Bio import SeqIO
 import copy
+import datetime
+import logging
 import os
 import shlex
 import shutil
 import stat
 import subprocess
 import tempfile
-from Bio import SeqIO
+import time
 
 logger = logging.getLogger('rarefan')
 
@@ -403,7 +401,7 @@ def files(req_path):
         # Remove trailing '/'
         if req_path.endswith('/'):
             req_path = req_path[:-1]
-        logger.warning("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
+        logger.info("Request dir is %s in (%s).", req_path, os.path.dirname(req_path))
 
         # Save the target for the 'back to results' link.
         tmp_dir = session.get('tmpdir', None)

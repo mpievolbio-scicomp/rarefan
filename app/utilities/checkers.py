@@ -1,7 +1,7 @@
 import sys
 import os
 import logging
-logger = logging.getLogger('routes')
+logger = logging.getLogger('rarefan')
 
 
 def count_lines(fname):
@@ -16,7 +16,7 @@ def count_lines(fname):
         try:
             number_of_lines = len(fh.readlines())
         except IOError:
-            logging.warning("%s is empty.", fname)
+            logger.warning("%s is empty.", fname)
             return 0
 
     return number_of_lines

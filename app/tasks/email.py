@@ -1,11 +1,13 @@
-import subprocess
+""" :module email: Hosts the redis email task to send out job completion notifications to configured email addresses."""
+
 import copy
 import os
-import sys
+import re
 import shlex
 import shutil
-import re
 import subprocess
+import subprocess
+import sys
 
 from app import app
 from app.utilities import checkers
@@ -18,7 +20,7 @@ from app.models import Job as DBJob
 
 import jinja2
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger('rarefan')
 
 app.app_context().push()
 
@@ -34,8 +36,8 @@ def email_test():
 
     success = mail.send(message)
 
-    logging.debug("Mail was sent: %s", str(success))
-    logging.debug("Mail message was: %s", str(message))
+    logger.debug("Mail was sent: %s", str(success))
+    logger.debug("Mail message was: %s", str(message))
 
     return success, message
 
@@ -57,7 +59,7 @@ def email_task(run_id):
 
     # Only non-empty strings in recipients list.
     recipients = [rec for rec in recipients if rec != ""]
-    logging.debug("Recipients: %s", recipients)
+    logger.debug("Recipients: %s", recipients)
 
     # Simply return if no recipients configured.
     if len(recipients) == 0:
@@ -75,7 +77,6 @@ def email_task(run_id):
 
     email_body = template.render(job=dbjob)  # this is where to put args to the template renderer
 
-
     sender = app.config['DEFAULT_MAIL_SENDER']
 
     message = Message(subject=email_subject,
@@ -83,18 +84,18 @@ def email_task(run_id):
                       sender=sender,
                       recipients=recipients,
                       )
-    logging.debug("Message: %s", message)
+    logger.debug("Message: %s", message)
 
     is_sent = copy.deepcopy(dbjob.notification_is_sent)
     while not is_sent:
         mail_status = mail.send(message)
-        logging.debug("Mail status %s", str(mail_status))
-        logging.debug("Mail status type: %s", str(type(mail_status)))
+        logger.debug("Mail status %s", str(mail_status))
+        logger.debug("Mail status type: %s", str(type(mail_status)))
 
         if mail_status is None:
-            logging.debug("Updating Mail status.")
+            logger.debug("Updating Mail status.")
             is_sent = True
     dbjob.update(set__notification_is_sent=copy.deepcopy(is_sent))
     dbjob.save()
 
-    logging.debug("Mail sent? %s", str(is_sent))
+    logger.debug("Mail sent? %s", str(is_sent))
