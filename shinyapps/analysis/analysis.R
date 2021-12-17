@@ -17,7 +17,7 @@ suppressMessages(library(logging))
 
 # Set log level
 logging::basicConfig()
-logging::setLevel(10) # 10: debug, 20: info, 30: warning, 40: error
+logging::setLevel(30) # 10: debug, 20: info, 30: warning, 40: error
 
 # 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
 colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
@@ -437,7 +437,7 @@ get_rayt_phylogeny=function(data_dir){
 
 
 ######################################################################################
-drawRAYTphylogeny=function(data_dir, fontsize=16){
+drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
@@ -453,8 +453,17 @@ drawRAYTphylogeny=function(data_dir, fontsize=16){
   raytTreeFile=rayt_files$raytPhyTreeFile
   nwk=read.tree(raytTreeFile)
 
+  # reference_strain_node_ids = sapply(reference_strain, function(y) grep(y, nwk$tip.label))
+
+  # reference_annotation =  data.frame(node=nwk$
+  #                                    labels=rep(c(reference_strain),
+  #                                              each=length(reference_strain_node_ids)
+  #                                              )
+  # )
+
   # Plot the tree
   p <- ggtree(nwk)
+  # p <- p %<+% reference_annotation + geom_tiplab(aes(label=labels), color='orange', offset=1)
 
   # Get colors
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
@@ -476,6 +485,7 @@ drawRAYTphylogeny=function(data_dir, fontsize=16){
   print(cols)
   # Add colors
   p <-  p + scale_color_manual(values=cols,guide="none")
+
 
   logging::logdebug("Added color scale.")
 
