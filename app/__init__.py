@@ -13,7 +13,8 @@ import datetime
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
 upload_dir = os.path.join(app.static_folder, 'uploads')
 
-app.testing = app.debug = True
+app.testing = True
+app.debug = True
 
 # email
 app.config.from_object(Config)
@@ -22,16 +23,17 @@ app.config['UPLOAD_DIR'] = upload_dir
 # Logging
 logger = logging.getLogger('rarefan')
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
-timestamp = datetime.datetime.now().strftime(format="%Y%m%d-%H%M%S")
-handler = logging.FileHandler("/tmp/rarefan.log".format(timestamp))
+handler = logging.FileHandler("/tmp/rarefan.log")
 handler.setFormatter(formatter)
-handler.setLevel(logging.INFO)
 if app.debug:
     handler.setLevel(logging.DEBUG)
+else:
+    handler.setLevel(logging.INFO)
 
 logger.addHandler(handler)
 if app.debug:
-    logger.debug("****************** Debug mode is active ******************")
+    logger.warning(logger.level)
+    logger.warning("****************** Debug mode is active ******************")
 
 
 # csrf = CSRFProtect()
