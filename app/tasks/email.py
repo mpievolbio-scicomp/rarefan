@@ -20,7 +20,7 @@ from app.models import Job as DBJob
 
 import jinja2
 import logging
-logger = logging.getLogger('rarefan')
+logger = logging.getLogger(__name__)
 
 app.app_context().push()
 

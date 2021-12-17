@@ -8,7 +8,7 @@ import subprocess
 from app.models import Job as DBJob
 from rq import get_current_job
 import logging
-logger = logging.getLogger('rarefan')
+logger = logging.getLogger(__name__)
 
 from app.utilities.rarefan_cli import rarefan_command
 

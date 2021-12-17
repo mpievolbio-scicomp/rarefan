@@ -1,7 +1,7 @@
 import sys
 import os
 import logging
-logger = logging.getLogger('rarefan')
+logger = logging.getLogger(__name__)
 
 
 def count_lines(fname):

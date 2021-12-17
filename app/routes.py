@@ -34,7 +34,7 @@ import subprocess
 import tempfile
 import time
 
-logger = logging.getLogger('rarefan')
+logger = logging.getLogger(__name__)
 
 def get_status_code(run_id_path):
     # Check if the run has finished.

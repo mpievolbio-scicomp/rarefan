@@ -7,7 +7,7 @@ import shutil
 from app.models import Job as DBJob
 from rq import get_current_job
 import logging
-logger = logging.getLogger('rarefan')
+logger = logging.getLogger(__name__)
 
 
 def zip_task(run_dir):
