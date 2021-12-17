@@ -520,11 +520,11 @@ def test_task():
 
 @app.route('/test_mail')
 def test_mail():
-    email_test()
+    success, message = email_test()
     # logger.debug("Attempting to send mail throug redis queue.")
     # job = app.queue.enqueue(email_test)
     # logger.debug(job)
     # time.sleep(3
                # )
 
-    return str(job.result)
+    return message
