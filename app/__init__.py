@@ -24,7 +24,10 @@ app.config['UPLOAD_DIR'] = upload_dir
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
 handler = logging.FileHandler(filename="/tmp/rarefan.log")
 handler.setFormatter(formatter)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.INFO)
+
+if app.config['DEBUG']:
+    handler.setLevel(logging.DEBUG)
 
 # Configure root logger (this config will trickle down to all module loggers.)
 app.logger.addHandler(handler)
