@@ -521,5 +521,7 @@ def test_task():
 @app.route('/test_mail')
 def test_mail():
     job = app.queue.enqueue(email_test)
+    time.sleep(3)
 
-    return "Check your inbox"
+
+    return str(job.result)
