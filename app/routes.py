@@ -514,13 +514,13 @@ def plot():
 
 @app.route('/test_task')
 def test_task():
-
+-
     job  = app.queue.enqueue(redis_tests.example, 10)
     logger.info(job.result)
     
     return redirect(url_for('index'))
 
-@app.rout('/test_mail')
+@app.route('/test_mail')
 def test_mail():
     job = app.queue.enqueue(email_test)
 
