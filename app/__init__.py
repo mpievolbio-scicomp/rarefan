@@ -26,7 +26,7 @@ handler = logging.FileHandler(filename="/tmp/rarefan.log")
 handler.setFormatter(formatter)
 
 # Configure root logger (this config will trickle down to all module loggers.)
-logging.basicConfig(handlers=[handler], filemode='a', level=logging.DEBUG)
+logging.basicConfig(handlers=[handler], level=logging.DEBUG)
 
 logger = logging.getLogger(__name__)
 
