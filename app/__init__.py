@@ -26,13 +26,14 @@ formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message
 handler = logging.FileHandler("/tmp/rarefan.log")
 handler.setFormatter(formatter)
 if app.debug:
-    handler.setLevel(logging.DEBUG)
+    logger.setLevel(logging.DEBUG)
 else:
-    handler.setLevel(logging.INFO)
+    logger.setLevel(logging.INFO)
 
 logger.addHandler(handler)
 if app.debug:
     logger.warning(logger.level)
+    logger.debug(logger.level)
     logger.warning("****************** Debug mode is active ******************")
 
 
