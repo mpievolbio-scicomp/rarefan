@@ -6,8 +6,9 @@ import shutil
 
 from app.models import Job as DBJob
 from rq import get_current_job
-import logging
-logger = logging.getLogger(__name__)
+from app import app
+app.app_context().push()
+logger = app.logger
 
 
 def zip_task(run_dir):

@@ -24,14 +24,13 @@ app.config['UPLOAD_DIR'] = upload_dir
 formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(module)s: %(message)s')
 handler = logging.FileHandler(filename="/tmp/rarefan.log")
 handler.setFormatter(formatter)
+handler.setLevel(logging.DEBUG)
 
 # Configure root logger (this config will trickle down to all module loggers.)
-logging.basicConfig(handlers=[handler], level=logging.DEBUG)
-
-logger = logging.getLogger(__name__)
+app.logger.addHandler(handler)
 
 if app.debug:
-    logger.debug("****************** Debug mode is active ******************")
+    app.logger.debug("****************** Debug mode is active ******************")
 
 
 # csrf = CSRFProtect()

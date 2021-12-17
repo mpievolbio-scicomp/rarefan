@@ -5,11 +5,8 @@ import os
 import sys
 import rq
 from rq.exceptions import NoSuchJobError
-import logging
-
-logger = logging.getLogger(__name__)
-
 from app import app, db
+logger = app.logger
 
 
 class Job(db.Document):

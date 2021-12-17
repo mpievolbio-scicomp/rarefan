@@ -4,9 +4,9 @@ from app.models import Job as DBJob
 from app.utilities.checkers import parse_results
 from app.tasks.email import email_task
 from app.tasks.zip import zip_task
+from app import app
 
-import logging
-logger = logging.getLogger('rarefan')
+logger = app.logger
 
 def rarefan_on_success(job, result):
     """ Callback for the 'rarefan' task if completed successfully. """

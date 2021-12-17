@@ -5,9 +5,9 @@ import shlex
 import shutil
 from app.models import Job as DBJob
 from rq import get_current_job
-
-import logging
-logger = logging.getLogger(__name__)
+from app import app
+app.app_context().push()
+logger = app.logger
 
 def tree_task(run_dir, treefile=None):
     """ Generate a phylogenetic tree from all DNA sequence files in given directory.

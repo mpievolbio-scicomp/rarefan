@@ -34,7 +34,7 @@ import subprocess
 import tempfile
 import time
 
-logger = logging.getLogger(__name__)
+logger = app.logger
 
 def get_status_code(run_id_path):
     # Check if the run has finished.
@@ -520,7 +520,9 @@ def test_task():
 
 @app.route('/test_mail')
 def test_mail():
+    logger.debug("Attempting to send mail throug redis queue.")
     job = app.queue.enqueue(email_test)
+    logger.debug(job)
     time.sleep(3)
 
 

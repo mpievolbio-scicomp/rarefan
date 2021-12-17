@@ -19,14 +19,15 @@ from app.views import AnalysisForm
 from app.models import Job as DBJob
 
 import jinja2
-import logging
-logger = logging.getLogger(__name__)
 
 app.app_context().push()
+
+logger = app.logger
 
 def email_test():
 
     recipients = ['grotec@evolbio.mpg.de']
+    logger.debug("Attempting to send email to %s", recipients[0])
 
     message = Message("Test from flask",
                       sender="rarefan@evolbio.mpg.de",
@@ -39,7 +40,7 @@ def email_test():
     logger.debug("Mail was sent: %s", str(success))
     logger.debug("Mail message was: %s", str(message))
 
-    return success, message
+    return success, str(message)
 
 
 def email_task(run_id):
@@ -99,3 +100,6 @@ def email_task(run_id):
     dbjob.save()
 
     logger.debug("Mail sent? %s", str(is_sent))
+
+if __name__ == "__main__":
+    email_test()

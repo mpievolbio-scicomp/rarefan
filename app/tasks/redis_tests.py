@@ -1,8 +1,10 @@
 # usage: $> rq enqueue -p app.tasks.redis_tests example 10
 import time
 
-import logging
-logger = logging.getLogger(__name__)
+from app import app
+app.app_context().push()
+
+logger = app.logger
 
 def example(seconds):
     seconds=int(seconds)
