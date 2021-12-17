@@ -18,9 +18,9 @@ from app.models import Job as DBJob
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task, empty_task
 from app.tasks.zip import zip_task
-from app.tasks.email import email_task
-from app.tasks.redis_tests import example
+from app.tasks.email import email_task, email_test
 from app.callbacks.callbacks import on_success, on_failure
+from app.tasks import redis_tests
 
 from Bio import SeqIO
 import copy
@@ -515,8 +515,13 @@ def plot():
 @app.route('/test_task')
 def test_task():
 
-    job  = app.queue.enqueue(example, 10)
+    job  = app.queue.enqueue(redis_tests.example, 10)
     logger.info(job.result)
     
     return redirect(url_for('index'))
 
+@app.rout('/test_mail')
+def test_mail():
+    job = app.queue.enqueue(email_test)
+
+    return "Check your inbox"
