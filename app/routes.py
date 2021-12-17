@@ -65,6 +65,8 @@ def validate_fasta(filename):
 
 @app.route('/')
 def index():
+    if app.debug:
+        logger.debug("****************** Debug mode is active ******************")
     return render_template("index.html")
 
 @app.route('/upload', methods=['GET', 'POST'])
