@@ -32,9 +32,7 @@ else:
 
 logger.addHandler(handler)
 if app.debug:
-    logger.warning(logger.level)
-    logger.debug(logger.level)
-    logger.warning("****************** Debug mode is active ******************")
+    logger.debug("****************** Debug mode is active ******************")
 
 
 # csrf = CSRFProtect()
