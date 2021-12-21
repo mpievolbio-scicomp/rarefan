@@ -14,6 +14,8 @@ suppressMessages(library(stringr))
 suppressMessages(library(ggplot2))
 suppressMessages(library(cowplot))
 suppressMessages(library(logging))
+suppressMessages(library(glue))
+suppressMessages(library(ggtext))
 
 # Set log level
 logging::basicConfig()
@@ -24,7 +26,7 @@ colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
 
 # Set theme for all plots
 logging::logdebug("defining theme")
-theme=theme(axis.line.x = element_line(colour = "black"),
+rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.key = element_rect(fill = "white"),
             axis.line.y = element_line(colour = "black"),
             panel.grid.major = element_blank(),
@@ -42,7 +44,7 @@ theme=theme(axis.line.x = element_line(colour = "black"),
 
 ######################################################################################
 # Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
-plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
+plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -84,7 +86,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars,bs,fontsize=16){
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
             annotate(x=0.5, y=0.5, geom='text', label="No REPIN tree found.") +
-            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + theme
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + rarefan_theme
 
 		return(p)
   }
@@ -259,10 +261,10 @@ determineColor=function(associationFile,repin_rayt_group){
 ######################################################################################
 plotCorrelationSingle=function(folder,
                                rep_rayt_group,
-                               theme,
+                               theme=rarefan_theme,
                                fontsize=16,
-                               pvLabelX,
-                               pvLabelY,
+                               pvLabelX=NA,
+                               pvLabelY=NA,
                                subsetSmooth=F,
                                from=F,
                                to=F,
@@ -285,7 +287,7 @@ plotCorrelationSingle=function(folder,
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
             annotate(x=0.5, y=0.5, geom='text', label="No data to correlate.") +
-            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + theme
+            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + rarefan_theme
 
 		return(p)
 	}
@@ -352,20 +354,23 @@ plotCorrelationSingle=function(folder,
                shape=as.factor(color),
            ),
                size=3,
-       ) + # Manually set the shapes
+       )   + # Manually set the shapes
       scale_shape_manual(values=shapes,
-                       # labels=colLegend,
-                       guide="none"
-                         ) + # Manually set the colors and insert legend.
+                       labels=colLegend,
+                       guide="none" ) + # Manually set the colors and insert legend.
       scale_color_manual(values=cols,
                        labels=colLegend,
-                       guide="legend"
-                       )
+                       guide=guide_legend(override.aes = list(
+                         breaks=colLegend,
+                         shape = sort(shapes, decreasing = T)
+                         )
+           )
+      )
 
   logging::logdebug("Adding limits, theme, and axis labels.")
   p <- p +
         xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
-        theme +
+        rarefan_theme +
         xlab("Proportion master sequence (~Replication rate)") +
         ylab("REPIN population size")
 
@@ -452,18 +457,10 @@ drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
   # Read tree file.
   raytTreeFile=rayt_files$raytPhyTreeFile
   nwk=read.tree(raytTreeFile)
+  nwk$node.label = c(1:136)
 
-  # reference_strain_node_ids = sapply(reference_strain, function(y) grep(y, nwk$tip.label))
-
-  # reference_annotation =  data.frame(node=nwk$
-  #                                    labels=rep(c(reference_strain),
-  #                                              each=length(reference_strain_node_ids)
-  #                                              )
-  # )
-
-  # Plot the tree
+  # Get tree object.
   p <- ggtree(nwk)
-  # p <- p %<+% reference_annotation + geom_tiplab(aes(label=labels), color='orange', offset=1)
 
   # Get colors
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
@@ -477,7 +474,46 @@ drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
 
   # Add tip labels.
   p <- p %<+% onlyRAYTs + geom_tiplab(aes(color=color),size=fontsize*1/4)+theme_tree2()
+
+  # Stretch x axis to accomodate tip labels.
   p=p+xlim(layer_scales(p)$x$get_limits()*1.5)
+
+  ## Annotate reference strain.
+  # Extract node ids that belong to the reference strain.
+  # Check if reference strain annotation is requested.
+  if(reference_strain != "") {
+    reference_strain_node_ids = sapply(reference_strain, function(y) grep(y, nwk$tip.label))
+
+    # Check if requested ref. strain is actually present.
+    if (isFALSE(reference_strain_node_ids[[1]] == 0)) {
+      label=nwk$tip.label[reference_strain_node_ids]
+
+      # Temp data.frame to map tip label to ref. strain annotation (unformatted).
+      tmp =  data.frame(label=label, x_label=reference_strain)
+
+      # Now format the ref. strain label using html syntax.
+      reference_annotation <- dplyr::mutate(tmp,
+                                            label=label,
+                                            x_label=glue("<b>&#10229;</b>"),
+                                            )
+
+      # Add ref strain annotation to ggtree object.
+      p <- p %<+% reference_annotation + geom_richtext(data=td_filter(isTip),
+                                                       aes(label=x_label),
+                                                       label.color=NA,
+                                                       nudge_x=0.8,
+                                                       fill='orange',
+                                                       alpha=0.7,
+                                                      label.padding=grid::unit.c(grid::unit(0.0, "pt"),
+                                                                                 grid::unit(8.0, "pt"),
+                                                                                 grid::unit(-2.5, "pt"),
+                                                                                 grid::unit(2.0, "pt")
+                                                      )
+      )
+    }
+  }
+
+  # Add color tips.
   logging::logdebug("Added color tips")
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
@@ -485,7 +521,6 @@ drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
   print(cols)
   # Add colors
   p <-  p + scale_color_manual(values=cols,guide="none")
-
 
   logging::logdebug("Added color scale.")
 
