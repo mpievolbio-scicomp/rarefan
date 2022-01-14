@@ -50,21 +50,22 @@ public class DeterminePopulationFrequencies {
 		DeterminePopulationFrequencies dpf;
 		String program="tblastn";
         int MCLThreads=Integer.parseInt(args[9]);
+        int distanceGroupSeeds=Integer.parseInt(args[10]);
         // legacy_blast path not given.
-		if(args.length==10) {
-			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN,MCLThreads);
+		if(args.length==11) {
+			dpf=new DeterminePopulationFrequencies(inFolder,outFolder, focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,"",evalue,analyseREPIN,MCLThreads,distanceGroupSeeds);
 		    dpf.print(out);
 		}
         // legacy_blast path given.
-        else if(args.length==11) {
-			String legacyBlastPerlLocation=args[10];
-			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads);
+        else if(args.length==12) {
+			String legacyBlastPerlLocation=args[11];
+			dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads,distanceGroupSeeds);
 		    dpf.print(out);
         }
     }
 	
     // Workhorse function.
-	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads){
+	public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads,int distanceGroupSeeds){
 		this.inFolder=inFolder;
 		this.outFolder=outFolder;
 		this.MCLThreads=MCLThreads;
@@ -72,7 +73,7 @@ public class DeterminePopulationFrequencies {
 		genomes=getFiles();
 		this.legacyBlastPerlLocation=legacyBlastPerlLocation;
 		this.queryRAYT=queryRAYT;
-		this.focalSeeds=getFocalSeeds(focalSeedGenome,minRepFreq,wordlength);
+		this.focalSeeds=getFocalSeeds(focalSeedGenome,minRepFreq,wordlength,distanceGroupSeeds);
 		this.genomeFolder=inFolder;
 		this.analyseREPIN=analyseREPIN;
 		e=evalue;
@@ -116,9 +117,9 @@ public class DeterminePopulationFrequencies {
 		return list.toArray(new String[0]);
 	}
 
-	private String[] getFocalSeeds(String genome,int minRepFreq,int wl) {
+	private String[] getFocalSeeds(String genome,int minRepFreq,int wl,int distanceGroupSeeds) {
 		File fsg=new File(inFolder+"/"+genome);
-		DetermineFocalSeeds dfs=new DetermineFocalSeeds(fsg,outFolder,minRepFreq,wl);
+		DetermineFocalSeeds dfs=new DetermineFocalSeeds(fsg,outFolder,minRepFreq,wl,distanceGroupSeeds);
 		return dfs.getFocalSeeds();
 	}
 
