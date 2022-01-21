@@ -146,6 +146,7 @@ def submit():
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
 
+
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
         session['outdir'] = os.path.join(tmpdir, 'out')
@@ -328,6 +329,8 @@ def submit():
                                 run_id=run_id,
                                 _method='GET',)
         )
+
+    logger.debug("Form not validated, rendering submit template.")
 
     return render_template(
                     'submit.html',
