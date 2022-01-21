@@ -80,6 +80,11 @@ class SubmitForm(FlaskForm):
         description="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence (see above) will be considered in the REP/REPIN analysis.",
                              validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
                              )
+    distance_group_seeds= IntegerField("Distance group seeds", 
+                             default=15, 
+        description="Set the group seeds distance (???)",
+                             validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
+                             )
 
     e_value_cutoff = FloatField("e value cutoff",
                                 default=1.0e-30,

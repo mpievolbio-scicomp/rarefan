@@ -24,8 +24,10 @@ def rarefan_command(**kwargs):
                             '{}'.format(kwargs['e_value_cutoff']),
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
                             '{}'.format(kwargs.get('num_threads', MCL_THREADS)),
+                            '{}'.format(kwargs.get('distance_group_seeds', 15)),
                             ]
                            )
+
     return cmd
 
 
@@ -114,6 +116,16 @@ if __name__ == '__main__':
                         type=int,
     )
 
+    parser.add_argument("-d", "--distance_group_seeds",
+                        dest="distance_group_seeds",
+                        metavar="DISTANCE_GROUP_SEEDS",
+                        help="Set the distance between the REPIN groups (???)",
+                        required=False,
+                        default=15,
+                        type=int,
+    )
+
+
     parser.add_argument("-q", "--query_rayt",
                         dest="query_rayt",
                         metavar="QUERY_RAYT",
@@ -171,6 +183,8 @@ if __name__ == '__main__':
     args.outdir = os.path.abspath(args.outdir)
     args.query_rayt = os.path.abspath(args.query_rayt)
 
+    print(args)
+
     # Ask for confirmation if interactive mode.
     if args.interactive:
         items_str = ["", "RAREFAN run parameters:", "=======================",]
@@ -200,6 +214,7 @@ if __name__ == '__main__':
                                 e_value_cutoff=args.e_value_cutoff,
                                 analyse_repins=(not args.no_repins),
                                 mcl_threads=args.num_threads,
+                                distance_group_seeds=args.distance_group_seeds,
                                 )
 
     # Log the command.
