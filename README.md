@@ -51,9 +51,9 @@ conda deactivate
 
 ### Build in separate build directory.
 ```
-$> mkdir build
-$> cd build
-$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..
+$> mkdir build  
+$> cd build  
+$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..  
 ```
 The last line instructs sets the installation prefix to $CONDA_PREFIX.
 ```
@@ -77,9 +77,9 @@ The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. 
 
 The syntax of is
 ```
-$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] -q QUERY_RAYT
-               [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i]
-               DIR
+$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] -q QUERY_RAYT  
+               [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i]  
+               DIR  
 ```
 where the commandline arguments are explained as follows:
 ```
@@ -129,6 +129,7 @@ Jobs submitted to RAREFAN are processed by redis. In your conda environmont, ins
 $> conda install rq redis
 ```
 
+
 ```python
 import os
 
@@ -158,6 +159,7 @@ class Config(object):
 To launch the server, run
 
 ```
+$> rq worker rarefan &  # Launch a redis worker.
 $> flask run 
 ```
 
@@ -165,6 +167,50 @@ And navigate your browser to http://localhost:5000 .
 
 #### NOTE
 Data visualisation on a local deployment server is currently not working.
+
+### Server notes (applies mostly to rarefan.evolbio.mpg.de production server)
+#### Code updates
+After a code update, the server components need to be restarted. 
+
+1. Recompile java
+```console
+$> cd REPINecology/REPINecology
+$> gradle build
+$> cd -
+```
+1. Restart python webserver
+If the python code is installed in a conda (recommended), it should be activated since the server script depends on the `$CONDA_PREFIX` variable pointing to the environments root directory.
+```console
+$> sudo service rarefan restart
+```
+1. Restart R
+Deactivate the conda environment
+```console
+$> conda deactivate
+$> sudo service shiny-server restart
+```
+
+#### Dependency updates
+Sometimes, new code also adds new software dependencies.
+
+1. python
+Simply update your conda environment
+```console
+$> conda env update --file=environment.yml
+```
+Then restart the webserver as discussed above.
+1. R
+Deactivate conda env and install new packages as root:
+```console
+$> conda deactivate
+$> sudo -i
+#> R
+> install.packages("<new package name>")
+> exit
+#> exit
+$>
+```
+Then restart shiny-server as discussed above.
 
 ##  Testing
 The directory *test/scripts/* contains two scripts:
