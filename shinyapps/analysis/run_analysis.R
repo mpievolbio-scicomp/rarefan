@@ -1,6 +1,8 @@
 #! /usr/bin/env R
 
-source("analysis.R")
+suppressMessages(library(here))
+r_src_dir <- here('shinyapps/analysis')
+source(paste0(r_src_dir, "/analysis.R"))
 
 packages=c("ggpubr", "argparse", "filenamer")
 
@@ -19,7 +21,7 @@ parser <- ArgumentParser(description='Create plots from rarefan results.')
 # Input data dir
 parser$add_argument('-d', '--data_dir',
                     metavar='DIR',
-                    type="character", 
+                    type="character",
 					default='.',
                     help='The output data dir of the rarefan run to analyse. Defaults to current working directory.'
 )
@@ -27,26 +29,26 @@ parser$add_argument('-d', '--data_dir',
 # RAYT index
 parser$add_argument('-r', '--rayt',
                     metavar='RAYT',
-                    type="integer", 
+                    type="integer",
                     dest='rayt_type',
                     default=0,
-                    choices=c(0,1,2,3,4,5),
+                    choices=c(0,1,2,3,4,5,6,7),
                     help='The RAYT index to calculate results for.'
 )
 
 # tree file
 parser$add_argument('-t', '--tree',
                     metavar='TREEFILE',
-                    type="character", 
+                    type="character",
                     dest='treefile',
                     default='tmptree.nwk',
-                    help='The treefile to use (default "DIR/tmptree.nwk")'
+                    help='The name of the treefile to use for plotting the genome phylogenies.'
 )
 
 # tree file
 parser$add_argument('-o', '--outfile',
                     metavar='OUTFILE',
-					default='analysis.png',
+					default='analysis.pdf',
                     type="character", 
                     help='Save figures to OUTFILE'
 )
@@ -73,32 +75,27 @@ barsize = 2
 fontsize = 12
 
 correlation_plot = plotCorrelationSingle(
-		folder=data_dir,
-		type=rayt_type,
-		theme=theme,
-		fontsize=fontsize,
-		pvLabelX='left',
-		pvLabelY='bottom'
+		data_dir,
+		rayt_type,
+		theme,
+		fontsize,
+		'left',
+		'bottom'
 		)
 
 repin_facet_plot = plotREPINs(
-           data_dir,
+       data_dir,
 		   treefile,
 		   rayt_type,
 		   barcolor,
 		   barsize,
-		   fontsize 
+		   fontsize
 	)
-		
+
 
 phylogeny_plot = drawRAYTphylogeny(data_dir)
 
-figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1, nrow=1)
+figure = ggarrange(phylogeny_plot, repin_facet_plot, correlation_plot,  ncol=1)
 
-ggexport(figure, filename=outfile)
-
-return(figure)
-
-
-
+ggexport(figure, filename=outfile ,height=30)
 

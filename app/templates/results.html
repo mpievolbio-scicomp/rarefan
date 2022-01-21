@@ -1,35 +1,36 @@
 {% extends "base.html" %}
 {% block head %}
 <head>
-    {% if status < 1000 %}
-        <meta http-equiv="refresh" content='30'></meta>
-    {% endif %}
+    <meta http-equiv="refresh" content='30'></meta>
 </head>
 {% endblock %}
 {% block body %}
-    <body>
-        {{ results_form.hidden_tag() }}
-        </p>
-		<p>
-		<h1>{{title}}</h1>
-		</p>
-        {% if status > 10 %}
-            <h2 topmargin=800px> Browse data </h2>
+		    <p>
+		        <h1>{{title}}</h1>
+            {% if job.parent_run  %}
             <p>
-                <a href={{url_for('files', req_path=run_id)}}>{{run_id}}</a>
+                {{job.run_id}} is a rerun of <a href={{url_for('results')}}?run_id={{job.parent_run}}>{{job.parent_run}}</a>.
             </p>
+            {% endif %}
+		    </p>
+        {% include 'report.html' %}
+        {% if job.stages['rarefan']['results']['counts']['repins'] == 0 %}
+        You can <a href={{url_for('rerun')}}?run_id={{run_id}}&do_repins=0 title="Click here rerun this job without REPIN analysis."> rerun this job with "Analyse REPINs" turned off.</a>
         {% endif %}
-        {% if status > 100     %}
-            <h2> Download data </h2>
-            <p>
-                <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip">{{run_id}}_out.zip</a>
-            </p>
-        {% endif %}
-        {% if status in [11, 111] %}
+        {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
             {%  if render_plots %}
-                <a href=http://rarefan.evolbio.mpg.de/shiny/analysis/?run_id={{run_id}} target="_blank"><input type="button" value="Plot data"></a>
+            <h2><a href="http://rarefan.evolbio.mpg.de//shiny/analysis/?run_id={{run_id}}" target="_blank" title="Visualize your results.">Plot data</a></h2>
             {% endif %}
         {% endif %}
-    </body>
+            <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
+            {% if job.stages['zip'].status in ['finished', 'complete'] %}
+            <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
+            <p>
+            </p>
+            {% endif %}
+            <p>
+                <h2><a href={{url_for('rerun')}}?run_id={{job.run_id}} title="Click here modify the parameters of this run and resubmit.">Rerun this job</a></h2>
+            </p>
+        </p>
 {% endblock %}
 

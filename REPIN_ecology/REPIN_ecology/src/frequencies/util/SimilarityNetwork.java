@@ -35,6 +35,8 @@ public class SimilarityNetwork {
 	}
 	
 	public void writeCytoscapeInput(File out){
+
+        System.out.println("Writing Cytoscape input to " + out + ".");
 		try{
 			if(simNetwork.size()>1){
 				BufferedWriter bw=new BufferedWriter(new FileWriter(out));

@@ -38,7 +38,7 @@ class SequenceFilesValidator():
 class UploadForm(FlaskForm):
     sequences = MultipleFileField('File upload',
                                    validators=[validators.DataRequired(),
-                                               validators.Length(min=1, message="Please select at least 1 sequence files (fasta format) and (optionally) one tree file."),
+                                               validators.Length(min=1, message="Please select at least one sequence file (fasta format) and (optionally) one tree file."),
                                                SequenceFilesValidator(),
                                               ]
                                   )
@@ -51,6 +51,7 @@ class SubmitForm(FlaskForm):
     reference_strain = SelectField(
             'Reference sequence',
             choices=[],
+        description="Select the reference strain from your uploaded genome sequences.",
             )
 
     query_rayt = SelectField(
@@ -58,39 +59,52 @@ class SubmitForm(FlaskForm):
             choices = ['yafM_Ecoli',
                        'yafM_SBW25',
                        ], 
+            description="Select the RAYT protein sequence to use for identfying RAYT sequences in the provided genomes. 'yafM_Ecoli' and 'yafM_SBW25' are provided by default. You can supply your own RAYTs in the 'Upload' step.",
             validators=[validators.DataRequired()]
             )
 
     treefile = SelectField(
             "Tree file",
             choices=[],
+        description="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes.",
             )
 
-    min_nmer_occurence = IntegerField("Min. nmer occurence", 
+    min_nmer_occurrence = IntegerField("Min. seed sequence occurrence", 
                           default=55,
-                          validators=[validators.DataRequired(message="Please enter the minimal nmer occurence as an integer!")]
+        description="Set the seed sequence occurrence cutoff. Only seeds of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
+                          validators=[validators.DataRequired(message="Please enter the minimal seed occurrence as an integer!")]
                           )
 
-    nmer_length = IntegerField("Nmer length", 
+    nmer_length = IntegerField("Seed length", 
                              default=21, 
+        description="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence (see above) will be considered in the REP/REPIN analysis.",
                              validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
+                             )
+    distance_group_seeds= IntegerField("Distance group seeds", 
+                             default=15, 
+        description="Set the group seeds distance (???)",
+                             validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
                              )
 
     e_value_cutoff = FloatField("e value cutoff",
                                 default=1.0e-30,
+        description="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.",
                                 validators=[validators.DataRequired(message="Please enter the e value cutoff in scientific notation (e.g. 1e-30)")]
                                 )
 
     analyse_repins = BooleanField("Analyse REPINs",
                                   default=True,
-                                  description="Leave unchecked to analyse REPs only."
+        description="Toggle REPIN analysis. If unchecked, only REPs will be analysed.",
                                   )
 
     email = StringField("Optional: Your email address.",
-                        validators=[OptionalEmail()]
+                        validators=[OptionalEmail()],
+        description="Provide your email address to receive a notification when the job is finished.",
                         )
 
-    submit = SubmitField("Go!")
+    submit = SubmitField("Go!",
+        description="Click here to submit the job.",
+    )
 
 
 class RunForm(FlaskForm):
@@ -104,5 +118,5 @@ class ReturnToResultsForm(FlaskForm):
 
 class AnalysisForm(FlaskForm):
     run_id = StringField("Enter run ID")
-    go = SubmitField("Download zip")
+    go = SubmitField("Ok")
 

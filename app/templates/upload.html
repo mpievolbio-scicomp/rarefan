@@ -10,16 +10,14 @@
         Note:
     </b>
     RAREFAN accepts the following filename extensions (the part after the "."): ".fasta", ".fastn", ".fn", ".fna", ".fas" for
-    DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newik formatted tree files.
+    DNA sequence data files; ".faa", "fa" for amino acid sequence files (RAYTs), and ".nwk" for newick formatted tree files.
     </p>
     <p style="margin: 10px">
      <form action="{{ url_for('upload') }}" class="dropzone" id="my_dropzone" method="post" enctype="multipart/form-data">
-         {{ confirmation_form.hidden_tag() }}
     </form>
     </p>
     <p style="margin: 10px">
     <form method="post" enctype="multipart/form-data" id="confirm_upload">
-        {{ confirmation_form.hidden_tag() }}
         {{ confirmation_form.confirm(title="Confirm file uploads") }}
         <button type="button" id="cancel" class="btn btn-secondary">Cancel all uploads</button>
         <button type="button" id="remove" class="btn btn-secondary">Remove all files</button>

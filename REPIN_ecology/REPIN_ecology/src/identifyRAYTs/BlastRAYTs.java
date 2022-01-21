@@ -50,9 +50,9 @@ public class BlastRAYTs {
 
 						int masterSeqs=Integer.parseInt(maxREPIN.split("_")[2]);
 						int allREPs=getOnlyREPINNumbers(seqName, outFolder,repType[k],false);
-						int allREPINs=getOnlyREPINNumbers(seqName, outFolder,repType[k],true);
+						int allREPINs=getOnlyREPINNumbers(seqName, outFolder,repType[k],true&&analyseREPIN);
 						int numREPINClusters=getNumREPINClusters(seqName,outFolder,repType[k],analyseREPIN);
-						int numREPINDist=getNumREPINDist(seqName, outFolder,repType[k],masterDist,maxREPIN.split("_")[0]);
+						int numREPINDist=getNumREPINDist(seqName, outFolder,repType[k],masterDist,maxREPIN.split("_")[0],analyseREPIN);
 						presAbsHash.put(seqName, bi.size()+"\t"+masterSeqs+"\t"+maxREPIN.split("_")[0]+"\t"+maxREPINNum+"\t"+allREPs+"\t"+numREPINClusters+"\t"+allREPINs+"\t"+numREPINDist);
 						print(bi,dbs[i],seqs);
 					}
@@ -65,8 +65,8 @@ public class BlastRAYTs {
 	}
 	
 	private static String getName(File in) {
-		String[] parts=in.getName().split("\\.");
-		return parts[parts.length-2];
+		String parts=DeterminePopulationFrequencies.getGenomeID(in);
+		return parts;
 	}
 	
 	public static int getNumREPINClusters(String name,File folder,String repType,boolean analyseREPIN) {
@@ -109,7 +109,6 @@ public class BlastRAYTs {
 	public static String getMaxREPIN(String name,File folder,String repType,boolean analyseREPIN) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+"_largestCluster.nodes");
-			if(!in.exists())System.err.println(in);
 			if(in.exists()) {
 				BufferedReader br=new BufferedReader(new FileReader(in));
 				String line="";
@@ -137,6 +136,7 @@ public class BlastRAYTs {
 					return all+"_"+sum;
 				}else return "-1";
 			}else {
+				System.err.println("Cannot find file "+in+". There is probably no REPIN in the corresponding submitted genome.");
 				return "-1";
 			}
 		}catch(IOException e) {
@@ -163,7 +163,7 @@ public class BlastRAYTs {
 	}
 
 	
-	public static int getNumREPINDist(String name,File folder,String repType,int masterDist,String master) {
+	public static int getNumREPINDist(String name,File folder,String repType,int masterDist,String master,boolean analyseREPINs) {
 		try {
 			File in=new File(folder+"/"+name+"_"+repType+"/"+name+"_"+repType+".nodes");
 			//System.out.println(in);
@@ -176,7 +176,7 @@ public class BlastRAYTs {
 					String curr=split[0];
 					String REPIN=curr.split("_")[0];
 					int occ=Integer.parseInt(split[1]);
-					if(isREPIN(REPIN) && maxDistMaster(REPIN,master,masterDist)) {
+					if((isREPIN(REPIN)|| !analyseREPINs) && maxDistMaster(REPIN,master,masterDist)) {
 						reps+=occ;
 					}
 				}

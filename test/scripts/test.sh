@@ -1,6 +1,4 @@
 #! /bin/bash
-set -e
-
 ! getopt --test > /dev/null
 
 if [[ ${PIPESTATUS[0]} -ne 4 ]]; then
@@ -47,7 +45,7 @@ echo "DATASET=${DATASET}"
 echo "OPERATIONS=${OPERATIONS}"
 
 
-case $DATASET in 
+case $DATASET in
     chlororaphis)
         ISREF=1
         ;;
@@ -80,52 +78,68 @@ setup() {
     if [ $ISREF == "1" ]; then
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/datasets/${DATASET}"
 	    rsync -ruL ${TESTCASE_DATA_DIR}/in/ ${RUN_DATA_DIR}/
-        rsync -ruL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
+      rsync -ruL ${TESTCASE_DATA_DIR}/out/ ${RUN_REF_DIR}/
     else
 		TESTCASE_DATA_DIR="${TEST_DATA_DIR}/${DATASET}"
 		rsync -ruL ${TESTCASE_DATA_DIR}/ ${RUN_DATA_DIR}/
-	fi	
+	fi
 	dataset_vars
-		
+
 	echo "RAYT AA sequence will be read from $rayt_faa."
 	echo "Reference strain set to $ref_strain."
 
     rsync -u $rayt_faa ${RUN_DATA_DIR}
-} 
+}
 
 dataset_vars() {
 # Dataset specific settings.
 	case $DATASET in
-		"chlororaphis")
+		"NZ_CP043305.1_RagTag")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=NZ_CP043305.1_RagTag.fna
+			analyze_repins='true'
+			mem="4g"
+			;;
+		"ecoli")
+			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
+			ref_strain=MG1655.fas
+			analyze_repins='false'
+			mem="4g"
+			;;
+    "chlororaphis")
 			rayt_faa=${TEST_DATA_DIR}/yafM_SBW25.faa
 			ref_strain=chlTAMOak81.fas
+			analyze_repins='true'
 			;;
 		"dokdonia")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=dokd-P16.fas
 			mem="4g"
+			analyze_repins='true'
 			;;
 		"neisseria")
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=Nmen_2594.fas
+			analyze_repins='true'
 			;;
 		*)
 			rayt_faa=${TEST_DATA_DIR}/yafM_Ecoli.faa
 			ref_strain=Nmen_2594.fas
 			mem="4g"
+			analyze_repins='true'
 			;;
 	esac
 }
 
 java_cmd() {
 	dataset_vars
-    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar\
+    javacmd="java -Xmx${mem} -jar ${PROJECT_ROOT_DIR}/REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar \
                                   ${RUN_DATA_DIR}\
                                   ${RUN_OUT_DIR}\
                                   ${ref_strain}\
                                   55 21\
                                   ${rayt_faa}\
-                                  ${TREENAME}.nwk 1e-30 true 1"
+                                  ${TREENAME}.nwk 1e-30 ${analyze_repins} 1"
     echo ${javacmd}
 }
 
@@ -148,7 +162,7 @@ test_java() {
 # Run andi and check output.
 
 run_andi() {
-    andi ${RUN_DATA_DIR}/*.fas > ${RUN_OUT_DIR}/${TREENAME}.dist
+    andi -j ${RUN_DATA_DIR}/*.fas ${RUN_DATA_DIR}/*.fn ${RUN_DATA_DIR}/*.fna ${RUN_DATA_DIR}/*.fastn ${RUN_DATA_DIR}/*.fasta> ${RUN_OUT_DIR}/${TREENAME}.dist
 }
 test_andi() {
     echo
@@ -196,9 +210,9 @@ test_md5() {
 
 ref_plots() {
     if [ $ISREF -ne 1 ]; then
-        echo 
+        echo
         echo "'$DATASET' is not a reference dataset."
-        echo 
+        echo
         exit 1
     fi
 
