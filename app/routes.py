@@ -121,6 +121,7 @@ def upload():
     session['query_rayt'] = None
     session['treefile'] = None
     session['min_nmer_occurrence'] = None
+    session['distance_group_seeds'] = None
     session['nmer_length'] = None
     session['e_value_cutoff'] = None
     session['analyse_repins'] = None
@@ -181,6 +182,7 @@ def submit():
 
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
+        session['distance_group_seeds'] = request.form.get('distance_group_seeds', 15)
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
         session['analyse_repins'] = request.form.get('analyse_repins')
         session['email'] = request.form.get('email', None)
@@ -253,6 +255,7 @@ def submit():
                 "reference_strain": session['reference_strain'],
                 "min_nmer_occurrence": session['min_nmer_occurrence'],
                 "nmer_length": session['nmer_length'],
+                "distance_group_seeds": session.get('distance_group_seeds', 15),
                 "query_rayt_fname": query_rayt_fname,
                 "treefile": session['treefile'],
                 "e_value_cutoff": session['e_value_cutoff'],
@@ -477,6 +480,8 @@ def rerun():
     submit_form.min_nmer_occurrence.data = dbjob.setup.get('min_nmer_occurrence')
     session['nmer_length'] = dbjob.setup.get('nmer_length')
     submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
+    session['distance_group_seeds'] = dbjob.setup.get('distance_group_seeds', 15)
+    submit_form.distance_group_seeds.data = dbjob.setup.get('distance_group_seeds', 15)
     session['analyse_repins'] = dbjob.setup.get('analyse_repins')
     submit_form.analyse_repins.data = dbjob.setup.get('analyse_repins')
     session['e_value_cutoff'] = dbjob.setup.get('e_value_cutoff')

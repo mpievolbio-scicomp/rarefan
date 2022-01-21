@@ -7,26 +7,22 @@
     <form action="{{ url_for('submit') }}" method="post" enctype="multipart/form-data">
         <p>
             {{ submit_form.reference_strain.label }}
-            <!-- <span title="{{submit_form.reference_strain.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.reference_strain(title=submit_form.reference_strain.description) }}
     </br></br>
         </p>
         <p>
             {{ submit_form.query_rayt.label }}
-            <!-- <span title="{{submit_form.query_rayt.description}}" style="cursor:default">(?)</span> -->
     </br>
             {{ submit_form.query_rayt(title=submit_form.query_rayt.description) }}</br></br>
         </p>
         <p>
             {{ submit_form.treefile.label }}
-            <!-- <span title="{{submit_form.treefile.description}}" style="cursor:default">(?)</span> -->
     </br>
             {{ submit_form.treefile(title=submit_form.treefile.description) }}</br></br>
         </p>
         <p>
             {{ submit_form.min_nmer_occurrence.label }}
-            <!-- <span title="{{submit_form.min_nmer_occurrence.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.min_nmer_occurrence(title=submit_form.min_nmer_occurrence.description) }}
             </br>
@@ -39,7 +35,6 @@
         </p>
         <p>
             {{ submit_form.nmer_length.label }}
-            <!-- <span title="{{submit_form.nmer_length.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.nmer_length(title=submit_form.nmer_length.description) }}
             </br>
@@ -50,8 +45,18 @@
             </br>
         </p>
         <p>
+            {{ submit_form.distance_group_seeds.label }}
+    </br>
+    {{ submit_form.distance_group_seeds(title=submit_form.distance_group_seeds.description) }}
+    </br>
+    {% for error in submit_form.distance_group_seeds.errors %}
+    <span style="color: red;">
+        [{{ error }}]</span>
+    {% endfor %}
+    </br>
+        </p>
+        <p>
             {{ submit_form.e_value_cutoff.label }}
-            <!-- <span title="{{submit_form.e_value_cutoff.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.e_value_cutoff(title=submit_form.e_value_cutoff.description) }}</br>
     {% for error in submit_form.e_value_cutoff.errors %}
@@ -63,13 +68,11 @@
         </p>
         <p>
             {{ submit_form.analyse_repins.label }}
-            <!-- <span title="{{submit_form.analyse_repins.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.analyse_repins(title=submit_form.analyse_repins.description) }}</br>
         </p>
         <p>
             {{ submit_form.email.label }}
-            <!-- <span title="{{submit_form.email.description}}" style="cursor:default">(?)</span> -->
     </br>
     {{ submit_form.email(title=submit_form.email.description) }}</br>
     {% for error in submit_form.email.errors %}
@@ -81,7 +84,6 @@
         </p>
         <p>
             {{ submit_form.submit(title=submit_form.submit.description) }}
-            <!-- <span title="{{submit_form.submit.description}}" style="cursor:default">(?)</span> -->
         </p>
     </form>
 {% endblock %}
