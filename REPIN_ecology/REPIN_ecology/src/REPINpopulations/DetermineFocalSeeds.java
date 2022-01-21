@@ -11,7 +11,7 @@ public class DetermineFocalSeeds {
 		File outFolder=new  File(args[1]);
 		int minFreq=Integer.parseInt(args[2]);
 		int wordLength=Integer.parseInt(args[3]);
-			DetermineFocalSeeds dfs=new DetermineFocalSeeds(genome,outFolder,minFreq,wordLength);
+			DetermineFocalSeeds dfs=new DetermineFocalSeeds(genome,outFolder,minFreq,wordLength,30);
 	}
 	File genome;
 	int wl;
@@ -21,8 +21,9 @@ public class DetermineFocalSeeds {
 	int flanking =30;
 	String[] seedSequences;
 	File outFolder;
-	public DetermineFocalSeeds(File genome,File outFolder,int minRepFreq,int wl) {
+	public DetermineFocalSeeds(File genome,File outFolder,int minRepFreq,int wl, int flanking) {
 		this.genome=genome;
+		this.flanking=flanking;
 		this.outFolder=outFolder;
 		this.wl=wl;
 		genomeFolder=genome.getParentFile();
