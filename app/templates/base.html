@@ -7,9 +7,8 @@
     <meta charset='utf-8'></meta>
     <title>{% block title %}{% endblock %}</title>
     <!-- Bootstrap core CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <!-- Custom styles for this template -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
   {% block head %}{% endblock %}
   </head>
   <body>
@@ -39,13 +38,14 @@
          </ul>
       {%  endif %}
       {%  endwith %}
-        <script>
-            $(document).tooltip({show: null});
-        </script>
       {% block body %}{% endblock %}
       <footer class="footer">
         <p style="margin-top: 10px">© 2020 - 2021 Max Planck Institute for Evolutionary Biology</p>
       </footer>
-    </div> <!-- /container -->
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <!-- <script>window.jQuery || document.write('<script src="{{url_for('static', filename='js/jquery.min.js') }}">\x3C/script>')</script> -->
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <!-- <script>window.jQueryUI || document.write('<script src="{{url_for('static', filename='js/jquery-ui.min.js') }}">\x3C/script>')</script> -->
   </body>
 </html>

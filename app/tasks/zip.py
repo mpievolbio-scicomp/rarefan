@@ -6,6 +6,9 @@ import shutil
 
 from app.models import Job as DBJob
 from rq import get_current_job
+from app import app
+app.app_context().push()
+logger = app.logger
 
 
 def zip_task(run_dir):
@@ -19,7 +22,9 @@ def zip_task(run_dir):
 
     """
     oldwd = os.getcwd()
+    logger.debug("Saving old WD %s", oldwd)
     os.chdir(run_dir)
+    logger.debug("Chdir to %s", os.getcwd())
     run_id = os.path.split(run_dir)[-1]
     zip_command = " ".join(["zip",
                                 "-r",
@@ -28,6 +33,7 @@ def zip_task(run_dir):
                                 ]
                                )
 
+    logger.debug("zip command: %s", zip_command)
     redis_job =  get_current_job()
     dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
     dbjob.set_status('zip')
@@ -39,11 +45,15 @@ def zip_task(run_dir):
 
     log, err = proc.communicate()
 
+    logger.debug("proc.stdout: %s", log)
+    logger.debug("proc.stderr: %s", err)
+
     # Append only stderr to logfile.
     with open(os.path.join('out', 'rarefan.log'), 'ab') as fh:
         fh.write(err)
 
     os.chdir(oldwd)
+    logger.debug("Chdir to %s", os.getcwd())
 
-    return proc.returncode, err
+    return {'returncode': proc.returncode, "log": log}
 

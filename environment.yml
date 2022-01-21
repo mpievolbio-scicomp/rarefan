@@ -39,5 +39,7 @@ dependencies:
   - pip
   - pip:
       - flask-pymongo
+      - flask-mongoengine
       - flask-wtf
       - flask-autoindex
+      - flask-mail

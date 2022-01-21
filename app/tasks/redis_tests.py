@@ -1,13 +1,14 @@
+# usage: $> rq enqueue -p app.tasks.redis_tests example 10
 import time
-import logging
 
+from app import app
+app.app_context().push()
 
-logging.basicConfig(level=logging.DEBUG)
+logger = app.logger
 
 def example(seconds):
-    logging.info("************ Starting task *****************")
-
+    seconds=int(seconds)
     for i in range(seconds):
-        logging.debug(i)
+        logger.debug(i)
         time.sleep(1)
-    logging.info("************ Task complete *****************")
+    logger.debug("Done")

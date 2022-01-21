@@ -1,28 +1,19 @@
-import os
-import rq
-import copy
+""":module callbacks: Hosting all callback routines for rarefan tasks."""
 
-from app import db
 from app.models import Job as DBJob
 from app.utilities.checkers import parse_results
 from app.tasks.email import email_task
+from app.tasks.zip import zip_task
+from app import app
 
-import logging
-logging.basicConfig(level=logging.DEBUG)
+logger = app.logger
 
-def rarefan_on_success(job, connection, result, *args, **kwargs):
+def rarefan_on_success(job, result):
     """ Callback for the 'rarefan' task if completed successfully. """
 
     # Get db object.
-    run_id = job.meta['run_id']
     dbjob_id = job.meta['dbjob_id']
-    redis_job_id = job.id
     dbjob = DBJob.objects.get(id=dbjob_id)
-
-    logging.debug(run_id)
-    logging.debug(dbjob_id)
-    logging.debug(redis_job_id)
-    logging.debug(list(result.keys()))
 
     # Update returncode.
     dbjob.update(set__stages__rarefan__results__returncode=result['returncode'])
@@ -40,17 +31,51 @@ def rarefan_on_success(job, connection, result, *args, **kwargs):
     dbjob.save()
 
 
+def on_success(job, connection, result, *args, **kwargs):
+    """ Generic callback on success. """
+
+    # Get db object.
+    dbjob_id = job.meta['dbjob_id']
+    stage = job.meta['stage']
+    dbjob = DBJob.objects.get(id=dbjob_id)
+
+    if stage == "rarefan":
+        rarefan_on_success(job, result)
+    elif stage == "tree":
+        dbjob.update(set__stages__tree__results__returncode=result['returncode'])
+    elif stage == "zip":
+        dbjob.update(set__stages__zip__results__returncode=result['returncode'])
+
+    dbjob.set_overall()
+
+    dbjob.save()
+
+
 def on_failure(job, connection, type, value, traceback):
     """ Generic failure callback for all tasks. """
 
-    logging.debug(job.id)
-    logging.debug(job.meta)
-    logging.debug(type)
-    logging.debug(value)
-    logging.debug(traceback)
+    logger.debug(job.id)
+    logger.debug(job.meta)
+    logger.debug(type)
+    logger.debug(value)
+    logger.debug(traceback)
 
     dbjob_id = job.meta['dbjob_id']
+    stage = job.meta['stage']
     dbjob = DBJob.objects.get(id=dbjob_id)
 
-    email_task(dbjob)
-    raise RuntimeError
+    if stage == "rarefan":
+        dbjob.update(set__stages__rarefan__results__returncode=1)
+    elif stage == "tree":
+        dbjob.update(set__stages__tree__results__returncode=1)
+
+        # Even though getting the tree was not successfull, we still want to generate the zip file.
+        zip_results = zip_task(dbjob.setup['tmpdir'])
+        dbjob.update(set__stages__zip__results__returncode=zip_results['returncode'])
+    elif stage == "zip":
+        dbjob.update(set__stages__zip__results__returncode=1)
+
+    dbjob.set_overall()
+    dbjob.save()
+
+    email_task(dbjob.run_id)

@@ -1,4 +1,5 @@
 suppressMessages(library(shiny))
+suppressMessages(library(shinycssloaders))
 
 fluidPage(
 		# App title
@@ -21,13 +22,13 @@ fluidPage(
 						),
 				mainPanel(
 					h4("RAYT tree"),
-					plotOutput(outputId = 'rayt_tree', width="100%"),
+					withSpinner(plotOutput(outputId = 'rayt_tree', width="100%")),
 					hr(),
 					h4("REPINs"),
-					plotOutput(outputId = 'repin_tree', width="100%"),
+					withSpinner(plotOutput(outputId = 'repin_tree', width="100%")),
 					hr(),
 					h4("Correlation"),
-				  plotOutput(outputId = 'correlations', width="100%")
+				  withSpinner(plotOutput(outputId = 'correlations', width="100%"))
 				)
 		)
 )

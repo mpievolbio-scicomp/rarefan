@@ -5,10 +5,8 @@ import os
 import sys
 import rq
 from rq.exceptions import NoSuchJobError
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
 from app import app, db
+logger = app.logger
 
 
 class Job(db.Document):
@@ -54,7 +52,7 @@ class Job(db.Document):
         stage_names =  self.stages.keys()
         for stage in stage_names:
             self.set_status(stage)
-            logging.debug("%s status= %s", stage, self.stages[stage]['status'] )
+            logger.debug("%s status= %s", stage, self.stages[stage]['status'] )
         
         overall = 'setup'
         if all([ stage['status'] == "none" for stage in self.stages.values()]):
