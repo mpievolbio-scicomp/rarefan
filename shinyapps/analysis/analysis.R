@@ -291,60 +291,52 @@ plotCorrelationSingle=function(folder,
 	logging::logdebug("Preparing data structures and colors.")
   association=association[association$repintype==rep_rayt_group,]
   t$numRAYT=association[match(t[,1],association[,1]),]$rayts
-  logging::logdebug("t=%s", str(t))
-  t$color=t$numRAYT
-  t$color[t$color>0]=1
-  t$color[t$color==0]=0
-  cols=t$color
-  names(cols)=cols
+  t$RAYTs = as.factor(t$numRAYT)
+
+  # Get color dataframe.
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
-  colLegend=cols
-  logging::logdebug(colnames(colorDF))
-  logging::logdebug(colorDF)
 
-  # Number of RAYTs will be encoded in symbol size. Need to scale up the size
-  symbol_size_scaling_factor = 2.0
-  t$symbol_size = t$numRAYT*symbol_size_scaling_factor
-  t$symbol_size[t$numRAYT==0] = 2.0
-
+	# Color for current REP/RAYT group.
   rayt_color = unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
-  cols[cols>0]=rayt_color
-  cols[cols==0]="black"
-  t$symbol_color = cols
 
-  t$symbol_shape = 16
-  t$symbol_shape[t$cols=='black'] = 1
-  t$symbol_shape = as.factor(t$symbol_shape)
-  colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
-  colLegend[colLegend==0]="no RAYT"
-  colLegend=colLegend[!duplicated(colLegend)]
-  cols=cols[!duplicated(cols)]
-  logging::logdebug(str(cols))
-  logging::logdebug("Setting up ggplots.")
-
-  # Set up the shapes for RAYT[0-5] and "no RAYT".
-  # Have to treat the cases when there are either only "no RAYTs" or only "RAYT [0-5].
-  # In general, both cases are present, so setup as length 2 vector representing the two
-  # shapes.
-
+  # Setup the plot
   p <- ggplot(t) +
-    geom_point(
+    geom_point2(
            aes(x=propMaster,
                y=numRepin,
-               size=as.factor(numRAYT)
-               # color=as.factor(symbol_color),
-               # shape=as.factor(symbol_shape)
+               size=RAYTs,
+               subset=numRAYT>0
            ),
-           color=rayt_color
-       )
-  # +
-  #    scale_size_manual(
-  #         values=t$numRAYT,
-  #         labels=as.factor(as.integer(t$numRAYT))
-          # override.aes = list(
-          #   breaks = c(0,1)
-          # )
-     # )
+           color=rayt_color,
+       ) +
+    geom_point2(
+           aes(x=propMaster,
+               y=numRepin,
+               shape=RAYTs,
+               subset=numRAYT==0,
+           )
+       ) +
+    scale_size_manual(
+          values=t$RAYTs,
+          labels=t$RAYTs,
+    ) +
+    scale_shape_manual(
+      values=c(1),
+      labels=c("No RAYT"),
+      guide=guide_legend(override.aes = list(shape=1)
+                          )
+      )+
+    labs(title=paste0("REP/RAYT group ", rep_rayt_group),
+         size="RAYTs", shape=NULL) +
+    # Set legend order.
+    guides(size=guide_legend(order=1), shape=guide_legend(order=2))
+ # guide=guide_legend(
+ #   override.aes = list(
+ #    breaks = c(0,1,2),
+ #    size=c(0,1,2)
+ #   )
+ #  )
+ #    )
 
 # Setup the plot.
   # x-axis: REPIN proportion of master sequence
