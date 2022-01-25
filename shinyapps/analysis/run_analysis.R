@@ -72,13 +72,13 @@ logging::loginfo(paste0("outfile = ", outfile))
 
 correlation_plot = plotCorrelationSingle(
 		data_dir,
-		rayt_type,
+		rayt_type
 		)
 
 repin_facet_plot = plotREPINs(
        data_dir,
 		   treefile,
-		   rayt_type,
+		   rayt_type
 	)
 
 

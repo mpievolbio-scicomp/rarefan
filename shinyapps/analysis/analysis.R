@@ -326,8 +326,7 @@ plotCorrelationSingle=function(folder,
       guide=guide_legend(override.aes = list(shape=1)
                           )
       )+
-    labs(title=paste0("REP/RAYT group ", rep_rayt_group),
-         size="RAYTs", shape=NULL) +
+    labs(size="RAYTs", shape=NULL) +
     # Set legend order.
     guides(size=guide_legend(order=1), shape=guide_legend(order=2))
  # guide=guide_legend(
@@ -454,7 +453,7 @@ get_rayt_phylogeny=function(data_dir){
 
 
 ######################################################################################
-drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
+drawRAYTphylogeny=function(data_dir, reference_strain=""){
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
