@@ -39,28 +39,21 @@ function(input, output, session) {
 
               logging::logdebug("Calling 'drawRAYTphylogeny'.")
               output$rayt_tree <-  renderPlot({
-                drawRAYTphylogeny(out_dir, fontsize)
+                drawRAYTphylogeny(out_dir)
               })
 
               logging::logdebug("Calling 'plotREPINs'.")
               output$repin_tree <-  renderPlot({
                 plotREPINs(out_dir,
                            treefile,
-                           input$rayt,
-                           "#40e0d0",
-                           2,
-                           fontsize
+                           input$rayt
                 )
               })
 
               logging::logdebug("Calling 'plotCorrelationSingle'.")
               output$correlations <-  renderPlot({
                 plotCorrelationSingle(out_dir,
-                                      input$rayt,
-                                      theme,
-                                      fontsize,
-                                      "left",
-                                      "bottom"
+                                      input$rayt
                 )
               })
             })
