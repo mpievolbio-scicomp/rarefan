@@ -46,7 +46,9 @@ fontsize=14
 
 ######################################################################################
 # Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
-plotREPINs=function(folder,treeFile,rep_rayt_group){
+plotREPINs=function(folder,
+                    treeFile,
+                    rep_rayt_group){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -78,7 +80,6 @@ plotREPINs=function(folder,treeFile,rep_rayt_group){
 
   logging::logdebug(tree)
   tree_file_is_corrupt = typeof(tree) == "logical"
-
   if(tree_file_is_corrupt) {
     p = ggplot() +
             geom_blank() +
@@ -148,7 +149,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group){
                               , xend=rayts
                               , y=y
                               , yend=y)
-                        , size=2,
+                        , size=2
                         , color=unique(rayt_color)
                         )
     }
@@ -177,7 +178,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group){
                          , xend=repins
                          , y=y
                          , yend=y)
-                   , size=2,
+                   , size=2
                    ,color=unique(rayt_color)
                    )
 
@@ -301,6 +302,7 @@ plotCorrelationSingle=function(folder,
 
   # Setup the plot
   p <- ggplot(t) +
+    # Plot only observations with numRAYT>0 and map size to number of RAYTs (as factor).
     geom_point2(
            aes(x=propMaster,
                y=numRepin,
@@ -309,6 +311,7 @@ plotCorrelationSingle=function(folder,
            ),
            color=rayt_color,
        ) +
+    # Now add the obs. with numRAYT==0 and set shape (will be fixed manually).
     geom_point2(
            aes(x=propMaster,
                y=numRepin,
@@ -316,67 +319,22 @@ plotCorrelationSingle=function(folder,
                subset=numRAYT==0,
            )
        ) +
+    # Set correct size of dots.
     scale_size_manual(
           values=t$RAYTs,
           labels=t$RAYTs,
     ) +
+    # Set the shape of numRAYT=0 observations.
     scale_shape_manual(
       values=c(1),
       labels=c("No RAYT"),
       guide=guide_legend(override.aes = list(shape=1)
                           )
       )+
+    # Legend titles.
     labs(size="RAYTs", shape=NULL) +
     # Set legend order.
     guides(size=guide_legend(order=1), shape=guide_legend(order=2))
- # guide=guide_legend(
- #   override.aes = list(
- #    breaks = c(0,1,2),
- #    size=c(0,1,2)
- #   )
- #  )
- #    )
-
-# Setup the plot.
-  # x-axis: REPIN proportion of master sequence
-  # y-axis REPIN population size
-  # color: RAYT type [0-5]
-  # shape: RAYT type (will be manually set to the configured shapes)
-  # Symbol size = 3
-  # p <- ggplot(t) +
-  #   geom_point(
-  #          aes(x=propMaster,
-  #              y=numRepin,
-  #              col=as.factor(color),
-  #              shape=as.factor(color),
-  #              size=as.factor(symbol_size)
-  #          ),
-  #      )   + # Manually set the sizes
-  #
-  #     scale_size_manual(
-  #       values=t$symbol_size,
-  #       labels=t$numRAYT
-  #     ) +
-                       # guide=guide_legend(
-                       #   override.aes = list(
-                       #     breaks=unique(t$numRAYT),
-                       #     size=unique(t$numRAYT*2)
-                       # )
-                       # )
-      # scale_shape_manual(values=shapes,
-      #                  labels=colLegend,
-      #                  guide="none" ) +
-      #
-      # scale_color_manual(values=cols,
-      #                    labels=colLegend,
-      #                    guide=guide_legend(
-      #                      override.aes = list(
-      #                        breaks=colLegend,
-      #                        shape = sort(shapes, decreasing = T),
-      #                        size=3
-      #                        )
-      #                      )
-      #                    )
 
   logging::logdebug("Adding limits, theme, and axis labels.")
   p <- p +
