@@ -300,6 +300,8 @@ plotCorrelationSingle=function(folder,
 	# Color for current REP/RAYT group.
   rayt_color = unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
 
+  # Sort in descending order of numRAYT.
+  t <- t[order(t$numRAYT, decreasing=T),]
   # Setup the plot
   p <- ggplot(t) +
     # Plot only observations with numRAYT>0 and map size to number of RAYTs (as factor).
