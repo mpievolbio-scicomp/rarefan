@@ -40,18 +40,18 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
 	          legend.title=element_blank()
 )
 
+# Set fontsize globally.
+fontsize=14
+
 
 ######################################################################################
 # Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
-plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16){
+plotREPINs=function(folder,treeFile,rep_rayt_group){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
   logging::logdebug(paste0("    treeFile = ", treeFile))
   logging::logdebug(paste0("    rep_rayt_group = ", rep_rayt_group))
-  logging::logdebug(paste0("    colorBars = ", colorBars))
-  logging::logdebug(paste0("    bs = ", bs))
-  logging::logdebug(paste0("    fontsize = ", fontsize))
 
   # Set theme.
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
@@ -148,7 +148,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
                               , xend=rayts
                               , y=y
                               , yend=y)
-                        , size=bs
+                        , size=2,
                         , color=unique(rayt_color)
                         )
     }
@@ -177,7 +177,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
                          , xend=repins
                          , y=y
                          , yend=y)
-                   , size=bs
+                   , size=2,
                    ,color=unique(rayt_color)
                    )
 
@@ -259,17 +259,7 @@ determineColor=function(associationFile,repin_rayt_group){
 
 ######################################################################################
 plotCorrelationSingle=function(folder,
-                               rep_rayt_group,
-                               theme=rarefan_theme,
-                               fontsize=16,
-                               pvLabelX=NA,
-                               pvLabelY=NA,
-                               subsetSmooth=F,
-                               from=F,
-                               to=F,
-                               repinThreshold=0,
-                               name=F,
-                               labelOdd=""){
+                               rep_rayt_group){
 
 	logging::logdebug("Plotting correlation.")
 
