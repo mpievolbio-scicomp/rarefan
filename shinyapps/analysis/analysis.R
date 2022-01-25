@@ -37,7 +37,7 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.position = c(0.80, 1),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
-	          legend.title=element_blank()
+	          # legend.title=element_blank()
 )
 
 # Set fontsize globally.
@@ -302,8 +302,19 @@ plotCorrelationSingle=function(folder,
   logging::logdebug(colnames(colorDF))
   logging::logdebug(colorDF)
 
-  cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
+  # Number of RAYTs will be encoded in symbol size. Need to scale up the size
+  symbol_size_scaling_factor = 2.0
+  t$symbol_size = t$numRAYT*symbol_size_scaling_factor
+  t$symbol_size[t$numRAYT==0] = 2.0
+
+  rayt_color = unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
+  cols[cols>0]=rayt_color
   cols[cols==0]="black"
+  t$symbol_color = cols
+
+  t$symbol_shape = 16
+  t$symbol_shape[t$cols=='black'] = 1
+  t$symbol_shape = as.factor(t$symbol_shape)
   colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
   colLegend[colLegend==0]="no RAYT"
   colLegend=colLegend[!duplicated(colLegend)]
@@ -315,53 +326,66 @@ plotCorrelationSingle=function(folder,
   # Have to treat the cases when there are either only "no RAYTs" or only "RAYT [0-5].
   # In general, both cases are present, so setup as length 2 vector representing the two
   # shapes.
-  shapes = c(1,16)
 
-  # If there's only one value in 'cols', treat special.
-  if(length(cols) == 1) {
-    # only no-RAYTs
-    if(cols[[1]]=='black') {
-      shapes=c(1)
-    }
-    # All other cases.
-    else {
-      shapes=c(16)
-    }
-  }
+  p <- ggplot(t) +
+    geom_point(
+           aes(x=propMaster,
+               y=numRepin,
+               size=as.factor(numRAYT)
+               # color=as.factor(symbol_color),
+               # shape=as.factor(symbol_shape)
+           ),
+           color=rayt_color
+       )
+  # +
+  #    scale_size_manual(
+  #         values=t$numRAYT,
+  #         labels=as.factor(as.integer(t$numRAYT))
+          # override.aes = list(
+          #   breaks = c(0,1)
+          # )
+     # )
 
-  # Setup the plot.
+# Setup the plot.
   # x-axis: REPIN proportion of master sequence
   # y-axis REPIN population size
   # color: RAYT type [0-5]
   # shape: RAYT type (will be manually set to the configured shapes)
   # Symbol size = 3
-  p <- ggplot(t) +
-    geom_point(
-           aes(x=propMaster,
-               y=numRepin,
-               col=as.factor(color),
-               shape=as.factor(color),
-               size=as.factor(numRAYT)
-           ),
-           alpha=0.7
-       )   + # Manually set the sizes
-      # scale_size_manual(values=as.factor(t$numRAYT[t$numRAYT>0]),
-      #                  labels=as.factor(t$numRAYT[t$numRAYT>0]),
-      #                  name ="Number of RAYTs"
-      #                 ) +
-       scale_shape_manual(values=shapes,
-                       labels=colLegend,
-                       guide="none" ) +
-      scale_color_manual(values=cols,
-                       labels=colLegend,
-                       guide=guide_legend(override.aes = list(
-                         breaks=colLegend,
-                         shape = sort(shapes, decreasing = T),
-                         size=3,
-                         name="REP/RAYT group"
-                         )
-           )
-      )
+  # p <- ggplot(t) +
+  #   geom_point(
+  #          aes(x=propMaster,
+  #              y=numRepin,
+  #              col=as.factor(color),
+  #              shape=as.factor(color),
+  #              size=as.factor(symbol_size)
+  #          ),
+  #      )   + # Manually set the sizes
+  #
+  #     scale_size_manual(
+  #       values=t$symbol_size,
+  #       labels=t$numRAYT
+  #     ) +
+                       # guide=guide_legend(
+                       #   override.aes = list(
+                       #     breaks=unique(t$numRAYT),
+                       #     size=unique(t$numRAYT*2)
+                       # )
+                       # )
+      # scale_shape_manual(values=shapes,
+      #                  labels=colLegend,
+      #                  guide="none" ) +
+      #
+      # scale_color_manual(values=cols,
+      #                    labels=colLegend,
+      #                    guide=guide_legend(
+      #                      override.aes = list(
+      #                        breaks=colLegend,
+      #                        shape = sort(shapes, decreasing = T),
+      #                        size=3
+      #                        )
+      #                      )
+      #                    )
 
   logging::logdebug("Adding limits, theme, and axis labels.")
   p <- p +
