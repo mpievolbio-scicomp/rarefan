@@ -35,10 +35,9 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             panel.background = element_blank(),
             legend.justification = c(0, 1),
             legend.position = c(0.80, 1),
-            # legend.title=element_blank(),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
-	    legend.title=element_blank()
+	          legend.title=element_blank()
 )
 
 
@@ -352,17 +351,24 @@ plotCorrelationSingle=function(folder,
                y=numRepin,
                col=as.factor(color),
                shape=as.factor(color),
+               size=as.factor(numRAYT)
            ),
-               size=3,
-       )   + # Manually set the shapes
-      scale_shape_manual(values=shapes,
+           alpha=0.7
+       )   + # Manually set the sizes
+      # scale_size_manual(values=as.factor(t$numRAYT[t$numRAYT>0]),
+      #                  labels=as.factor(t$numRAYT[t$numRAYT>0]),
+      #                  name ="Number of RAYTs"
+      #                 ) +
+       scale_shape_manual(values=shapes,
                        labels=colLegend,
-                       guide="none" ) + # Manually set the colors and insert legend.
+                       guide="none" ) +
       scale_color_manual(values=cols,
                        labels=colLegend,
                        guide=guide_legend(override.aes = list(
                          breaks=colLegend,
-                         shape = sort(shapes, decreasing = T)
+                         shape = sort(shapes, decreasing = T),
+                         size=3,
+                         name="REP/RAYT group"
                          )
            )
       )
