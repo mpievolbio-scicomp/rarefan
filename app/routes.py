@@ -355,7 +355,16 @@ def results():
     if run_id is not None:
         logger.debug(run_id)
 
-        dbjob = DBJob.objects.get_or_404(run_id=run_id)
+        dbjob = DBJob.objects.get(run_id=run_id)
+
+        if not isinstance(dbjob, DBJob):
+            flash("Run {} was not found in our records. Please provide a valid run ID.".format(
+                run_id))
+            return  render_template("results_query.html",
+                           results_form=results_form,
+                           title="Results",
+                           )
+
 
         # Update stage status by querying rq.
         dbjob.set_overall()
