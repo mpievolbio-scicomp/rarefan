@@ -22,13 +22,13 @@ fluidPage(
 						),
 				mainPanel(
 					h4("RAYT tree"),
-					withSpinner(plotOutput(outputId = 'rayt_tree', width="100%")),
+					withSpinner(plotOutput(outputId = 'rayt_tree', height="300px")),
 					hr(),
 					h4("REPINs"),
-					withSpinner(plotOutput(outputId = 'repin_tree', width="100%")),
+					withSpinner(plotOutput(outputId = 'repin_tree', height="300px")),
 					hr(),
 					h4("Correlation"),
-				  withSpinner(plotOutput(outputId = 'correlations', width="100%"))
+				  withSpinner(plotOutput(outputId = 'correlations', height="300px"))
 				)
 		)
 )
