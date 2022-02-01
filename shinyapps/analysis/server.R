@@ -24,14 +24,14 @@ function(input, output, session) {
           				paste("Run ID ", query$run_id, sep=" ")
           			}
               )
-              results_url <- a(h4("Back to results summary page"),
-                                 href=paste("http://rarefan.evolbio.mpg.de/results/?run_id=",
+              results_url <- 
+              output$back_to_results <- renderUI({
+                                        tags$a("Back to results summary page",
+                                               href=paste("http://rarefan.evolbio.mpg.de/results/?run_id=",
                                             query$run_id,
                                             sep=""
                                             )
-                                            )
-              output$back_to_results <- renderText(results_url)
-#			  output$plot_instructions <- renderText({
+                                            )})
 #          				paste("  ", "The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.", sep="")
 #          			}
 #			  )

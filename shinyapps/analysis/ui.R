@@ -4,7 +4,6 @@ suppressMessages(library(shinycssloaders))
 fluidPage(
 		# App title
 		titlePanel("REPIN and RAYT analysis"),
-    h4("Back to results summary page"),
 		sidebarLayout(
 				sidebarPanel(
 					textOutput("text"),
@@ -19,7 +18,7 @@ fluidPage(
 										"5" = 5
 								),
 								selected = 0),
-						textOutput("plot_instructions")
+						htmlOutput("back_to_results")
 						),
 				mainPanel(
 					h4("RAYT tree"),
