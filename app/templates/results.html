@@ -33,8 +33,8 @@
         </p>
         <p>
             <h2> Parameters for this run </h2>
-            {% for k, v in job.setup.items() %}
-                <b>{{k}}:</b> {{v}} </br>
+            {% for k in ['reference_strain', 'nmer_length', 'min_nmer_occurrence', 'query_rayt', 'distance_group_seeds', 'analyse_repins', 'e_value_cutoff'] %}
+                <b>{{k}}:</b> {{ job.setup[k] }} </br>
             {% endfor %}
         </p>
 {% endblock %}
