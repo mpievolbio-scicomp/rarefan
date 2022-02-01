@@ -41,7 +41,7 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Set fontsize globally.
-fontsize=14
+fontsize=16
 
 
 ######################################################################################
