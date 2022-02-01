@@ -34,7 +34,7 @@
         <p>
             <h2> Parameters for this run </h2>
             {% for k, v in job.setup.items() %}
-                <b>k:</b> v </br>
+                <b>{{k}}:</b> {{v}} </br>
             {% endfor %}
         </p>
 {% endblock %}
