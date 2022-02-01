@@ -4,6 +4,7 @@ suppressMessages(library(shinycssloaders))
 fluidPage(
 		# App title
 		titlePanel("REPIN and RAYT analysis"),
+    h4("Back to results summary page"),
 		sidebarLayout(
 				sidebarPanel(
 					textOutput("text"),
