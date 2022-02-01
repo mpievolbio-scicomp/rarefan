@@ -19,7 +19,7 @@
         {% endif %}
         {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
             {%  if render_plots %}
-            <h2><a href="//shiny/analysis/?run_id={{run_id}}" target="_top" title="Visualize your results.">Plot data</a></h2>
+            <h2><a href="{{url_for('index', _external=True )}}//shiny/analysis/?run_id={{run_id}}" target="_top" title="Visualize your results.">Plot data</a></h2>
             {% endif %}
         {% endif %}
         <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
