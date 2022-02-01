@@ -355,9 +355,9 @@ def results():
     if run_id is not None:
         logger.debug(run_id)
 
-        dbjob = DBJob.objects.get(run_id=run_id)
-
-        if not isinstance(dbjob, DBJob):
+        try:
+            dbjob = DBJob.objects.get(run_id=run_id)
+        except:
             flash("Run {} was not found in our records. Please provide a valid run ID.".format(
                 run_id))
             return  render_template("results_query.html",
