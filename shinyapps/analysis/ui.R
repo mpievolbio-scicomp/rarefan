@@ -10,12 +10,12 @@ fluidPage(
 					selectInput(inputId = 'rayt',
 								label="Select REP/RAYT group",
 								choices = list(
-										"RAYT 0" = 0,
-										"RAYT 1" = 1,
-										"RAYT 2" = 2,
-										"RAYT 3" = 3,
-										"RAYT 4" = 4,
-										"RAYT 5" = 5
+										"0" = 0,
+										"1" = 1,
+										"2" = 2,
+										"3" = 3,
+										"4" = 4,
+										"5" = 5
 								),
 								selected = 0),
 						textOutput("plot_instructions")
