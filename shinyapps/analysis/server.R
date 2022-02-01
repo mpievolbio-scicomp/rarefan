@@ -46,9 +46,16 @@ function(input, output, session) {
               logging::logdebug(paste0("treefile = ", treefile))
 
               logging::logdebug("Calling 'drawRAYTphylogeny'.")
-              output$rayt_tree <-  renderPlot({
-                drawRAYTphylogeny(out_dir)
-              })
+              rayt_phylogeny <- drawRAYTphylogeny(out_dir)
+              number_of_strains <- dim(rayt_phylogeny$data)[[1]]
+              plot_height <- max(600, ceiling(number_of_strains * fontsize/4 * 1.2))
+              plot_width = ceiling(1.41 * plot_height)
+              logging::logdebug(paste0("plot width: ", plot_width))
+              logging::logdebug(paste0("plot height: ", plot_height))
+              output$rayt_tree <-  renderPlot({rayt_phylogeny},
+                                              height=plot_height,
+                                              width=plot_width
+              )
 
               logging::logdebug("Calling 'plotREPINs'.")
               output$repin_tree <-  renderPlot({
@@ -56,13 +63,17 @@ function(input, output, session) {
                            treefile,
                            input$rayt
                 )
-              })
+              },
+              height=plot_height, width=plot_width
+              )
 
               logging::logdebug("Calling 'plotCorrelationSingle'.")
               output$correlations <-  renderPlot({
                 plotCorrelationSingle(out_dir,
                                       input$rayt
                 )
-              })
+              },
+              height=plot_height, width=plot_width
+              )
             })
 }
