@@ -28,7 +28,7 @@
       {%  if messages %}
         {%  for message in messages %}
             <div class="alert alert-message text-center" role="alert">
-                {% alert({{ message }}); %}
+                {{ message }}
             </div>
         {% endfor %}
       {%  endif %}
