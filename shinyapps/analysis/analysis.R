@@ -302,6 +302,10 @@ plotCorrelationSingle=function(folder,
 
   # Sort in descending order of numRAYT.
   t <- t[order(t$numRAYT, decreasing=T),]
+
+  legend_values = unique(t[t$numRAYT>0,]$numRAYT)
+  legend_values = legend_values[order(legend_values)]
+  # browser()
   # Setup the plot
   p <- ggplot(t) +
     # Plot only observations with numRAYT>0 and map size to number of RAYTs (as factor).
@@ -309,7 +313,7 @@ plotCorrelationSingle=function(folder,
            aes(x=propMaster,
                y=numRepin,
                size=RAYTs,
-               subset=numRAYT>0
+               subset=numRAYT>=1
            ),
            color=rayt_color,
        ) +
@@ -323,8 +327,7 @@ plotCorrelationSingle=function(folder,
        ) +
     # Set correct size of dots.
     scale_size_manual(
-          values=t$RAYTs,
-          labels=t$RAYTs,
+      values=legend_values
     ) +
     # Set the shape of numRAYT=0 observations.
     scale_shape_manual(
