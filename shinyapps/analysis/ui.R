@@ -21,14 +21,17 @@ fluidPage(
 						htmlOutput("back_to_results")
 						),
 				mainPanel(
-					h4("RAYT tree"),
-					withSpinner(plotOutput(outputId = 'rayt_tree', inline=TRUE)),
-					hr(),
-					h4("REPINs"),
-					withSpinner(plotOutput(outputId = 'repin_tree', inline=TRUE)),
-					hr(),
-					h4("Correlation"),
-				  withSpinner(plotOutput(outputId = 'correlations', inline=TRUE))
+				  tabsetPanel(
+				    tabPanel("RAYT tree",
+    					withSpinner(plotOutput(outputId = 'rayt_tree', inline=TRUE))
+				  ),
+					tabPanel("REPINs",
+  					withSpinner(plotOutput(outputId = 'repin_tree', inline=TRUE))
+					),
+					tabPanel("Correlation",
+					         withSpinner(plotOutput(outputId = 'correlations', inline=TRUE))
+					  )
+				  )
 				)
 		)
 )
