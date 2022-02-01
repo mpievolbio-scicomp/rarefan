@@ -73,7 +73,7 @@ function(input, output, session) {
                                       input$rayt
                 )
               },
-              height=plot_height, width=plot_width
+              height=600, width=846
               )
             })
 }
