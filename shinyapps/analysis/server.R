@@ -27,7 +27,8 @@ function(input, output, session) {
               output$back_to_results <- renderText({
                                a(h4("Back to results summary page"),
                                  href=paste("http://rarefan.evolbio.mpg.de/results/?run_id=",
-                                            query$run_id
+                                            query$run_id,
+                                            sep=""
                                             )
                                  )
                                  }
