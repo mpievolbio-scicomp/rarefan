@@ -8,7 +8,7 @@ fluidPage(
 				sidebarPanel(
 					textOutput("text"),
 					selectInput(inputId = 'rayt',
-								label="Select REP/RAYT group",
+								label="Select REPIN group",
 								choices = list(
 										"0" = 0,
 										"1" = 1,
