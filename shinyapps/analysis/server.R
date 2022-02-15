@@ -3,9 +3,17 @@
 
 suppressMessages(library(shiny))
 suppressMessages(library(here))
+suppressMessages(library(mongolite))
 
 uploads_path <- here('app', 'static', 'uploads')
-print(uploads_path)
+mongo_username <- "rarefan"
+mongo_password <- ""
+mongo_uri = sprintf("mongodb://%s:%s@localhost:27017",
+                    URLencode(mongo_username, reserved=TRUE), 
+                    URLencode(mongo_password, reserved=TRUE)
+)
+
+db <- mongo(db='rarefan', collection='job', url=mongo_uri)
 
 # Include local definitions
 source("analysis.R")
@@ -20,10 +28,28 @@ function(input, output, session) {
     observe(
             {
               query <- parseQueryString(session$clientData$url_search)
+              db_query <- paste0('{"run_id":"', query$run_id, '"}')
+
+              # Get run setup from database, filter relevant columns and transpose for nicer display.
+              db_run_setup <- data.frame(db$find(db_query)$setup) %>% select(reference_strain,
+                                                                                             query_rayt,
+                                                                                             nmer_length,
+                                                                                             min_nmer_occurrence,
+                                                                                             distance_group_seeds,
+                                                                                             e_value_cutoff
+                                                                                             ) %>% t
+              rownames(db_run_setup) <- c("Ref. strain",
+                                         "Query RAYT",
+                                         "Seed length",
+                                         "Min. seed count",
+                                         "Dist. group seeds",
+                                         "e-value cutoff"
+              )
               output$text <- renderText({
           				paste("Run ID ", query$run_id, sep=" ")
           			}
               )
+              output$run_setup <- renderTable(db_run_setup, rownames = T, colnames = F)
               output$back_to_results <- renderUI({
                                                   tags$a("Back to results summary page",
                                                          href=paste("http://rarefan.evolbio.mpg.de/results?run_id=",

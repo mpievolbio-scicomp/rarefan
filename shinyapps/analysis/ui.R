@@ -7,6 +7,7 @@ fluidPage(
 		sidebarLayout(
 				sidebarPanel(
 					textOutput("text"),
+					tableOutput("run_setup"),
 					selectInput(inputId = 'rayt',
 								label="Select REPIN group",
 								choices = list(
