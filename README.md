@@ -154,7 +154,18 @@ $> flask run
 
 And navigate your browser to http://localhost:5000 .
 
-#### NOTE
+## R shiny app
+RAREFAN output can be visualized using our provided R scripts and shiny app. The
+mongo db password must be set in *shinyapp/analysis/server.R* in order to query
+the run parameters from the database.
+
+To start the shiny app, run 
+```
+$> Rscript run_app.R
+```
+from the project root directory.
+
+*NOTE:*
 Data visualisation on a local deployment server is currently not working.
 
 ##  Testing
