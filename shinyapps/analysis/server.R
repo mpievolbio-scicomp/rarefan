@@ -7,9 +7,9 @@ suppressMessages(library(mongolite))
 
 uploads_path <- here('app', 'static', 'uploads')
 mongo_username <- "rarefan"
-mongo_password <- "!rarefan$"
+mongo_password <- ""
 mongo_uri = sprintf("mongodb://%s:%s@localhost:27017",
-                    URLencode(mongo_username, reserved=TRUE), 
+                    URLencode(mongo_username, reserved=TRUE),
                     URLencode(mongo_password, reserved=TRUE)
 )
 
@@ -31,14 +31,30 @@ function(input, output, session) {
               db_query <- paste0('{"run_id":"', query$run_id, '"}')
 
               # Get run setup from database, filter relevant columns and transpose for nicer display.
-              db_run_setup <- data.frame(db$find(db_query)$setup) %>% select(reference_strain,
-                                                                                             query_rayt,
-                                                                                             nmer_length,
-                                                                                             min_nmer_occurrence,
-                                                                                             distance_group_seeds,
-                                                                                             e_value_cutoff
-                                                                                             ) %>% t
-              rownames(db_run_setup) <- c("Ref. strain",
+              db_run_setup <- data.frame(db$find(db_query)$setup)
+              setup <- db_run_setup %>% select(reference_strain,
+                                               query_rayt,
+                                               nmer_length,
+                                               min_nmer_occurrence,
+                                               e_value_cutoff
+                                               )
+              if('distance_group_seeds' %in% colnames(db_run_setup)) {
+                setup$distance_group_seeds <- db_run_setup$distance_group_seeds
+              }
+              else {
+                setup$distance_group_seeds <- 30
+              }
+
+              # Change order
+              setup <- setup %>% select(reference_strain,
+                                               query_rayt,
+                                               nmer_length,
+                                               min_nmer_occurrence,
+                                               distance_group_seeds,
+                                               e_value_cutoff
+              )
+              setup <- t(setup)
+              rownames(setup) <- c("Ref. strain",
                                          "Query RAYT",
                                          "Seed length",
                                          "Min. seed count",
@@ -49,7 +65,7 @@ function(input, output, session) {
           				paste("Run ID ", query$run_id, sep=" ")
           			}
               )
-              output$run_setup <- renderTable(db_run_setup, rownames = T, colnames = F)
+              output$run_setup <- renderTable(setup, rownames = T, colnames = F)
               output$back_to_results <- renderUI({
                                                   tags$a("Back to results summary page",
                                                          href=paste("http://rarefan.evolbio.mpg.de/results?run_id=",
