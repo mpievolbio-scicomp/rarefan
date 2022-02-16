@@ -105,7 +105,7 @@ optional arguments:
   -i, --interactive     Interactive mode. Ask for confirmation before starting the analysis run.
 ```
 
-## Runing the RAREFAN web server
+## Running the RAREFAN web server
 ### Database backend
 The webserver uses MongoDB as a backend. Install mongodb-server, create a database user named 'rarefan', secured by password, and a database 'rarefan'. Assign the 'dbAdmin' role for the database 'rarefan' to the 'rarefan' user. Consult the [mongodb manual](https://docs.mongodb.com/manual/tutorial/manage-users-and-roles/) if unsure how to do this.
 
