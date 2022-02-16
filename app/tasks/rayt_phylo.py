@@ -40,11 +40,35 @@ def run_alignment(run_dir):
     """ Workhorse function to run the muscle aligner. """
     input_fname = os.path.join(run_dir, 'out', 'repin_rayt_association.txt.fas')
     output_fname = os.path.join(run_dir, 'out', 'raytAln.phy')
-    command = 'muscle -in {} -out {} -phyiout '.format(input_fname, output_fname)
+    command = 'muscle -in {} -out {} -phyiout'.format(input_fname, output_fname)
 
     proc = subprocess.Popen(shlex.split(command),
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT, shell=False)
+
+    log, _ = proc.communicate()
+
+    return proc.returncode, log
+
+def run_phyml(run_dir, seed=None):
+    """ Workhorse function to run the phyml tool.
+
+    :param run_dir: The rarefan run directory containing the user submitted input data and the out/ directory created by rarefan.
+    :param seed: Random seed for phyml. Mainly used for testing.
+
+    """
+
+    input_fname = os.path.join(run_dir, 'out', 'raytAln.phy')
+
+    command = 'phyml --quiet -i {} -m GTR'.format(input_fname)
+
+    if seed is not None:
+        command = command + " --r_seed {}".format(int(seed))
+
+    proc = subprocess.Popen(shlex.split(command),
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, shell=False,
+                            cwd=os.path.join(run_dir, 'out'))
 
     log, _ = proc.communicate()
 

@@ -14,7 +14,7 @@ import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
 from app.tasks.tree import tree_task
-from app.tasks.rayt_phylo import alignment_task, phylogeny_task, run_alignment
+from app.tasks.rayt_phylo import alignment_task, phylogeny_task, run_alignment, run_phyml
 
 class TasksTest(unittest.TestCase):
     """ Testing the app utilities."""
@@ -84,28 +84,49 @@ class TasksTest(unittest.TestCase):
 
         ret, log = run_alignment(self.run_dir)
 
+        # Check expected output file is present.
         expected_out_fname = 'raytAln.phy'
         self.assertIn(expected_out_fname, os.listdir(self.out_dir))
+
+        # Check output data is equal to reference data.
         test_out_fname = os.path.join(self.out_dir, 'raytAln.phy')
         reference_out_fname = os.path.join(self.reference_out_dir, 'raytAln.phy') 
-
+        
         with open(test_out_fname, 'r') as ifh:
             test_alignment = ifh.read()
         with open(reference_out_fname, 'r') as ifh:
             reference_alignment = ifh.read()
 
-        for line in difflib.unified_diff(test_alignment, reference_alignment):
-            print(line)
+        # Get the diff between reference data and test run data.
+        diff = [line for line in difflib.unified_diff(test_alignment, reference_alignment)]
 
-        shutil.copy(test_out_fname, '/tmp/raytAln.phy')
+        self.assertEqual(len(diff), 0)
 
-    def test_rayt_phylogeny_task(self):
+
+    def test_rayt_phylo_run_phyml(self):
         """ Test the task for computing the rayt phylogeny ."""
 
-        ret, log = phylogeny_task(self.run_dir)
+        ret, log = run_phyml(self.run_dir, seed=1645012703)
 
-        self.assertIn('raytAln.phy_phyml_tree.txt', os.listdir(self.out_dir))
-        self.assertIn('raytAln.phy_phyml_stats.txt', os.listdir(self.out_dir))
+        # Check tree and stats files are present.
+        expected_tree_fname = 'raytAln.phy_phyml_tree.txt'
+        expected_stats_fname = 'raytAln.phy_phyml_stats.txt'
+        self.assertIn(expected_tree_fname, os.listdir(self.out_dir))
+        self.assertIn(expected_stats_fname, os.listdir(self.out_dir))
+
+        # Compare generated data and reference data.
+        test_tree_fname = os.path.join(self.out_dir, expected_tree_fname)
+        reference_tree_fname = os.path.join(self.reference_out_dir, expected_tree_fname)
+
+        with open(test_tree_fname, 'r') as ifh:
+            test_tree_data = ifh.read()
+        with open(reference_tree_fname, 'r') as ifh:
+            reference_tree_data = ifh.read()
+
+        # Get diffs.
+        tree_diff = [line for line in difflib.unified_diff(test_tree_data, reference_tree_data)]
+
+        self.assertSequenceEqual(tree_diff, [])
 
 if __name__ == '__main__':
     unittest.main()
