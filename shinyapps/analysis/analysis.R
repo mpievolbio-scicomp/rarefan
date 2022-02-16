@@ -409,7 +409,8 @@ get_rayt_phylogeny=function(data_dir){
   if(!(file.exists(raytPhyTreeFile) && file.exists(raytPhyStatsFile))) {
 	  logging::loginfo(paste0("RAYT phylogeny data files not found, will compute phylogeny now."))
 	  # Run phyml as system command.
-	  system(paste0("phyml --quiet -i ",raytAlnFile," -m GTR"))
+    phyml_cmd = sprintf("phyml --quiet -i %s -m GTR", raytAlnFile)
+	  system(phyml_cmd)
   }
   else {
 	  logging::loginfo(paste0("RAYT phylogeny data files found."))

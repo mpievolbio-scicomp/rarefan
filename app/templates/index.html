@@ -34,12 +34,9 @@
                 Our service provides an analysis of REPIN population size, how it relates to
                 REPIN replication rate and the presence and absence of RAYTs across all submitted genomes.
             </p>
-            {#<p>#}
-            {#    If you use the webserver please cite#}
-            {#</p>#}
             <h2>Third party tools</h2>
             <p>
-                The webserver relies on the following tools for analysis:
+                RAREFAN uses the following tools:
             </p>
             <ul>
                 <li>
@@ -96,6 +93,11 @@
                     <a href={{url_for('results', run_id='t5dvaibm')}}>Visit results</a> </p>
                 </li>
             </ul>
+            <div>
+                <h2>Code availability</h2>
+                The source code for all RAREFAN components is available at our <a href="https://gitlab.gwdg.de/mpievolbio-scicomp/repinpop" target="_blank" >gitlab repository</a>, where we also
+                provide the command line interface to run RAREFAN locally.
+            </div>
         </div>
     </div>
 {% endblock %}
