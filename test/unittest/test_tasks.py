@@ -113,7 +113,7 @@ class TasksTest(unittest.TestCase):
         # Check no output was generated.
         expected_out_fname = 'raytAln.phy'
         self.assertNotIn(expected_out_fname, os.listdir(os.path.join(run_dir, 'out')))
-        self.assertEqual(ret, 1)
+        self.assertEqual(ret, 0)
         self.assertEqual(log, "Input data file is empty.")
 
     def test_rayt_phylo_run_phyml(self):
@@ -153,7 +153,7 @@ class TasksTest(unittest.TestCase):
         # Check no output was generated.
         expected_out_fname = 'raytAln.phy_phyml_tree.txt'
         self.assertNotIn(expected_out_fname, os.listdir(os.path.join(run_dir, 'out')))
-        self.assertEqual(ret, 1)
+        self.assertEqual(ret, 0)
         self.assertEqual(log, "No input data found.")
 
 

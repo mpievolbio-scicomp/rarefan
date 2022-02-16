@@ -65,9 +65,9 @@ def run_alignment(run_dir):
 
     # Check input:
     if not os.path.exists(input_fname):
-        return "No input data found.", 1
+        return "No input data found.", 0
     if os.path.getsize(input_fname) == 0:
-        return "Input data file is empty.", 1
+        return "Input data file is empty.", 0
 
     output_fname = os.path.join(run_dir, 'out', 'raytAln.phy')
     R = shutil.which('Rscript')
@@ -99,9 +99,9 @@ def run_phyml(run_dir, seed=None):
 
     # Check input:
     if not os.path.exists(input_fname):
-        return "No input data found.", 1
+        return "No input data found.", 0
     if os.path.getsize(input_fname) == 0:
-        return "Input data file is empty.", 1
+        return "Input data file is empty.", 0
 
 
     command = 'phyml --quiet -i {} -m GTR'.format(input_fname)
