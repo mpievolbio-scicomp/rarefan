@@ -108,7 +108,7 @@ class TasksTest(unittest.TestCase):
     def test_rayt_phylo_run_phyml(self):
         """ Test the task for computing the rayt phylogeny ."""
 
-        ret, log = run_phyml(self.run_dir, seed=1645023897)
+        ret, log = run_phyml(self.run_dir, seed=1645040163)
 
         # Check tree and stats files are present.
         expected_tree_fname = 'raytAln.phy_phyml_tree.txt'
