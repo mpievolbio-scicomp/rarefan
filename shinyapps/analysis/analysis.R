@@ -41,14 +41,15 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Set fontsize globally.
-fontsize=16
+fontsize=12
 
 
 ######################################################################################
 # Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
 plotREPINs=function(folder,
                     treeFile,
-                    rep_rayt_group){
+                    rep_rayt_group,
+                    highlight_strain=""){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
@@ -198,7 +199,15 @@ plotREPINs=function(folder,
                                               linetype="blank"
               )
         )
-
+  if(highlight_strain!="") {
+  p = p +
+      geom_highlight(node=which(tree$tip.label==highlight_strain),
+                     extend=230,
+                     colour='red',
+                     fill='white',
+                     size=0.3,
+                     alpha=0.0)
+  }
   # Font size.
   p = p +
           theme(text=element_text(size=fontsize),axis.text=element_text(size=fontsize)) +
@@ -400,7 +409,8 @@ get_rayt_phylogeny=function(data_dir){
   if(!(file.exists(raytPhyTreeFile) && file.exists(raytPhyStatsFile))) {
 	  logging::loginfo(paste0("RAYT phylogeny data files not found, will compute phylogeny now."))
 	  # Run phyml as system command.
-	  system(paste0("phyml --quiet -i ",raytAlnFile," -m GTR"))
+    phyml_cmd = sprintf("phyml --quiet -i %s -m GTR", raytAlnFile)
+	  system(phyml_cmd)
   }
   else {
 	  logging::loginfo(paste0("RAYT phylogeny data files found."))
