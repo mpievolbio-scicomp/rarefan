@@ -7,7 +7,7 @@ suppressMessages(library(mongolite))
 
 uploads_path <- here('app', 'static', 'uploads')
 mongo_username <- "rarefan"
-mongo_password <- ""
+mongo_password <- "!rarefan$"
 mongo_uri = sprintf("mongodb://%s:%s@localhost:27017",
                     URLencode(mongo_username, reserved=TRUE),
                     URLencode(mongo_password, reserved=TRUE)

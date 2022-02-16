@@ -92,6 +92,8 @@ class TasksTest(unittest.TestCase):
         test_out_fname = os.path.join(self.out_dir, 'raytAln.phy')
         reference_out_fname = os.path.join(self.reference_out_dir, 'raytAln.phy') 
         
+        shutil.copy(test_out_fname, '/tmp/raytAln.phy')
+
         with open(test_out_fname, 'r') as ifh:
             test_alignment = ifh.read()
         with open(reference_out_fname, 'r') as ifh:
@@ -106,7 +108,7 @@ class TasksTest(unittest.TestCase):
     def test_rayt_phylo_run_phyml(self):
         """ Test the task for computing the rayt phylogeny ."""
 
-        ret, log = run_phyml(self.run_dir, seed=1645012703)
+        ret, log = run_phyml(self.run_dir, seed=1645023897)
 
         # Check tree and stats files are present.
         expected_tree_fname = 'raytAln.phy_phyml_tree.txt'
