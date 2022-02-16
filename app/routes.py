@@ -231,7 +231,8 @@ def submit():
                               }, 
                               "zip": {"redis_job_id": None,
                                       "status": 'setup',
-                                      "results": {"returncode": None, "log": ""}}
+                                      "results": {"returncode": None, "log": ""}
+                                      },
                               },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
@@ -320,7 +321,7 @@ def submit():
     
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
-                               depends_on=[rarefan_job, tree_job],
+                               depends_on=[rarefan_job, tree_job, rayt_alignment_job, rayt_phylogeny_job],
                                on_success=on_success,
                                on_failure=on_failure,
                                meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'zip'},
@@ -351,6 +352,9 @@ def submit():
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)
