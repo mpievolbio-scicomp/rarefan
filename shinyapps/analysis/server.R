@@ -13,7 +13,6 @@ mongo_uri = sprintf("mongodb://%s:%s@localhost:27017",
                     URLencode(mongo_password, reserved=TRUE)
 )
 
-# db <- mongo(db='rarefan', collection='job', url=mongo_uri)
 db <- mongo(db='rarefan', collection='job', url="mongodb://localhost:27017")
 
 # Include local definitions
