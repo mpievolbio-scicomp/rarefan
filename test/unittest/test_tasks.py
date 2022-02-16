@@ -108,7 +108,7 @@ class TasksTest(unittest.TestCase):
     def test_rayt_phylo_run_phyml(self):
         """ Test the task for computing the rayt phylogeny ."""
 
-        ret, log = run_phyml(self.run_dir, seed=1645040163)
+        ret, log = run_phyml(self.run_dir, seed=1645041004)
 
         # Check tree and stats files are present.
         expected_tree_fname = 'raytAln.phy_phyml_tree.txt'
@@ -119,6 +119,9 @@ class TasksTest(unittest.TestCase):
         # Compare generated data and reference data.
         test_tree_fname = os.path.join(self.out_dir, expected_tree_fname)
         reference_tree_fname = os.path.join(self.reference_out_dir, expected_tree_fname)
+        
+        # Copy output for manual investigation
+        shutil.copy(test_tree_fname, '/tmp/raytAln.phy')
 
         with open(test_tree_fname, 'r') as ifh:
             test_tree_data = ifh.read()

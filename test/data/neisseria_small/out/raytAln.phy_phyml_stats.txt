@@ -1,6 +1,6 @@
 
  oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
-                                  ---  PhyML 3.3.3:3.3.20200621-1  ---                                             
+                                  ---  PhyML 3.3.20211231  ---                                             
                               http://www.atgc-montpellier.fr/phyml                                          
                              Copyright CNRS - Universite Montpellier                                 
  oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
@@ -10,43 +10,43 @@
 . Initial tree: 			BioNJ
 . Model of nucleotides substitution: 	GTR
 . Number of taxa: 			13
-. Log-likelihood: 			-1468.58082
+. Log-likelihood: 			-1467.75247
 . Unconstrained log-likelihood: 	-1711.35064
 . Composite log-likelihood: 		-10145.30579
-. Parsimony: 				208
-. Tree size: 				1.03315
+. Parsimony: 				209
+. Tree size: 				1.65400
 . Discrete gamma model: 		Yes
   - Number of classes: 			4
-  - Gamma shape parameter: 		0.703
-  - Relative rate in class 1: 		0.07476 [freq=0.250000] 		
-  - Relative rate in class 2: 		0.36478 [freq=0.250000] 		
-  - Relative rate in class 3: 		0.92585 [freq=0.250000] 		
-  - Relative rate in class 4: 		2.63461 [freq=0.250000] 		
+  - Gamma shape parameter: 		0.419
+  - Relative rate in class 1: 		0.01954 [freq=0.250000] 		
+  - Relative rate in class 2: 		0.19576 [freq=0.250000] 		
+  - Relative rate in class 3: 		0.75099 [freq=0.250000] 		
+  - Relative rate in class 4: 		3.03371 [freq=0.250000] 		
 . Nucleotides frequencies:
   - f(A)=  0.24439
   - f(C)=  0.21445
   - f(G)=  0.25712
   - f(T)=  0.28404
 . GTR relative rate parameters :
-  A <-> C    1.46986
-  A <-> G    3.05262
-  A <-> T    0.38969
-  C <-> G    2.04059
-  C <-> T    3.57757
+  A <-> C    1.73687
+  A <-> G    4.01530
+  A <-> T    0.01384
+  C <-> G    2.76138
+  C <-> T    4.61672
   G <-> T    1.00000
 . Instantaneous rate matrix : 
   [A---------C---------G---------T------]
-  -0.86564   0.22535   0.56115   0.07914  
-   0.25681  -1.35843   0.37511   0.72650  
-   0.53335   0.31285  -1.04927   0.20307  
-   0.06809   0.54849   0.18383  -0.80040  
+  -0.82794   0.21889   0.60674   0.00231  
+   0.24945  -1.43737   0.41726   0.77066  
+   0.57668   0.34800  -1.09161   0.16693  
+   0.00199   0.58182   0.15111  -0.73492  
 
 
 . Run ID:				none
-. Random seed:				1645040163
+. Random seed:				1645041004
 . Subtree patterns aliasing:		no
-. Version:				3.3.3:3.3.20200621-1
-. Time used:				0h0m0s (0 seconds)
+. Version:				3.3.20211231
+. Time used:				0h0m1s (1 seconds)
 
  oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
  Suggested citations:
