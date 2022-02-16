@@ -303,6 +303,21 @@ def submit():
                                     connection=app.redis,
             )
 
+        rayt_alignment_job = RQJob.create(
+            alignment_task,
+            depends_on=rarefan_job,
+            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            connection=app.redis,
+            kwargs={'run_id': run_id},
+        )
+        rayt_phylogeny_job = RQJob.create(
+                    phylogeny_task,
+                    depends_on=rayt_alignment_job,
+                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    connection=app.redis,
+                    kwargs={'run_id': run_id},
+                )
+    
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
@@ -329,6 +344,8 @@ def submit():
         # Enqueue the jobs
         app.queue.enqueue_job(rarefan_job)
         app.queue.enqueue_job(tree_job)
+        app.queue.enqueue_job(rayt_alignment_job)
+        app.queue.enqueue_job(rayt_phylogeny_job)
         app.queue.enqueue_job(zip_job)
         app.queue.enqueue_job(email_job)
 

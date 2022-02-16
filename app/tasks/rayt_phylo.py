@@ -62,6 +62,13 @@ def alignment_task(**kwargs):
 def run_alignment(run_dir):
     """ Workhorse function to run the muscle aligner. """
     input_fname = os.path.join(run_dir, 'out', 'repin_rayt_association.txt.fas')
+
+    # Check input:
+    if not os.path.exists(input_fname):
+        return "No input data found.", 1
+    if os.path.getsize(input_fname) == 0:
+        return "Input data file is empty.", 1
+
     output_fname = os.path.join(run_dir, 'out', 'raytAln.phy')
     R = shutil.which('Rscript')
     rscript = os.path.join(utilities_path, 'run_muscle.R')
@@ -89,6 +96,13 @@ def run_phyml(run_dir, seed=None):
     """
 
     input_fname = os.path.join(run_dir, 'out', 'raytAln.phy')
+
+    # Check input:
+    if not os.path.exists(input_fname):
+        return "No input data found.", 1
+    if os.path.getsize(input_fname) == 0:
+        return "Input data file is empty.", 1
+
 
     command = 'phyml --quiet -i {} -m GTR'.format(input_fname)
 

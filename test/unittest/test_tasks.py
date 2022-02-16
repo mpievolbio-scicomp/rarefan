@@ -91,7 +91,7 @@ class TasksTest(unittest.TestCase):
         # Check output data is equal to reference data.
         test_out_fname = os.path.join(self.out_dir, 'raytAln.phy')
         reference_out_fname = os.path.join(self.reference_out_dir, 'raytAln.phy') 
-        
+
         shutil.copy(test_out_fname, '/tmp/raytAln.phy')
 
         with open(test_out_fname, 'r') as ifh:
@@ -104,6 +104,17 @@ class TasksTest(unittest.TestCase):
 
         self.assertEqual(len(diff), 0)
 
+    def test_rayt_phylo_run_alignment_empty_input(self):
+        """ Test the task for computing the rayt alignment when there are no rayts."""
+
+        run_dir = os.path.join(project_dir, "test/data/datasets/dokdonia/")
+        log, ret = run_alignment(run_dir)
+
+        # Check no output was generated.
+        expected_out_fname = 'raytAln.phy'
+        self.assertNotIn(expected_out_fname, os.listdir(os.path.join(run_dir, 'out')))
+        self.assertEqual(ret, 1)
+        self.assertEqual(log, "Input data file is empty.")
 
     def test_rayt_phylo_run_phyml(self):
         """ Test the task for computing the rayt phylogeny ."""
@@ -119,7 +130,7 @@ class TasksTest(unittest.TestCase):
         # Compare generated data and reference data.
         test_tree_fname = os.path.join(self.out_dir, expected_tree_fname)
         reference_tree_fname = os.path.join(self.reference_out_dir, expected_tree_fname)
-        
+
         # Copy output for manual investigation
         shutil.copy(test_tree_fname, '/tmp/raytAln.phy')
 
@@ -132,6 +143,19 @@ class TasksTest(unittest.TestCase):
         tree_diff = [line for line in difflib.unified_diff(test_tree_data, reference_tree_data)]
 
         self.assertSequenceEqual(tree_diff, [])
+
+    def test_rayt_phylo_run_phylogeny_empty_input(self):
+        """ Test the task for computing the rayt phylogeny when there are no rayts."""
+
+        run_dir = os.path.join(project_dir, "test/data/datasets/dokdonia/")
+        log, ret = run_phyml(run_dir)
+
+        # Check no output was generated.
+        expected_out_fname = 'raytAln.phy_phyml_tree.txt'
+        self.assertNotIn(expected_out_fname, os.listdir(os.path.join(run_dir, 'out')))
+        self.assertEqual(ret, 1)
+        self.assertEqual(log, "No input data found.")
+
 
 if __name__ == '__main__':
     unittest.main()
