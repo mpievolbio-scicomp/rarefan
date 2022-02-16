@@ -5,6 +5,7 @@ import unittest
 import sys
 import os
 import shutil
+import difflib
 
 project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 sys.path.insert(0, project_dir)
@@ -13,7 +14,7 @@ import logging
 logging.getLogger().setLevel(logging.DEBUG)
 
 from app.tasks.tree import tree_task
-from app.tasks.rayt_phylo import alignment_task, phylogeny_task
+from app.tasks.rayt_phylo import alignment_task, phylogeny_task, run_alignment
 
 class TasksTest(unittest.TestCase):
     """ Testing the app utilities."""
@@ -22,13 +23,36 @@ class TasksTest(unittest.TestCase):
         """ Setup a test."""
         self.neisseria = os.path.join(project_dir, "test/data/neisseria_small")
         self.run_dir = os.path.join('/tmp', 'neisseria_small')
+        self.reference_out_dir = os.path.join(self.neisseria, 'out')
         self.out_dir = os.path.join(self.run_dir, 'out')
+
+        # Copy input data.
         shutil.copytree(self.neisseria, self.run_dir)
-        os.mkdir(os.path.join(self.out_dir))
+
+        # Remove some files that will be generated during testing.
+        for f in ['tmptree.nwk',
+                  'raytAln.phy',
+                  'raytAln.phy_phyml_stats.txt',
+                  'raytAln.phy_phyml_tree.txt',
+                  ] :
+            if os.path.exists(f):
+                os.remove(f)
+
+
+        self.__files_to_remove = []
+        self.__dirs_to_remove = [self.run_dir]
 
     def tearDown(self):
         """ Teardown a test."""
-        shutil.rmtree('/tmp/neisseria_small')
+
+        for f in self.__files_to_remove:
+            if os.path.isfile(f):
+                os.remove(f)
+
+        for d in self.__dirs_to_remove:
+            if os.path.isdir(d):
+                shutil.rmtree(d)
+
 
     def test_tree_task_default(self):
         """ Test the tree generation task with default treefile name.
@@ -55,12 +79,25 @@ class TasksTest(unittest.TestCase):
             tree = "".join(fh.readlines())
         self.assertEqual(tree, "(Nmen_14-563:0.008237,(Nmen_331401:0.001783,Nmen_2594:0.001417):0.007763,(Nmen_38277:0.008887,Ngon_NJ1711654:0.027612):0.000413);\n")
 
-    def test_rayt_align_task(self):
+    def test_rayt_phylo_run_alignment(self):
         """ Test the task for computing the rayt alignment ."""
 
-        ret, log = alignment_task(self.run_dir)
+        ret, log = run_alignment(self.run_dir)
 
-        self.assertIn('raytAln.phy', os.listdir(self.out_dir))
+        expected_out_fname = 'raytAln.phy'
+        self.assertIn(expected_out_fname, os.listdir(self.out_dir))
+        test_out_fname = os.path.join(self.out_dir, 'raytAln.phy')
+        reference_out_fname = os.path.join(self.reference_out_dir, 'raytAln.phy') 
+
+        with open(test_out_fname, 'r') as ifh:
+            test_alignment = ifh.read()
+        with open(reference_out_fname, 'r') as ifh:
+            reference_alignment = ifh.read()
+
+        for line in difflib.unified_diff(test_alignment, reference_alignment):
+            print(line)
+
+        shutil.copy(test_out_fname, '/tmp/raytAln.phy')
 
     def test_rayt_phylogeny_task(self):
         """ Test the task for computing the rayt phylogeny ."""
