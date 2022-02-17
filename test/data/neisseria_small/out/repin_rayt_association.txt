@@ -1,0 +1,16 @@
+Genome	RAYT	REPINgroups
+Nmen_2594	0	0,5
+Nmen_2594	1	0,5
+Nmen_2594	2	
+Ngon_NJ1711654	0	0,5
+Nmen_14-563	0	0,5
+Nmen_14-563	1	0,5
+Nmen_14-563	2	0,5
+Nmen_14-563	3	
+Nmen_331401	0	
+Nmen_331401	1	0,5
+Nmen_331401	2	0,5
+Nmen_331401	3	
+Nmen_38277	0	0,3,5
+Nmen_38277	1	0,5
+Nmen_38277	2	

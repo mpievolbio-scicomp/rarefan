@@ -396,7 +396,7 @@ get_rayt_phylogeny=function(data_dir){
 
 	  # Run muscle alignment.
 	  logging::logdebug("Running muscle...")
-	  aln=muscle(raytseqs)
+	  aln=muscle(raytseqs, verbose=T, log='/tmp/muscle.log')
 	  logging::logdebug("...done.")
 
 	  # Write alignment to file.

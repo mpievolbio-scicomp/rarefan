@@ -17,6 +17,7 @@ from app import app, db
 from app.models import Job as DBJob
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task, empty_task
+from app.tasks.rayt_phylo import alignment_task, phylogeny_task
 from app.tasks.zip import zip_task
 from app.tasks.email import email_task, email_test
 from app.callbacks.callbacks import on_success, on_failure
@@ -200,26 +201,39 @@ def submit():
 
         # Create new Job instance.
         dbjob = DBJob(run_id=run_id,
-                    stages={"rarefan": {"redis_job_id": None,
-                                                           "status": 'setup',
-                                                           "results": {"returncode": None,
-                                                                       "counts": {
-                                                                           "rayts":None,
-                                                                           "nmers":None,
-                                                                           "repins":None},
-                                                                       "data_sanity": {
-                                                                           "rayts":None,
-                                                                           "nmers":None,
-                                                                           "repins":None},
-                                                           }
-                                                 },
-                                               "tree": {"redis_job_id": None,
-                                                        "status": 'setup',
-                                                        "results": {"returncode": None, "log": ""}},
-                                               "zip": {"redis_job_id": None,
-                                                       "status": 'setup',
-                                                       "results": {"returncode": None, "log": ""}}
-                                       },
+                      stages={"rarefan": {"redis_job_id": None,
+                                          "status": 'setup',
+                                          "results": {"returncode": None,
+                                                      "counts": {
+                                                          "rayts":None,
+                                                          "nmers":None,
+                                                          "repins":None},
+                                                      "data_sanity": {
+                                                          "rayts":None,
+                                                          "nmers":None,
+                                                          "repins":None},
+                                                      }
+                                          },
+                              "tree": {"redis_job_id": None,
+                                       "status": 'setup',
+                                       "results": {"returncode": None, "log": ""}},
+                              "rayt_alignment": {
+                                  "redis_job_id": None,
+                                  "status": 'setup',
+                                  "results": {"returncode": None,
+                                              "log": None},
+                              },
+                              "rayt_phylogeny": {
+                                  "redis_job_id": None,
+                                  "status": 'setup',
+                                  "results": {"returncode": None,
+                                              "log": None},
+                              }, 
+                              "zip": {"redis_job_id": None,
+                                      "status": 'setup',
+                                      "results": {"returncode": None, "log": ""}
+                                      },
+                              },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
                     notification_is_sent=False,
@@ -290,9 +304,24 @@ def submit():
                                     connection=app.redis,
             )
 
+        rayt_alignment_job = RQJob.create(
+            alignment_task,
+            depends_on=rarefan_job,
+            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            connection=app.redis,
+            kwargs={'run_id': run_id},
+        )
+        rayt_phylogeny_job = RQJob.create(
+                    phylogeny_task,
+                    depends_on=rayt_alignment_job,
+                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    connection=app.redis,
+                    kwargs={'run_id': run_id},
+                )
+    
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
-                               depends_on=[rarefan_job, tree_job],
+                               depends_on=[rarefan_job, tree_job, rayt_alignment_job, rayt_phylogeny_job],
                                on_success=on_success,
                                on_failure=on_failure,
                                meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'zip'},
@@ -316,11 +345,16 @@ def submit():
         # Enqueue the jobs
         app.queue.enqueue_job(rarefan_job)
         app.queue.enqueue_job(tree_job)
+        app.queue.enqueue_job(rayt_alignment_job)
+        app.queue.enqueue_job(rayt_phylogeny_job)
         app.queue.enqueue_job(zip_job)
         app.queue.enqueue_job(email_job)
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)
@@ -523,9 +557,6 @@ def plot():
     """ Redirect to the shiny app for the run id given via the request. """
 
     run_id = request.args['run_id']
-    # Go to port 7238 on localhost if this is a debug run, else use the shiny server endpoint on the production server.
-    # if os.environ['FLASK_DEBUG']:
-        # return redirect('http://localhost:7238?run_id={}'.format(run_id))
 
     return redirect('http://rarefan.evolbio.mpg.de/shiny/analysis?run_id={}'.format(run_id))
 
@@ -545,3 +576,35 @@ def test_mail():
                # )
 
     return message
+
+@app.route('/rayt_alignment')
+def align_rayts():
+    run_id = request.args['run_id']
+
+    job = RQJob.create(alignment_task,
+                       meta={'run_id': run_id, "stage":'rayt_alignment'},
+                       connection=app.redis,
+                       kwargs={'run_id': run_id},
+                       )
+
+    
+    app.queue.enqueue_job(job)
+
+    return redirect(url_for('index'))
+
+@app.route('/rayt_phylogeny')
+def phyml_rayts():
+    run_id = request.args['run_id']
+
+    job = RQJob.create(phylogeny_task,
+                       meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                       connection=app.redis,
+                       kwargs={'run_id': run_id},
+                       )
+
+    
+    app.queue.enqueue_job(job)
+
+    return redirect(url_for('index'))
+
+
