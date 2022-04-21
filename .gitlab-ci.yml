@@ -15,7 +15,7 @@ build:
   stage: build
   script:
       - CI/build.sh
-      - build.sh
+      - pkg-build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
