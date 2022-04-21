@@ -6,9 +6,15 @@ import subprocess
 from io import StringIO
 import shlex
 
-# JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
-# JAR = os.path.join('share', "lib", 'REPIN_ecology.jar')
-JAR = 'REPIN_ecology.jar'
+# Test if we are bundled.
+is_bundled = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+if is_bundled:
+    JAR = 'REPIN_ecology.jar'
+else:
+    JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+
+
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
