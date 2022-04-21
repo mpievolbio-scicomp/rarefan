@@ -4,12 +4,10 @@ channels:
   - defaults
   - bioconda
   - anaconda
+  - r
 dependencies:
   - libstdcxx-ng
-  - ipywidgets>=7.5
-  - openjdk=11.0.8
-  - jupyter=1.0.0
-  - voila=0.1.21
+  - openjdk>=11.0.8
   - cmake>=3.12
   - blast=2.10
   - mcl=14.137
@@ -17,16 +15,23 @@ dependencies:
   - flask
   - wtforms
   - r-ggpmisc
-  - bioconductor-ggtree
   - r-dplyr
   - r-stringr
   - r-cowplot
   - r-ggplot2
-  - bioconductor-muscle
-  - r-biostrings
   - r-rlang>=0.4.10
   - r-vctrs>=0.3.7
   - r-lifecycle>=1.0.0
+  - r-shiny
+  - r-plotly
+  - r-logging
+  - r-ggpubr
+  - r-argparse
+  - r-roxygen2
+  - r-base>=4.1.1
+  - bioconductor-ggtree
+  - bioconductor-muscle
+  - bioconductor-biostrings
   - gradle
   - biopython
   - email_validator
@@ -34,5 +39,7 @@ dependencies:
   - pip
   - pip:
       - flask-pymongo
+      - flask-mongoengine
       - flask-wtf
       - flask-autoindex
+      - flask-mail

@@ -23,14 +23,14 @@ public class MakeREPINClusters {
 		File inFolder=new File(args[0]);
 		String[] focalSeeds=Arrays.copyOfRange(args, 1, args.length);
 		File out=new File(inFolder+"/repinClusters.txt");
-		MakeREPINClusters mrc=new MakeREPINClusters(inFolder, focalSeeds,true);
+		MakeREPINClusters mrc=new MakeREPINClusters(inFolder, focalSeeds,true,1);
 		mrc.writeClusters(out);
 		File fasAlignments=new File(out.getParentFile()+"/fas/");
 		fasAlignments.mkdir();
 		mrc.writeREPINAlignments(fasAlignments);
 	}
 	
-	public MakeREPINClusters(File inFolder,String[] reps,boolean analyseREPIN) {
+	public MakeREPINClusters(File inFolder,String[] reps,boolean analyseREPIN,int MCLThreads) {
 		this.analyseREPIN=analyseREPIN;
 		File[] genomes=getGenomes(inFolder);
 		reference=AlignTwoGenomes.getID(genomes[0]);
@@ -39,7 +39,7 @@ public class MakeREPINClusters {
 		File outFolder=new File(inFolder+"/repinProp/");
 		outFolder.mkdir();
 		this.reps=reps;
-		HashMap<String,REPINpopulations> rp=getREPINProperties(genomes,outFolder);
+		HashMap<String,REPINpopulations> rp=getREPINProperties(genomes,outFolder,MCLThreads);
 		clusterREPINsReference(ga,rp,refGenome.get(0).getSequence());
 		analyseREPINs(inFolder);
 		repinAlignments=cr.getREPINAlignments();
@@ -92,13 +92,13 @@ public class MakeREPINClusters {
 	}
 
 	
-	private HashMap<String/*genome ID*/,REPINpopulations> getREPINProperties(File[] genomes,File outFolder){
+	private HashMap<String/*genome ID*/,REPINpopulations> getREPINProperties(File[] genomes,File outFolder,int MCLThreads){
 		HashMap<String,REPINpopulations> rp=new HashMap<String, REPINpopulations>();
 		for(int i=0;i<genomes.length;i++) {
 			String id=AlignTwoGenomes.getID(genomes[i]);
 			rp.put(id, new REPINpopulations());
 			for(int j=0;j<reps.length;j++) {
-				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false,analyseREPIN));
+				rp.get(id).addREPINPopulation(reps[j], new REPINProperties(outFolder,id+"_"+j,genomes[i],reps[j].length(),numMuts,minFrac,null,reps[j],false,analyseREPIN, MCLThreads));
 			}
 		}
 		

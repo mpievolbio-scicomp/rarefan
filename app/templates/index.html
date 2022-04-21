@@ -4,7 +4,12 @@
 {% block title %}Home{% endblock %}
 {% block body %}
     <div class="jumbotron">
-        <h1><b>RAREFAN: RAyt and REpin Finder and ANalyzer</b></h1>
+        <h1><b>RAREFAN: RAyt/REpin Finder and ANalyzer</b></h1>
+        <h2>
+            <div style="color:red" >
+                <b>Note</b>: this webserver is still under development. The results may be erroneous or not be displayed correctly. In case of issues or questions please do not hesitate to contact us at <a href="mailto:rarefan@evolbio.mpg.de">rarefan@evolbio.mpg.de</a> .
+            </div>
+        </h2>
         <div id="divContainer" style="position: absolute;  border: solid 0 #000; margin-bottom:500px">
             <div id="frameContainer" style="overflow:hidden;">
                 <iframe
@@ -29,12 +34,9 @@
                 Our service provides an analysis of REPIN population size, how it relates to
                 REPIN replication rate and the presence and absence of RAYTs across all submitted genomes.
             </p>
-            {#<p>#}
-            {#    If you use the webserver please cite#}
-            {#</p>#}
             <h2>Third party tools</h2>
             <p>
-                The webserver relies on the following tools for analysis:
+                RAREFAN uses the following tools:
             </p>
             <ul>
                 <li>
@@ -73,22 +75,29 @@
             </p>
                 <li>
                     <p>Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
-                        REPIN population analysis in 4 Dokdonia genomes (Version 1).
-                        Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4117577"
-                                        target="_blank">DOI:10.5281/zenodo.4117577</a>
-                    </p>
+                        REPIN population analysis in 4 <i>Dokdonia</i> genomes.
+                        Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4117576"
+                                        target="_blank">DOI:10.5281/zenodo.4117576</a>
+                    <a href={{url_for('results', run_id='auoms4wi')}}>Visit results</a> </p>
                 </li>
                 <li><p>
                     Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
-                    REPIN population analysis in 130 Neisseria meningitidis and N. gonorrhoeae genomes (Version 1).
-                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4049438" target="_blank">DOI:10.5281/zenodo.4049438</a>.
-                </p></li>
+                    REPIN population analysis in 130 <i>Neisseria meningitidis</i> and <i>N. gonorrhoeae</i> genomes.
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4049437" target="_blank">DOI:10.5281/zenodo.4049437</a>.
+                    <a href={{url_for('results', run_id='7yl7znll')}}>Visit results</a> </p>
+                </li>
                 <li><p>
                     Frederic Bertels, Carsten Fortmann-Grote, & Paul B. Rainey.
-                    REPIN population analysis in 42 Pseudomonas chlororaphis genomes (Version 1).
-                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4043615" target="_blank">DOI:10.5281/zenodo.4043615</a>
-                </p></li>
+                    REPIN population analysis in 42 <i>Pseudomonas chlororaphis</i> genomes.
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4043614" target="_blank">DOI:10.5281/zenodo.4043614</a>
+                    <a href={{url_for('results', run_id='t5dvaibm')}}>Visit results</a> </p>
+                </li>
             </ul>
+            <div>
+                <h2>Code availability</h2>
+                The source code for all RAREFAN components is available at our <a href="https://gitlab.gwdg.de/mpievolbio-scicomp/repinpop" target="_blank" >gitlab repository</a>, where we also
+                provide the command line interface to run RAREFAN locally.
+            </div>
         </div>
     </div>
 {% endblock %}

@@ -7,9 +7,8 @@
     <meta charset='utf-8'></meta>
     <title>{% block title %}{% endblock %}</title>
     <!-- Bootstrap core CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <!-- Custom styles for this template -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
   {% block head %}{% endblock %}
   </head>
   <body>
@@ -20,31 +19,26 @@
             <li role="presentation"><a href="/">Home</a></li>
             <li role="presentation"><a href={{ url_for('upload') }}>Submit new run</a></li>
             <li role="presentation"><a href={{ url_for("results") }}>Browse results</a></li>
+            <li role="presentation"><a href={{ url_for("manual") }}>User manual</a></li>
           </ul>
         </nav>
       </div>
       <hr>
       {%  with messages = get_flashed_messages() %}
       {%  if messages %}
-          <h3>
-          Messages:
-          </h3>
-         <ul>
-             {%  for message in messages %}
-             <li>
-                 {{ message }}
-             </li>
-             {% endfor %}
-         </ul>
+        {%  for message in messages %}
+            <div class="alert alert-message" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
       {%  endif %}
       {%  endwith %}
-        <script>
-            $(document).tooltip({show: null});
-        </script>
       {% block body %}{% endblock %}
       <footer class="footer">
-        <p style="margin-top: 10px">© 2020 - 2021 Max Planck Institute for Evolutionary Biology</p>
+        <p style="margin-top: 10px">© 2020 - 2022 Max Planck Institute for Evolutionary Biology</p>
       </footer>
-    </div> <!-- /container -->
+    </div>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
   </body>
 </html>

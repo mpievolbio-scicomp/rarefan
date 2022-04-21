@@ -1,0 +1,9 @@
+app/
+memon.sh
+notebooks
+profiling/
+project.ini
+__pycache__/
+README.md
+Rplots.pdf
+Session.vim
