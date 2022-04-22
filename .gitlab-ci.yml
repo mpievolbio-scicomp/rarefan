@@ -111,8 +111,6 @@ test:chlororaphis:
 
 deploy:
   stage: deploy
-  only:
-    - tags
   dependencies:
     - build
   script:
@@ -123,12 +121,10 @@ deploy:
       - rarefan.zip
       - rarefan.tar.gz
 
-
-
 release:
   stage: release
-  only:
-    - tags
+  dependencies:
+    - deploy
   script:
     - echo "Make release."
   release:

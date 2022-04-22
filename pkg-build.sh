@@ -3,7 +3,6 @@
 # Build executable via pyinstaller
 
 cp -ur app/utilities ./
-ls utilities
 
 pyinstaller -y \
             --clean \
