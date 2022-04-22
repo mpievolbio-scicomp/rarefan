@@ -17,6 +17,7 @@ build:
       - CI/build.sh
       - source ~/.bashrc
       - conda activate repinpop
+      - touch __init__.py
       - source pkg-build.sh
   artifacts:
     paths:
