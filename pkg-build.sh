@@ -11,8 +11,7 @@ pyinstaller -y \
             --distpath pkg-dist \
             --name rarefan \
             --add-data REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar:./ \
-            --collect-data utilities.checkers \
-            -p app/utilities \
-            app/utilities/rarefan_cli.py
+            --add-data utilities/checkers.py:./ \
+            utilities/rarefan_cli.py
 
 rm -r utilities
