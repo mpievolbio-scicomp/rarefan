@@ -4,9 +4,14 @@
 
 cp -ur app/utilities ./
 
-# pyinstaller rarefan.spec
-
-# Uncomment to regenerate the spec file.
-pyinstaller -y --clean --workpath pkg-build --distpath pkg-dist --name rarefan --add-data REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar:./ --collect-data utilities.checkers -p app/utilities app/utilities/rarefan_cli.py 
+pyinstaller -y \
+            --clean \
+            --workpath pkg-build \
+            --distpath pkg-dist \
+            --name rarefan \
+            --add-data REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar:./ \
+            --collect-data utilities.checkers \
+            -p app/utilities \
+            app/utilities/rarefan_cli.py
 
 rm -r utilities
