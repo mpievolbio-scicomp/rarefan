@@ -10,6 +10,7 @@ variables:
 stages:
   - build
   - test
+  - deploy
 
 build:
   stage: build
@@ -27,6 +28,7 @@ build:
 
 test:unittest:
   stage: test
+  allow_failure: true
   script:
     - source /root/.bashrc
     - conda activate repinpop
@@ -37,6 +39,7 @@ test:unittest:
 
 test:neisseria:small:
   stage: test
+  allow_failure: true
   script:
     - cd build
     - make 
@@ -45,7 +48,7 @@ test:neisseria:small:
     - conda activate repinpop
     - source setenv.sh
     - cd test/scripts
-    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist 
     - mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
   artifacts:
     paths:
@@ -63,7 +66,7 @@ test:dokdonia:
     - source setenv.sh
     - cd test/scripts
     - ./dl_zenodo.sh dokdonia
-    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist 
     - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
   artifacts:
     paths:
@@ -71,7 +74,7 @@ test:dokdonia:
 
 test:neisseria:
   stage: test
-  allow_failure: false
+  allow_failure: true
   script: 
     - cd build
     - make 
@@ -89,7 +92,7 @@ test:neisseria:
 
 test:chlororaphis:
   stage: test
-  allow_failure: false
+  allow_failure: true
   script: 
     - cd build
     - make 
@@ -104,4 +107,21 @@ test:chlororaphis:
   artifacts:
     paths:
       - test/data/datasets/chlororaphis/ref
+
+deploy:
+  stage: deploy
+  only:
+    - master
+    - tags
+  dependencies:
+    - build
+  script:
+    - zip rarefan.zip -r pkg-dist/rarefan
+    - tar czf rarefan.tar.gz pkg-dist/rarefan
+  artifacts:
+    paths:
+      pkg-dist/rarefan.zip
+      pkg-dist/rarefan.tar.gz
+
+
 
