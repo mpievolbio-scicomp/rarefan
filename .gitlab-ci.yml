@@ -15,7 +15,9 @@ build:
   stage: build
   script:
       - CI/build.sh
-      - conda activate repinpop && ./pkg-build.sh
+      - source ~/.bashrc
+      - conda activate repinpop
+      - source pkg-build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
