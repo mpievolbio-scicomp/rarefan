@@ -123,6 +123,9 @@ deploy:
 
 release:
   stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
   dependencies:
     - deploy
   script:
@@ -132,3 +135,10 @@ release:
     description: 'Created by gitlab CI'
     tag_name: '$CI_COMMIT_TAG'
     ref: '$CI_COMMIT_TAG'
+  assets:
+    - name: 'zip'
+      filepath: 'rarefan.zip'
+      url: 'https://gitlab.gwdg.de:mpievolbio-scicomp/RepinPop/-/releases/${CI_COMMIT_TAG}/rarefan.-${CI_COMMIT_TAG}.zip'
+    - name: 'tar.gz'
+      filepath: 'rarefan.tar.gz'
+      url: 'https://gitlab.gwdg.de:mpievolbio-scicomp/RepinPop/-/releases/${CI_COMMIT_TAG}/rarefan.-${CI_COMMIT_TAG}.tar.gz'
