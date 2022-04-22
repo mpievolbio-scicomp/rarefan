@@ -120,8 +120,8 @@ deploy:
     - tar czf rarefan.tar.gz pkg-dist/rarefan
   artifacts:
     paths:
-      pkg-dist/rarefan.zip
-      pkg-dist/rarefan.tar.gz
+      - pkg-dist/rarefan.zip
+      - pkg-dist/rarefan.tar.gz
 
 
 
