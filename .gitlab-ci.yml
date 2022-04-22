@@ -18,7 +18,7 @@ build:
       - source ~/.bashrc
       - conda activate repinpop
       - touch __init__.py
-      - source pkg-build.sh
+      - ./pkg-build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
