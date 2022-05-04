@@ -17,6 +17,7 @@ from app import app, db
 from app.models import Job as DBJob
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task, empty_task
+from app.tasks.rayt_phylo import alignment_task, phylogeny_task
 from app.tasks.zip import zip_task
 from app.tasks.email import email_task, email_test
 from app.callbacks.callbacks import on_success, on_failure
