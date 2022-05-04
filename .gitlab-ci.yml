@@ -10,18 +10,26 @@ variables:
 stages:
   - build
   - test
+  - deploy
+  - release
 
 build:
   stage: build
   script:
       - CI/build.sh
+      - source ~/.bashrc
+      - conda activate repinpop
+      - touch __init__.py
+      - ./pkg-build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
-      - build/
+      - pkg-dist/rarefan
+      - build
 
 test:unittest:
   stage: test
+  allow_failure: true
   script:
     - source /root/.bashrc
     - conda activate repinpop
@@ -32,6 +40,7 @@ test:unittest:
 
 test:neisseria:small:
   stage: test
+  allow_failure: true
   script:
     - cd build
     - make 
@@ -40,7 +49,7 @@ test:neisseria:small:
     - conda activate repinpop
     - source setenv.sh
     - cd test/scripts
-    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist 
     - mv /tmp/rarefan_test/neisseria_small/out ../data/neisseria_small/out
   artifacts:
     paths:
@@ -58,7 +67,7 @@ test:dokdonia:
     - source setenv.sh
     - cd test/scripts
     - ./dl_zenodo.sh dokdonia
-    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist plots test_plots
+    - ./test.sh dokdonia clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist 
     - mv /tmp/rarefan_test/dokdonia/out ../data/dokdonia/out
   artifacts:
     paths:
@@ -66,7 +75,7 @@ test:dokdonia:
 
 test:neisseria:
   stage: test
-  allow_failure: false
+  allow_failure: true
   script: 
     - cd build
     - make 
@@ -84,7 +93,7 @@ test:neisseria:
 
 test:chlororaphis:
   stage: test
-  allow_failure: false
+  allow_failure: true
   script: 
     - cd build
     - make 
@@ -100,3 +109,35 @@ test:chlororaphis:
     paths:
       - test/data/datasets/chlororaphis/ref
 
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  script:
+    - zip rarefan.zip -r pkg-dist/rarefan
+    - tar czf rarefan.tar.gz pkg-dist/rarefan
+  artifacts:
+    paths:
+      - rarefan.zip
+      - rarefan.tar.gz
+
+release_job:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  needs:
+    - job: deploy
+      artifacts: true
+  script:
+    - echo "Make release."
+  release:
+    name: 'Release $CI_COMMIT_TAG'
+    description: 'Created by gitlab CI'
+    tag_name: '$CI_COMMIT_TAG'
+    ref: '$CI_COMMIT_TAG'
+  assets:
+    links:
+      - name: 'zip'
+        url: 'https://gitlab.gwdg.de/mpievolbio-scicomp/repinpop/download/rarefan-${CI_COMMIT_TAG}.zip'
+        filepath: rarefan.zip

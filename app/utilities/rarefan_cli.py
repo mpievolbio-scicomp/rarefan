@@ -6,7 +6,15 @@ import subprocess
 from io import StringIO
 import shlex
 
-JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+# Test if we are bundled.
+is_bundled = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
+
+if is_bundled:
+    JAR = 'REPIN_ecology.jar'
+else:
+    JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+
+
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
@@ -67,7 +75,7 @@ if __name__ == '__main__':
 * RAREFAN is released under the terms of the MIT License.                 *
 * See LICENSE for details.                                                *
 *                                                                         *
-* Copyright (c) 2020 - 2021 Max Planck Institute for Evolutionary Biology *
+* Copyright (c) 2020 - 2022 Max Planck Institute for Evolutionary Biology *
 *                                                                         *
 ***************************************************************************
 
@@ -182,8 +190,6 @@ if __name__ == '__main__':
     # Convert to absolute paths.
     args.outdir = os.path.abspath(args.outdir)
     args.query_rayt = os.path.abspath(args.query_rayt)
-
-    print(args)
 
     # Ask for confirmation if interactive mode.
     if args.interactive:
