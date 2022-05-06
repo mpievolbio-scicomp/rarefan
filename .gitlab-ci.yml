@@ -19,12 +19,9 @@ build:
       - CI/build.sh
       - source ~/.bashrc
       - conda activate repinpop
-      - touch __init__.py
-      - ./pkg-build.sh
   artifacts:
     paths:
       - REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
-      - pkg-dist/rarefan
       - build
 
 test:unittest:
@@ -113,13 +110,22 @@ deploy:
   stage: deploy
   dependencies:
     - build
+  rules:
+    - if: $CI_COMMIT_TAG
   script:
-    - zip rarefan.zip -r pkg-dist/rarefan
-    - tar czf rarefan.tar.gz pkg-dist/rarefan
+    - mkdir pkg-dist
+    - cp REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar pkg-dist
+    - cp app/utilities/checkers.py pkg-dist
+    - cp app/utilities/rarefan_cli.py pkg-dist/rarefan
+    - chmod 755 pkg-dist/rarefan
+    - cd pkg-dist
+    - zip ../rarefan-${CI_COMMIT_TAG}.zip *.jar *.py rarefan 
+    - tar czvf ../rarefan-${CI_COMMIT_TAG}.tar.gz *.jar *.py rarefan
+
   artifacts:
     paths:
-      - rarefan.zip
-      - rarefan.tar.gz
+      - rarefan-${CI_COMMIT_TAG}.zip
+      - rarefan-${CI_COMMIT_TAG}.tar.gz
 
 release_job:
   stage: release

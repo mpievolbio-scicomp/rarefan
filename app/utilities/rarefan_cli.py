@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os, sys
@@ -6,10 +6,7 @@ import subprocess
 from io import StringIO
 import shlex
 
-# Test if we are bundled.
-is_bundled = getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS')
-
-if is_bundled:
+if "REPIN_ecology.jar" in os.listdir():
     JAR = 'REPIN_ecology.jar'
 else:
     JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
@@ -247,7 +244,6 @@ if __name__ == '__main__':
     ### Collect results.
     results = parse_results(args.outdir, os.path.basename(args.reference))
     counts = results['counts']
-
 
     print("")
     print("Results")
