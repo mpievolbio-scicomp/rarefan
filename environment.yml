@@ -17,7 +17,6 @@ dependencies:
   - email_validator
   - phyml
   - pip
-  - pyinstaller
   - pip:
       - flask-pymongo
       - flask-mongoengine
