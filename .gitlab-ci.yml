@@ -138,10 +138,7 @@ release_job:
     - apt-get install curl
     - echo "Make release."
     - echo "Pushing to OC."
-    - curl -k -T rarefan-${CI_COMMIT_TAG}.zip \
-              -u "wnkxtBG28BvvfUq" \
-              -H 'X-Requested-With: XMLHttpRequest' \
-              https://owncloud.gwdg.de/public.php/webdav/rarefan-${CI_COMMIT_TAG}.zip
+    - curl -k -T rarefan-${CI_COMMIT_TAG}.zip -u "wnkxtBG28BvvfUq" -H 'X-Requested-With: XMLHttpRequest' https://owncloud.gwdg.de/public.php/webdav/rarefan-${CI_COMMIT_TAG}.zip
   release:
     name: 'Release $CI_COMMIT_TAG'
     description: 'Created by gitlab CI'
