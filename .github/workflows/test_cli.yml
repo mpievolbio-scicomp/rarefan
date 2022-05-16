@@ -24,15 +24,13 @@ jobs:
         shell: bash
       - name: zip
         run: |
-          mkdir pkg-dist
-          cp REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar pkg-dist
-          cp app/utilities/checkers.py pkg-dist
-          cp app/utilities/rarefan_cli.py pkg-dist/rarefan
-          chmod 755 pkg-dist/rarefan
-          cd pkg-dist
-          zip ../rarefan.zip *.jar *.py rarefan
+          mkdir rarefan
+          cp REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar rarefan
+          cp app/utilities/checkers.py rarefan
+          cp app/utilities/rarefan_cli.py rarefan/rarefan
+          chmod 755 rarefan/rarefan
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: zip
-          path: rarefan.zip
+          name: rarefan
+          path: rarefan
