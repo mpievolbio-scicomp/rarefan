@@ -57,9 +57,11 @@ jobs:
 
       - name: setup RTE
         run: |
+          conda init bash
+          source ~/.bashrc
           conda activate repinpop
           conda install pytest
-          . setenv.sh
+          source setenv.sh
         shell: bash
       - name: unittest
         run: |
