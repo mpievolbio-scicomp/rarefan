@@ -34,8 +34,8 @@ jobs:
         with:
           name: rarefan
           path: |
+            REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
             rarefan
-            build
 
   test:
     needs: build
@@ -56,9 +56,6 @@ jobs:
           name: rarefan
       - name: setup RTE
         run: |
-          cd build
-          make
-          cd ..
           source ~/.bashrc
           conda activate repinpop
           conda install pytest
