@@ -31,5 +31,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: py
-          path: app/utilities/rarefan_cli.py
-          path: app/utilities/checkers.py
+          path:
+            - app/utilities/rarefan_cli.py
+            - app/utilities/checkers.py
