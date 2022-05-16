@@ -33,9 +33,11 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: rarefan
-          path: rarefan
+          path: |
+            rarefan
+            build
 
-  testb:
+  test:
     needs: build
 
     runs-on: [ubuntu-latest]
@@ -48,10 +50,30 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: rarefan
+      - name: setup RTE
+        run: |
+          cd build
+          make
+          cd ..
+          source ~/.bashrc
+          conda activate repinpop
+          conda install pytest
+          source setenv.sh
+      - name: unittest
+        run: |
+          cd test/unittest
+          pytest test_routes.py
+        shell: bash
+
+      - name: neisseria_small
+        run: |
+          cd test/scripts
+          ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist
+
+
 
 
