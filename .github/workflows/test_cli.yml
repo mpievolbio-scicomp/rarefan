@@ -11,7 +11,6 @@ jobs:
   build:
     runs-on: [ubuntu-latest]
     container: mpievolbioscicomp/repinpop_base
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 11
@@ -23,3 +22,14 @@ jobs:
         run: |
           source ./build.sh
         shell: bash
+      - name: Upload jar
+        uses: actions/upload-artifact@v3
+        with:
+          name: jar
+          path: REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+      - name: Upload py
+        uses: actions/upload-artifact@v3
+        with:
+          name: py
+          path: app/utilities/rarefan_cli.py
+          path: app/utilities/checkers.py
