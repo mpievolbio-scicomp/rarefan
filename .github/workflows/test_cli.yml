@@ -63,5 +63,5 @@ jobs:
           conda install pytest rq redis redis-py -c conda-forge
           source setenv.sh
           cd test/scripts
-          ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist
+          ./test.sh neisseria_small clean setup run_cli
         shell: bash
