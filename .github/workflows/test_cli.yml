@@ -60,7 +60,7 @@ jobs:
           conda init bash
           source ~/.bashrc
           conda activate repinpop
-          conda install pytest
+          conda install pytest rq redis redis-py -c conda-forge
           source setenv.sh
           cd test/unittest
           pytest test_routes.py
