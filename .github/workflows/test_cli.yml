@@ -55,19 +55,13 @@ jobs:
         with:
           name: rarefan
 
-      - name: setup RTE
+      - name: test
         run: |
           conda init bash
           source ~/.bashrc
           conda activate repinpop
           conda install pytest rq redis redis-py -c conda-forge
           source setenv.sh
-          cd test/unittest
-          pytest test_routes.py
-        shell: bash
-
-      - name: neisseria_small
-        run: |
           cd test/scripts
           ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist
         shell: bash
