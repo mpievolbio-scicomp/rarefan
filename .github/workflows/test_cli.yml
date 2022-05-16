@@ -20,4 +20,6 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - name: Build with Gradle
-        run: ./build.sh
+        run: |
+          source ./build.sh
+        shell: bash
