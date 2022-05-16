@@ -56,10 +56,10 @@ jobs:
           name: rarefan
       - name: setup RTE
         run: |
-          source ~/.bashrc
+          . ~/.bashrc
           conda activate repinpop
           conda install pytest
-          source setenv.sh
+          . setenv.sh
       - name: unittest
         run: |
           cd test/unittest
