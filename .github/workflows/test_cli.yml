@@ -65,6 +65,7 @@ jobs:
         shell: bash
       - name: unittest
         run: |
+          conda activate repinpop
           cd test/unittest
           pytest test_routes.py
         shell: bash
