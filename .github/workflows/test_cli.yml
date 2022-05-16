@@ -34,8 +34,9 @@ jobs:
         with:
           name: rarefan
           path: |
-            REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
             rarefan
+            REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+            ~/.bashrc
 
   test:
     needs: build
@@ -52,7 +53,11 @@ jobs:
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
-          name: rarefan
+          name: |
+            rarefan
+            REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
+            ~/.bashrc
+
       - name: setup RTE
         run: |
           source ~/.bashrc
@@ -71,6 +76,8 @@ jobs:
           cd test/scripts
           ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist
         shell: bash
+
+
 
 
 
