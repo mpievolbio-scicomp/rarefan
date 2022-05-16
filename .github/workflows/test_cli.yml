@@ -32,13 +32,8 @@ jobs:
           cd pkg-dist
           zip ../rarefan.zip *.jar *.py rarefan
         shell: bash
-
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: zip
           path: rarefan.zip
-          name: py
-          path:
-            app/utilities/rarefan_cli.py
-          : app/utilities/checkers.py
