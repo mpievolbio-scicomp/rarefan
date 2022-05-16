@@ -62,6 +62,5 @@ jobs:
           conda activate repinpop
           conda install pytest rq redis redis-py -c conda-forge
           source setenv.sh
-          cd test/scripts
-          ./test.sh neisseria_small clean setup run_cli
+          ls -lrt
         shell: bash
