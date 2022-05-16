@@ -41,7 +41,6 @@ jobs:
     needs: build
 
     runs-on: [ubuntu-latest]
-
     container: mpievolbioscicomp/repinpop_base
     steps:
       - uses: actions/checkout@v3
@@ -56,10 +55,11 @@ jobs:
           name: rarefan
       - name: setup RTE
         run: |
-          . ~/.bashrc
+          source ~/.bashrc
           conda activate repinpop
           conda install pytest
           . setenv.sh
+        shell: bash
       - name: unittest
         run: |
           cd test/unittest
@@ -70,6 +70,7 @@ jobs:
         run: |
           cd test/scripts
           ./test.sh neisseria_small clean setup run_java test_java run_andi test_andi run_clustdist test_clustdist
+        shell: bash
 
 
 
