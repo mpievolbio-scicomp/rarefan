@@ -99,8 +99,7 @@ jobs:
       - name: "install blast"
         run: |
           brew install blast
-          which makeblastdb
-          sudo ln -s /usr/local/bin/makeblastdb /usr/bin/makeblastdb
+          patch /usr/local/bin/legacy_blast.pl patch_mac
         shell: bash
 
       - name: "install mcl"

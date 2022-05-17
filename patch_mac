@@ -1,0 +1,4 @@
+43c43
+< use constant DEFAULT_PATH => "/usr/bin";
+---
+> use constant DEFAULT_PATH => "/usr/local/bin";
