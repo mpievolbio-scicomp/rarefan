@@ -57,22 +57,16 @@ jobs:
 
       - name: setup rte
         run: |
-          ls -R __w
-          mv __w/rarefan/rarefan/build ./build
-          mv __w/rarefan/rarefan/rarefan ./rte
           apt install andi
-          source ./build.sh
-        shell: bash
-      - name: test
-        run: |
           cd build
           make
           cd ..
-          conda setup bash
-          source ~/.bashrc
+      - name: test
+        run: |
           conda activate repinpop
           conda install pytest 
           source setenv.sh
+          mv __w/rarefan/rarefan/rarefan ./rte
           cd rte
           chmod u+x rarefan
           ls -lrt
