@@ -14,7 +14,8 @@ jobs:
     steps:
       - name: context
         run: echo '${{ toJSON(github) }}'
-      - name: echo '{{ github.ref_type }}'
+      - name: ref_type
+        run: echo '{{ github.ref_type }}'
       - uses: actions/checkout@v3
       - name: Set up JDK 11
         uses: actions/setup-java@v3
