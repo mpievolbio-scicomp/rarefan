@@ -78,8 +78,8 @@ jobs:
           exit 0
         shell: bash
 
-  release:
-    needs: build
+  pre-release:
+    needs: test
     runs-on: "ubuntu-latest"
 
     steps:
@@ -103,6 +103,36 @@ jobs:
           prerelease: false
           automatic_release_tag: "latest"
           title: "Nightly build"
+          files: |
+            LICENSE
+            rarefan.zip
+
+  release:
+    needs: test
+    runs-on: "ubuntu-latest"
+    if: startsWith(${{GITHUB_REF_NAME}}, "v")
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rarefan
+
+      - name: pack
+        run: |
+          zip -r rarefan.zip rarefan
+        shell: bash
+
+      - name: "Release step"
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          automatic_release_tag: ${{GITHUB_REF_NAME}}
+          title: "Rarefan ${{GITHUB_REF_NAME}}"
           files: |
             LICENSE
             rarefan.zip
