@@ -103,7 +103,6 @@ jobs:
         shell: bash
       - name: "update gcc"
         run: |
-          brew reinstall llvm
           brew reinstall gcc
           which gcc
           gcc --version
