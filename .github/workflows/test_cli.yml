@@ -79,10 +79,13 @@ jobs:
         shell: bash
 
   pre-release:
-    needs: test
+    needs: build
     runs-on: "ubuntu-latest"
 
     steps:
+      - name: context
+        run: echo '${{ toJSON(github) }}'
+
       - name: checkout
         uses: actions/checkout@v2
 
@@ -108,11 +111,12 @@ jobs:
             rarefan.zip
 
   release:
-    needs: test
+    needs: build
     runs-on: "ubuntu-latest"
-    if: startsWith("${{ github.ref_name }}", "v")
 
     steps:
+      - name: context
+        run: echo '${{ toJSON(github) }}'
       - name: checkout
         uses: actions/checkout@v2
 
