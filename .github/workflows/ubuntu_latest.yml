@@ -101,7 +101,12 @@ jobs:
           brew install blast
           patch /usr/local/bin/legacy_blast.pl patch_mac
         shell: bash
-
+      - name: "update gcc"
+        run: |
+          brew reinstall llvm
+          brew reinstall gcc
+          which gcc
+          gcc --version
       - name: "install mcl"
         run: |
           curl https://micans.org/mcl/src/mcl-latest.tar.gz --output mcl-latest.tar.gz
