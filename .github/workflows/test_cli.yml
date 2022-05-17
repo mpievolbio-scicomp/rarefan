@@ -54,14 +54,17 @@ jobs:
         with:
           name: rarefan
 
+      - name: install andi
+        uses: ConorMacBride/install-package@v1
+        with:
+          brew: andi
+          apt: andi
       - name: test
         run: |
-          apt install andi
           source ./build.sh
           conda activate repinpop
           cd build
           make
-          make install
           cd ..
           conda install pytest 
           source setenv.sh
