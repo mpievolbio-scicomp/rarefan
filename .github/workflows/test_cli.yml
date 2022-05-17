@@ -63,6 +63,8 @@ jobs:
           cd ..
       - name: test
         run: |
+          conda init bash
+          source ~/.bashrc
           conda activate repinpop
           conda install pytest 
           source setenv.sh
