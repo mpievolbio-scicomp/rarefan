@@ -71,10 +71,10 @@ explicitly.
 ```
 source setenv.sh
 ```
+## Commandline interface (CLI)
+We provide a standalone commandline interface to run rarefan. See the [Releases]{https://github.com/mpievolbio-scicomp/rarefan/releases} section of this repository.
 
-## Running RAREFAN from the commandline
-The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory DIR that contains genome sequences and rayt protein fasta files.
-
+The command line signature is as follows:
 ```
 $> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] [-d DISTANCE_GROUP_SEEDS] -q QUERY_RAYT [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i] DIR
 
