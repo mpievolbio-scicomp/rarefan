@@ -80,7 +80,7 @@ jobs:
 
   release:
     name: "Release"
-    needs: test
+    needs: build
     runs-on: "ubuntu-latest"
 
     steps:
