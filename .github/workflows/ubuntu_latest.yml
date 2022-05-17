@@ -81,7 +81,7 @@ jobs:
         shell: bash
 
   release:
-    needs: test
+    needs: build
     runs-on: "ubuntu-latest"
     if: startsWith(github.ref, 'refs/tags/v')
 
