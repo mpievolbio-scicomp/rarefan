@@ -57,6 +57,7 @@ jobs:
 
       - name: setup rte
         run: |
+          ls -R __w
           mv __w/rarefan/rarefan/build ./build
           mv __w/rarefan/rarefan/rarefan ./rte
           apt install andi
