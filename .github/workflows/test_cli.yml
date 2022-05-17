@@ -36,7 +36,6 @@ jobs:
           path: |
             rarefan
             REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
-            ~/.bashrc
 
   test:
     needs: build
@@ -57,10 +56,14 @@ jobs:
 
       - name: test
         run: |
-          conda init bash
-          source ~/.bashrc
+          apt install andi
+          source ./build.sh
           conda activate repinpop
-          conda install pytest rq redis redis-py -c conda-forge
+          cd build
+          make
+          make install
+          cd ..
+          conda install pytest 
           source setenv.sh
           mv __w/rarefan/rarefan/rarefan ./rte
           cd rte
