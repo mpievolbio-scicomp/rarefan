@@ -58,6 +58,7 @@ jobs:
       - name: setup rte
         run: |
           apt install andi
+          ls -lrt
           cd build
           make
           cd ..
