@@ -79,7 +79,7 @@ jobs:
         shell: bash
 
   release:
-    needs: test
+    needs: build
     runs-on: "ubuntu-latest"
     if: github.ref_name == 'v*.*.*'
 
