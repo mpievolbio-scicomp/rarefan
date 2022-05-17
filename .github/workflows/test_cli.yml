@@ -79,7 +79,6 @@ jobs:
         shell: bash
 
   release:
-    name: "Release"
     needs: build
     runs-on: "ubuntu-latest"
 
@@ -92,6 +91,11 @@ jobs:
         with:
           name: rarefan
 
+      - name: pack
+        run: |
+          zip -r rarefan.zip rarefan
+        shell: bash
+
       - name: "Release step"
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
@@ -101,4 +105,4 @@ jobs:
           title: "Nightly build"
           files: |
             LICENSE
-            rarefan/*
+            rarefan.zip
