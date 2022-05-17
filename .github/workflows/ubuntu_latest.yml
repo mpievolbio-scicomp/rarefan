@@ -97,11 +97,13 @@ jobs:
         with:
           name: rarefan
 
-      - name: "setup env "
+      - name: "install conda "
         uses: s-weigand/setup-conda@v1
         with:
           activate-conda: true
           python-version: 3.8
+
+      - name: "install mcl blast"
         run: conda install blast mcl -c bioconda
 
       - name: test
