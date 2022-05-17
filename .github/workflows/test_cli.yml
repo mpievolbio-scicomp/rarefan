@@ -61,13 +61,13 @@ jobs:
           cd build
           make clustdist patch_blast link_lapack
           cd ..
-      - name: test
-        run: |
-          conda init bash
-          source ~/.bashrc
+          find / -name conda
+          source activate repinpop
           conda activate repinpop
           conda install pytest 
-          source setenv.sh
+      - name: test
+        run: |
+          source activate repinpop
           cd rarefan
           chmod u+x rarefan
           ls -lrt
