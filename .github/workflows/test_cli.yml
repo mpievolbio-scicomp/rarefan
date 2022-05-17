@@ -117,6 +117,8 @@ jobs:
     steps:
       - name: context
         run: echo '${{ toJSON(github) }}'
+      - name: ref_name
+        run: echo '${{ toJSON(github.ref_name) }}'
       - name: checkout
         uses: actions/checkout@v2
 
