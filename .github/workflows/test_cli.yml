@@ -34,6 +34,7 @@ jobs:
         with:
           name: rarefan
           path: |
+            build
             rarefan
             REPIN_ecology/REPIN_ecology/build/libs/REPIN_ecology.jar
 
@@ -54,21 +55,23 @@ jobs:
         with:
           name: rarefan
 
-      - name: install andi
-        uses: ConorMacBride/install-package@v1
-        with:
-          brew: andi
-          apt: andi
+      - name: setup rte
+        run: |
+          mv __w/rarefan/rarefan/rarefan/build ./build
+          mv __w/rarefan/rarefan/rarefan ./rte
+          apt install andi
+          source ./build.sh
+        shell: bash
       - name: test
         run: |
-          source ./build.sh
-          conda activate repinpop
           cd build
           make
           cd ..
+          conda setup bash
+          source ~/.bashrc
+          conda activate repinpop
           conda install pytest 
           source setenv.sh
-          mv __w/rarefan/rarefan/rarefan ./rte
           cd rte
           chmod u+x rarefan
           ls -lrt
