@@ -17,6 +17,7 @@ from app import app, db
 from app.models import Job as DBJob
 from app.tasks.rarefan import rarefan_task
 from app.tasks.tree import tree_task, empty_task
+from app.tasks.rayt_phylo import alignment_task, phylogeny_task
 from app.tasks.zip import zip_task
 from app.tasks.email import email_task, email_test
 from app.callbacks.callbacks import on_success, on_failure
@@ -24,19 +25,17 @@ from app.tasks import redis_tests
 
 from Bio import SeqIO
 import copy
-import datetime
-import logging
 import os
-import shlex
 import shutil
-import stat
-import subprocess
 import tempfile
 import time
 
+
 logger = app.logger
 
+
 def get_status_code(run_id_path):
+    """Legacy function (###REMOVEME)"""
     # Check if the run has finished.
     is_started = ".start.stamp" in os.listdir(run_id_path)
     is_java_finished = ".java.stamp" in os.listdir(run_id_path)
@@ -48,10 +47,10 @@ def get_status_code(run_id_path):
 
 
 def validate_fasta(filename):
-    """ Validates input from passed file as fasta formatted sequence data.
+    """
+    Validate input from passed file as fasta formatted sequence data.
 
     :param filename: The filename of the file to validate.
-
     """
     logger.info("Validating fasta file %s.", filename)
     with open(filename, 'r') as fp:
@@ -65,19 +64,22 @@ def validate_fasta(filename):
 
 @app.route('/')
 def index():
+    """Route to homepage."""
     return render_template("index.html")
+
 
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
+    """Upload files to server."""
     logger.debug("upload/%s", request.method)
-    if request.method == 'POST': #upload_form.validate_on_submit():
+    if request.method == 'POST':
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
             prefix="",
             dir=app.config["UPLOAD_DIR"]
         )
 
-        seqs = [v for k,v in request.files.items() if k.startswith('file')]
+        seqs = [v for k, v in request.files.items() if k.startswith('file')]
         logger.info("Uploading %s.", str(seqs))
 
         dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
@@ -105,11 +107,10 @@ def upload():
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
 
-        for k,v in session.items():
+        for k, v in session.items():
             logger.debug("session[%s] = %s", k, str(v))
 
         return redirect(url_for('submit', _method='GET'))
-
 
     form = RunForm()
     session['tmpdir'] = None
@@ -134,10 +135,9 @@ def upload():
     )
 
 
-
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
-
+    """Submit job to server."""
     logger.debug("submit/%s", request.method)
     submit_form = SubmitForm()
 
@@ -145,7 +145,6 @@ def submit():
     submit_form.reference_strain.choices.extend(strain_names)
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
-
 
     if submit_form.validate_on_submit():
         tmpdir = session['tmpdir']
@@ -200,26 +199,38 @@ def submit():
 
         # Create new Job instance.
         dbjob = DBJob(run_id=run_id,
-                    stages={"rarefan": {"redis_job_id": None,
-                                                           "status": 'setup',
-                                                           "results": {"returncode": None,
-                                                                       "counts": {
-                                                                           "rayts":None,
-                                                                           "nmers":None,
-                                                                           "repins":None},
-                                                                       "data_sanity": {
-                                                                           "rayts":None,
-                                                                           "nmers":None,
-                                                                           "repins":None},
-                                                           }
-                                                 },
-                                               "tree": {"redis_job_id": None,
-                                                        "status": 'setup',
-                                                        "results": {"returncode": None, "log": ""}},
-                                               "zip": {"redis_job_id": None,
-                                                       "status": 'setup',
-                                                       "results": {"returncode": None, "log": ""}}
-                                       },
+                      stages={"rarefan": {"redis_job_id": None,
+                                          "status": 'setup',
+                                          "results": {"returncode": None,
+                                                      "counts": {
+                                                          "rayts": None,
+                                                          "nmers": None,
+                                                          "repins": None},
+                                                      "data_sanity": {
+                                                          "rayts": None,
+                                                          "nmers": None,
+                                                          "repins": None},
+                                                      }
+                                          },
+                              "tree": {"redis_job_id": None,
+                                       "status": 'setup',
+                                       "results": {"returncode": None, "log": ""}},
+                              "rayt_alignment": {
+                                  "redis_job_id": None,
+                                  "status": 'setup',
+                                  "results": {"returncode": None,
+                                              "log": None},
+                              },
+                              "rayt_phylogeny": {
+                                  "redis_job_id": None,
+                                  "status": 'setup',
+                                  "results": {"returncode": None,
+                                              "log": None},
+                              }, 
+                              "zip": {"redis_job_id": None,
+                                      "status": 'setup',
+                                      "results": {"returncode": None, "log": ""}}
+                              },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
                     notification_is_sent=False,
@@ -230,8 +241,7 @@ def submit():
         success = dbjob.save()
         logger.debug("Return code is %s", str(success))
 
-
-        # If one of the server provided rayt files was selected,  copy it to the working dir. In the dropdown menu,
+        # If one of the server provided rayt files was selected, copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
         query_rayt_fname = os.path.join(session['tmpdir'], session['query_rayt'])
         if session['query_rayt'] in ['yafM_Ecoli', 'yafM_SBW25']:
@@ -249,7 +259,7 @@ def submit():
             on_success=on_success,
             on_failure=on_failure,
             timeout='24h',
-            meta={'run_id': run_id, 'dbjob_id': dbjob.id, 'stage':'rarefan'},
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id, 'stage': 'rarefan'},
             kwargs={
                 "tmpdir": session['tmpdir'],
                 "outdir": session['outdir'],
@@ -261,11 +271,9 @@ def submit():
                 "treefile": session['treefile'],
                 "e_value_cutoff": session['e_value_cutoff'],
                 "analyse_repins": session['analyse_repins'],
-                }
+            }
         )
-
         logger.debug("Constructed rarefan job %s.", str(rarefan_job))
-
 
         run_tree_task = len(dbjob.setup['strain_names']) >= 4
         if run_tree_task:
@@ -274,31 +282,46 @@ def submit():
                                     on_success=on_success,
                                     on_failure=on_failure,
                                     connection=app.redis,
-                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'tree'},
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'tree'},
                                     kwargs={
-                                         "run_dir": session['tmpdir'],
-                                         "treefile": session['treefile'],
-                                        }
-            )
+                                        "run_dir": session['tmpdir'],
+                                        "treefile": session['treefile'],
+                                    }
+                                    )
 
         else:
             tree_job = RQJob.create(empty_task,
                                     on_success=on_success,
                                     on_failure=on_failure,
                                     depends_on=rarefan_job,
-                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'tree'},
+                                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'tree'},
                                     connection=app.redis,
             )
 
+        rayt_alignment_job = RQJob.create(
+            alignment_task,
+            depends_on=rarefan_job,
+            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            connection=app.redis,
+            kwargs={'run_id': run_id},
+        )
+        rayt_phylogeny_job = RQJob.create(
+                    phylogeny_task,
+                    depends_on=rayt_alignment_job,
+                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    connection=app.redis,
+                    kwargs={'run_id': run_id},
+                )
+    
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
                                on_success=on_success,
                                on_failure=on_failure,
-                               meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'zip'},
+                               meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'zip'},
                                connection=app.redis,
-                               kwargs={'run_dir':session['tmpdir']},
-        )
+                               kwargs={'run_dir': session['tmpdir']},
+                               )
         logger.debug("Constructed zip job %s.", str(zip_job))
 
         email_job = RQJob.create(email_task,
@@ -306,7 +329,7 @@ def submit():
                                              'tree_job',
                                              'zip_job',
                                              ],
-                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'email'},
+                                 meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'email'},
                                  connection=app.redis,
                                  kwargs={'run_id': run_id},
                                  )
@@ -316,11 +339,16 @@ def submit():
         # Enqueue the jobs
         app.queue.enqueue_job(rarefan_job)
         app.queue.enqueue_job(tree_job)
+        app.queue.enqueue_job(rayt_alignment_job)
+        app.queue.enqueue_job(rayt_phylogeny_job)
         app.queue.enqueue_job(zip_job)
         app.queue.enqueue_job(email_job)
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)
@@ -328,20 +356,20 @@ def submit():
         return redirect(url_for('results',
                                 run_id=run_id,
                                 _method='GET',)
-        )
+                        )
 
     logger.debug("Form not validated, rendering submit template.")
 
     return render_template(
-                    'submit.html',
-                    title='Submit',
-                    submit_form=submit_form,
-                    )
+        'submit.html',
+        title='Submit',
+        submit_form=submit_form,
+    )
 
 
 @app.route('/results', methods=['GET', 'POST'])
 def results():
-
+    """Results summary page."""
 
     results_form = AnalysisForm()
 
@@ -355,7 +383,15 @@ def results():
     if run_id is not None:
         logger.debug(run_id)
 
-        dbjob = DBJob.objects.get_or_404(run_id=run_id)
+        try:
+            dbjob = DBJob.objects.get(run_id=run_id)
+        except:
+            flash("Run {} was not found in our records. Please provide a valid run ID.".format(
+                run_id))
+            return render_template("results_query.html",
+                                   results_form=results_form,
+                                   title="Results",
+                                   )
 
         # Update stage status by querying rq.
         dbjob.set_overall()
@@ -375,11 +411,13 @@ def results():
                            title="Results",
                            )
 
+
 @app.route('/files/<path:req_path>')
 def files(req_path):
     """
-    The 'files' route generates a navigable directory listing of a given run directory.
-    @param req_path: The requested path to display.
+    Generate a navigable directory listing of a given run directory.
+
+    :param req_path: The requested path to display.
     """
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     nested_file_path = os.path.join(uploads_dir, req_path)
@@ -438,6 +476,7 @@ def files(req_path):
 
 @app.route('/check_tasks', methods=['GET'])
 def queue():
+    """Queue a job on the redis job queue."""
     args = request.args
     job_id = request.args['job_id']
 
@@ -447,13 +486,16 @@ def queue():
 
     return("Job with id {} is finished: {}".format(redis_job.id, redis_job.is_finished))
 
+
 @app.route('/manual', methods=['GET'])
 def manual():
+    """Return the rarefan manual."""
     return render_template('manual.html')
+
 
 @app.route('/rerun')
 def rerun():
-    args = request.args
+    """Rerun a job."""
     run_id = request.args['run_id']
     do_repins = request.args.get('do_repins', None)
     dbjob = DBJob.objects.get_or_404(run_id=run_id)
@@ -466,7 +508,7 @@ def rerun():
     session['strain_names'] = dbjob.setup.get('strain_names')
     submit_form.reference_strain.choices.extend(session['strain_names'])
     session['reference_strain'] = dbjob.setup.get('reference_strain')
-    submit_form.reference_strain.data=session['reference_strain']
+    submit_form.reference_strain.data = session['reference_strain']
 
     session['rayt_names'] = dbjob.setup.get('rayt_names')
     submit_form.query_rayt.choices.extend(session['rayt_names'])
@@ -504,19 +546,17 @@ def rerun():
     logger.debug('session = %s', str(session))
 
     return render_template(
-                    'submit.html',
-                    title='Submit',
-                    submit_form=submit_form,
+        'submit.html',
+        title='Submit',
+        submit_form=submit_form,
     )
+
 
 @app.route('/plot')
 def plot():
     """ Redirect to the shiny app for the run id given via the request. """
 
     run_id = request.args['run_id']
-    # Go to port 7238 on localhost if this is a debug run, else use the shiny server endpoint on the production server.
-    # if os.environ['FLASK_DEBUG']:
-        # return redirect('http://localhost:7238?run_id={}'.format(run_id))
 
     return redirect('http://rarefan.evolbio.mpg.de/shiny/analysis?run_id={}'.format(run_id))
 

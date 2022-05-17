@@ -49,7 +49,7 @@ parser$add_argument('-t', '--tree',
 parser$add_argument('-o', '--outfile',
                     metavar='OUTFILE',
 					default='analysis.pdf',
-                    type="character", 
+                    type="character",
                     help='Save figures to OUTFILE'
 )
 
@@ -70,26 +70,15 @@ logging::loginfo(paste0("treefile = ", treefile))
 logging::loginfo(paste0("outfile = ", outfile))
 # Parse command line args
 
-barcolor = "#40e0d0"
-barsize = 2
-fontsize = 12
-
 correlation_plot = plotCorrelationSingle(
 		data_dir,
-		rayt_type,
-		theme,
-		fontsize,
-		'left',
-		'bottom'
+		rayt_type
 		)
 
 repin_facet_plot = plotREPINs(
        data_dir,
 		   treefile,
-		   rayt_type,
-		   barcolor,
-		   barsize,
-		   fontsize
+		   rayt_type
 	)
 
 

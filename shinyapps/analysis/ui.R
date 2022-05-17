@@ -7,28 +7,32 @@ fluidPage(
 		sidebarLayout(
 				sidebarPanel(
 					textOutput("text"),
+					tableOutput("run_setup"),
 					selectInput(inputId = 'rayt',
-								label="Select REP/RAYT group",
+								label="Select REPIN group",
 								choices = list(
-										"RAYT 0" = 0,
-										"RAYT 1" = 1,
-										"RAYT 2" = 2,
-										"RAYT 3" = 3,
-										"RAYT 4" = 4,
-										"RAYT 5" = 5
+										"0" = 0,
+										"1" = 1,
+										"2" = 2,
+										"3" = 3,
+										"4" = 4,
+										"5" = 5
 								),
 								selected = 0),
-						textOutput("plot_instructions")
+						htmlOutput("back_to_results")
 						),
 				mainPanel(
-					h4("RAYT tree"),
-					withSpinner(plotOutput(outputId = 'rayt_tree', width="100%")),
-					hr(),
-					h4("REPINs"),
-					withSpinner(plotOutput(outputId = 'repin_tree', width="100%")),
-					hr(),
-					h4("Correlation"),
-				  withSpinner(plotOutput(outputId = 'correlations', width="100%"))
+				  tabsetPanel(
+				    tabPanel("RAYT tree",
+    					withSpinner(plotOutput(outputId = 'rayt_tree', inline=TRUE))
+				  ),
+					tabPanel("REPINs",
+  					withSpinner(plotOutput(outputId = 'repin_tree', inline=TRUE))
+					),
+					tabPanel("Correlation",
+					         withSpinner(plotOutput(outputId = 'correlations', inline=TRUE))
+					  )
+				  )
 				)
 		)
 )

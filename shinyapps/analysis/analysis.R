@@ -35,24 +35,26 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             panel.background = element_blank(),
             legend.justification = c(0, 1),
             legend.position = c(0.80, 1),
-            # legend.title=element_blank(),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
-	    legend.title=element_blank()
+	          # legend.title=element_blank()
 )
+
+# Set fontsize globally.
+fontsize=12
 
 
 ######################################################################################
 # Plot phylo tree for all input NA sequences, number of RAYTs and number of REPs for each species.
-plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16){
+plotREPINs=function(folder,
+                    treeFile,
+                    rep_rayt_group,
+                    highlight_strain=""){
 
   logging::logdebug("Enter function 'plotREPINs' with ")
   logging::logdebug(paste0("    folder = ", folder))
   logging::logdebug(paste0("    treeFile = ", treeFile))
   logging::logdebug(paste0("    rep_rayt_group = ", rep_rayt_group))
-  logging::logdebug(paste0("    colorBars = ", colorBars))
-  logging::logdebug(paste0("    bs = ", bs))
-  logging::logdebug(paste0("    fontsize = ", fontsize))
 
   # Set theme.
   themeCurr=theme(axis.line.x = element_line(colour = "black"),
@@ -79,7 +81,6 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
 
   logging::logdebug(tree)
   tree_file_is_corrupt = typeof(tree) == "logical"
-
   if(tree_file_is_corrupt) {
     p = ggplot() +
             geom_blank() +
@@ -149,7 +150,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
                               , xend=rayts
                               , y=y
                               , yend=y)
-                        , size=bs
+                        , size=2
                         , color=unique(rayt_color)
                         )
     }
@@ -178,7 +179,7 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
                          , xend=repins
                          , y=y
                          , yend=y)
-                   , size=bs
+                   , size=2
                    ,color=unique(rayt_color)
                    )
 
@@ -198,7 +199,15 @@ plotREPINs=function(folder,treeFile,rep_rayt_group,colorBars="",bs=2,fontsize=16
                                               linetype="blank"
               )
         )
-
+  if(highlight_strain!="") {
+  p = p +
+      geom_highlight(node=which(tree$tip.label==highlight_strain),
+                     extend=230,
+                     colour='red',
+                     fill='white',
+                     size=0.3,
+                     alpha=0.0)
+  }
   # Font size.
   p = p +
           theme(text=element_text(size=fontsize),axis.text=element_text(size=fontsize)) +
@@ -260,17 +269,7 @@ determineColor=function(associationFile,repin_rayt_group){
 
 ######################################################################################
 plotCorrelationSingle=function(folder,
-                               rep_rayt_group,
-                               theme=rarefan_theme,
-                               fontsize=16,
-                               pvLabelX=NA,
-                               pvLabelY=NA,
-                               subsetSmooth=F,
-                               from=F,
-                               to=F,
-                               repinThreshold=0,
-                               name=F,
-                               labelOdd=""){
+                               rep_rayt_group){
 
 	logging::logdebug("Plotting correlation.")
 
@@ -302,70 +301,54 @@ plotCorrelationSingle=function(folder,
 	logging::logdebug("Preparing data structures and colors.")
   association=association[association$repintype==rep_rayt_group,]
   t$numRAYT=association[match(t[,1],association[,1]),]$rayts
-  logging::logdebug("t=%s", str(t))
-  t$color=t$numRAYT
-  t$color[t$color>0]=1
-  t$color[t$color==0]=0
-  cols=t$color
-  names(cols)=cols
+  t$RAYTs = as.factor(t$numRAYT)
+
+  # Get color dataframe.
 	colorDF = determineColor(paste0(folder,"/repin_rayt_association.txt"))
-  colLegend=cols
-  logging::logdebug(colnames(colorDF))
-  logging::logdebug(colorDF)
 
-  cols[cols>0]=colorDF[colorDF$repRAYT==rep_rayt_group,]$color
-  cols[cols==0]="black"
-  colLegend[colLegend>0]=paste0("RAYT ",rep_rayt_group)
-  colLegend[colLegend==0]="no RAYT"
-  colLegend=colLegend[!duplicated(colLegend)]
-  cols=cols[!duplicated(cols)]
-  logging::logdebug(str(cols))
-  logging::logdebug("Setting up ggplots.")
+	# Color for current REP/RAYT group.
+  rayt_color = unique(colorDF[colorDF$repRAYT==rep_rayt_group,]$color)
 
-  # Set up the shapes for RAYT[0-5] and "no RAYT".
-  # Have to treat the cases when there are either only "no RAYTs" or only "RAYT [0-5].
-  # In general, both cases are present, so setup as length 2 vector representing the two
-  # shapes.
-  shapes = c(1,16)
+  # Sort in descending order of numRAYT.
+  t <- t[order(t$numRAYT, decreasing=T),]
 
-  # If there's only one value in 'cols', treat special.
-  if(length(cols) == 1) {
-    # only no-RAYTs
-    if(cols[[1]]=='black') {
-      shapes=c(1)
-    }
-    # All other cases.
-    else {
-      shapes=c(16)
-    }
-  }
-
-  # Setup the plot.
-  # x-axis: REPIN proportion of master sequence
-  # y-axis REPIN population size
-  # color: RAYT type [0-5]
-  # shape: RAYT type (will be manually set to the configured shapes)
-  # Symbol size = 3
+  legend_values = unique(t[t$numRAYT>0,]$numRAYT)
+  legend_values = legend_values[order(legend_values)]
+  # browser()
+  # Setup the plot
   p <- ggplot(t) +
-    geom_point(
+    # Plot only observations with numRAYT>0 and map size to number of RAYTs (as factor).
+    geom_point2(
            aes(x=propMaster,
                y=numRepin,
-               col=as.factor(color),
-               shape=as.factor(color),
+               size=RAYTs,
+               subset=numRAYT>=1
            ),
-               size=3,
-       )   + # Manually set the shapes
-      scale_shape_manual(values=shapes,
-                       labels=colLegend,
-                       guide="none" ) + # Manually set the colors and insert legend.
-      scale_color_manual(values=cols,
-                       labels=colLegend,
-                       guide=guide_legend(override.aes = list(
-                         breaks=colLegend,
-                         shape = sort(shapes, decreasing = T)
-                         )
+           color=rayt_color,
+       ) +
+    # Now add the obs. with numRAYT==0 and set shape (will be fixed manually).
+    geom_point2(
+           aes(x=propMaster,
+               y=numRepin,
+               shape=RAYTs,
+               subset=numRAYT==0,
            )
-      )
+       ) +
+    # Set correct size of dots.
+    scale_size_manual(
+      values=legend_values
+    ) +
+    # Set the shape of numRAYT=0 observations.
+    scale_shape_manual(
+      values=c(1),
+      labels=c("No RAYT"),
+      guide=guide_legend(override.aes = list(shape=1)
+                          )
+      )+
+    # Legend titles.
+    labs(size="RAYTs", shape=NULL) +
+    # Set legend order.
+    guides(size=guide_legend(order=1), shape=guide_legend(order=2))
 
   logging::logdebug("Adding limits, theme, and axis labels.")
   p <- p +
@@ -413,7 +396,7 @@ get_rayt_phylogeny=function(data_dir){
 
 	  # Run muscle alignment.
 	  logging::logdebug("Running muscle...")
-	  aln=muscle(raytseqs)
+	  aln=muscle(raytseqs, verbose=T, log='/tmp/muscle.log')
 	  logging::logdebug("...done.")
 
 	  # Write alignment to file.
@@ -426,7 +409,8 @@ get_rayt_phylogeny=function(data_dir){
   if(!(file.exists(raytPhyTreeFile) && file.exists(raytPhyStatsFile))) {
 	  logging::loginfo(paste0("RAYT phylogeny data files not found, will compute phylogeny now."))
 	  # Run phyml as system command.
-	  system(paste0("phyml --quiet -i ",raytAlnFile," -m GTR"))
+    phyml_cmd = sprintf("phyml --quiet -i %s -m GTR", raytAlnFile)
+	  system(phyml_cmd)
   }
   else {
 	  logging::loginfo(paste0("RAYT phylogeny data files found."))
@@ -442,7 +426,7 @@ get_rayt_phylogeny=function(data_dir){
 
 
 ######################################################################################
-drawRAYTphylogeny=function(data_dir, fontsize=16, reference_strain=""){
+drawRAYTphylogeny=function(data_dir, reference_strain=""){
 
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)

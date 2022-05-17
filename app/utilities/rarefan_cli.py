@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os, sys
@@ -6,7 +6,12 @@ import subprocess
 from io import StringIO
 import shlex
 
-JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+if "REPIN_ecology.jar" in os.listdir():
+    JAR = 'REPIN_ecology.jar'
+else:
+    JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+
+
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
@@ -67,7 +72,7 @@ if __name__ == '__main__':
 * RAREFAN is released under the terms of the MIT License.                 *
 * See LICENSE for details.                                                *
 *                                                                         *
-* Copyright (c) 2020 - 2021 Max Planck Institute for Evolutionary Biology *
+* Copyright (c) 2020 - 2022 Max Planck Institute for Evolutionary Biology *
 *                                                                         *
 ***************************************************************************
 
@@ -183,8 +188,6 @@ if __name__ == '__main__':
     args.outdir = os.path.abspath(args.outdir)
     args.query_rayt = os.path.abspath(args.query_rayt)
 
-    print(args)
-
     # Ask for confirmation if interactive mode.
     if args.interactive:
         items_str = ["", "RAREFAN run parameters:", "=======================",]
@@ -241,7 +244,6 @@ if __name__ == '__main__':
     ### Collect results.
     results = parse_results(args.outdir, os.path.basename(args.reference))
     counts = results['counts']
-
 
     print("")
     print("Results")

@@ -51,9 +51,9 @@ conda deactivate
 
 ### Build in separate build directory.
 ```
-$> mkdir build  
-$> cd build  
-$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..  
+$> mkdir build
+$> cd build
+$> cmake -DCMAKE_INSTALL_PREFIX=$(cat ../conda_prefix.txt) ..
 ```
 The last line instructs sets the installation prefix to $CONDA_PREFIX.
 ```
@@ -75,60 +75,42 @@ source setenv.sh
 ## Running RAREFAN from the commandline
 The commandline interface to RAREFAN is implemented in *app/utilities/rarefan*. This script can be used to run RAREFAN on a directory DIR that contains genome sequences and rayt protein fasta files.
 
-The syntax of is
 ```
-$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] -q QUERY_RAYT  
-               [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i]  
-               DIR  
-```
-where the commandline arguments are explained as follows:
-```
-positional arguments:
+$> rarefan [-h] [-o OUTDIR] -r REFERENCE [-c MIN_NMER_OCCURRENCE] [-l NMER_LENGTH] [-d DISTANCE_GROUP_SEEDS] -q QUERY_RAYT [-e E_VALUE_CUTOFF] [-R] [-j THREADS] [-t TREEFILE] [-i] DIR
+
   DIR                   Contains the genome DNA sequences and RAYT AA sequences to be analyzed.
 
 optional arguments:
   -h, --help            show this help message and exit
   -o OUTDIR, --outdir OUTDIR
-                        Results will be written to OUTDIR. OUTDIR will be created if not existing
-                        (default: ./rarefan_out).
+                        Results will be written to OUTDIR. OUTDIR will be created if not existing (default: ./rarefan_out).
   -r REFERENCE, --reference REFERENCE
                         Filename of the reference genome sequence
   -c MIN_NMER_OCCURRENCE, --min_nmer_occurrence MIN_NMER_OCCURRENCE
-                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
-                        will be taken into account (default: 55). See RAREFAN manual for details.
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE will be taken into account (default: 55). See RAREFAN manual for details.
   -l NMER_LENGTH, --min_nmer_length NMER_LENGTH
-                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE
-                        will be taken into account (default: 21). See RAREFAN manual for details.)
+                        Only Nmers of NMER_LENGTH that occur more frequently than MIN_NMER_OCCURRENCE will be taken into account (default: 21). See RAREFAN manual for details.
+  -d DISTANCE_GROUP_SEEDS, --distance_group_seeds DISTANCE_GROUP_SEEDS
+                        Set the distance between the REPIN groups (???)
   -q QUERY_RAYT, --query_rayt QUERY_RAYT
-                        Filename or path of the amino acid sequence file containing the RAYT protein
-                        sequence (default: None).
+                        Filename or path of the amino acid sequence file containing the RAYT protein sequence (default: None).
   -e E_VALUE_CUTOFF, --e_value_cutoff E_VALUE_CUTOFF
-                        e-value cutoff for tblastn of the query rayt sequence against the submitted
-                        genomes (default: 1e-30).
+                        e-value cutoff for tblastn of the query rayt sequence against the submitted genomes (default: 1e-30).
   -R, --no-repins       Do not analyse REPINS (default: False).
   -j THREADS, --num_threads THREADS
-                        Number of threads for parallel cluster analysis with MCL (default: 24).
+                        Number of threads for parallel cluster analysis with MCL (default: 4).
   -t TREEFILE, --treefile TREEFILE
-                        Filename or path of the phylogenetic tree of submitted genomes (newik format,
-                        '.nwk' extension). If none given and more than four genomes are submitted, the
-                        tree will be calculated and written to OUTDIR/tmptree.nwk (default:
-                        tmptree.nwk).
+                        Filename or path of the phylogenetic tree of submitted genomes (newik format, '.nwk' extension). If none given and more than four genomes are submitted, the tree will be calculated and written to
+                        OUTDIR/tmptree.nwk (default: tmptree.nwk).
   -i, --interactive     Interactive mode. Ask for confirmation before starting the analysis run.
 ```
-
-## Runing the RAREFAN web server
+-
+## Running the RAREFAN web server
 ### Database backend
 The webserver uses MongoDB as a backend. Install mongodb-server, create a database user named 'rarefan', secured by password, and a database 'rarefan'. Assign the 'dbAdmin' role for the database 'rarefan' to the 'rarefan' user. Consult the [mongodb manual](https://docs.mongodb.com/manual/tutorial/manage-users-and-roles/) if unsure how to do this.
 
 ### Configuration
 Copy the configuration template *app/config_template.py* to  *app/config.py* and edit the settings. An example is given below.
-
-Jobs submitted to RAREFAN are processed by redis. In your conda environmont, install `rq` and `redis`.
-
-```shell
-$> conda install rq redis
-```
-
 
 ```python
 import os
@@ -156,61 +138,35 @@ class Config(object):
     DEFAULT_MAIL_SENDER='rarefan@mail.my.server.com'
 ```
 
+### Redis Job Queue
+Jobs submitted to RAREFAN are processed by redis. In your conda environmont, install `rq` and `redis`.
+
+```shell
+$> conda install rq redis
+```
+
+### Starting the server
 To launch the server, run
 
 ```
-$> rq worker rarefan &  # Launch a redis worker.
 $> flask run 
 ```
 
 And navigate your browser to http://localhost:5000 .
 
-#### NOTE
+## R shiny app
+RAREFAN output can be visualized using our provided R scripts and shiny app. The
+mongo db password must be set in *shinyapp/analysis/server.R* in order to query
+the run parameters from the database.
+
+To start the shiny app, run 
+```
+$> Rscript run_app.R
+```
+from the project root directory.
+
+*NOTE:*
 Data visualisation on a local deployment server is currently not working.
-
-### Server notes (applies mostly to rarefan.evolbio.mpg.de production server)
-#### Code updates
-After a code update, the server components need to be restarted. 
-
-1. Recompile java
-```console
-$> cd REPINecology/REPINecology
-$> gradle build
-$> cd -
-```
-1. Restart python webserver
-If the python code is installed in a conda (recommended), it should be activated since the server script depends on the `$CONDA_PREFIX` variable pointing to the environments root directory.
-```console
-$> sudo service rarefan restart
-```
-1. Restart R
-Deactivate the conda environment
-```console
-$> conda deactivate
-$> sudo service shiny-server restart
-```
-
-#### Dependency updates
-Sometimes, new code also adds new software dependencies.
-
-1. python
-Simply update your conda environment
-```console
-$> conda env update --file=environment.yml
-```
-Then restart the webserver as discussed above.
-1. R
-Deactivate conda env and install new packages as root:
-```console
-$> conda deactivate
-$> sudo -i
-#> R
-> install.packages("<new package name>")
-> exit
-#> exit
-$>
-```
-Then restart shiny-server as discussed above.
 
 ##  Testing
 The directory *test/scripts/* contains two scripts:

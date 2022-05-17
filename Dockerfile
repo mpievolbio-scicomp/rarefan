@@ -6,6 +6,7 @@ RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install linux-libc-dev
 RUN apt-get install util-linux git make gcc build-essential libgsl-dev gsl-bin andi wget zip unzip -y
+RUN apt-get install upx-ucl -y
 
 # Init conda.
 RUN conda init bash
@@ -15,4 +16,4 @@ COPY environment.yml .
 COPY CI/e2e.sh .
 
 # Create conda env in docker container.
-RUN conda env create -f environment.yml
+RUN conda env create -n repinpop -f environment.yml

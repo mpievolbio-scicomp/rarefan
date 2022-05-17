@@ -1,7 +1,6 @@
 package REPINpopulations;
 import java.io.*;
 import java.util.*;
-
 import frequencies.REPINProperties;
 import identifyRAYTs.BlastRAYTs;
 import util.*;
@@ -16,10 +15,10 @@ public class DeterminePopulationFrequencies {
     //requires mcl, andi, clustDist and BLAST+
     String focalSeeds[];
     ArrayList<File> genomes;
-    File inFolder; 
+    File inFolder;
     int numMuts=1;
     double minFrac=0.01;
-    
+
     //distance from repin to rayt, if within vicinity then repin cluster is associated with that rayt
     String legacyBlastPerlLocation;
     File queryRAYT;
