@@ -85,8 +85,7 @@ jobs:
   release:
     needs: build
     runs-on: "ubuntu-latest"
-    if: startsWith('${{ github.ref_name }}', 'v')
-    if: github.ref_type == 'tag'
+    if: ${{ github.ref_type}} == 'tag'
 
     steps:
       - name: checkout
