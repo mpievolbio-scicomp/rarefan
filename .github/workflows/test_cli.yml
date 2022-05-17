@@ -110,7 +110,7 @@ jobs:
   release:
     needs: test
     runs-on: "ubuntu-latest"
-    if: startsWith(${{GITHUB_REF_NAME}}, "v")
+    if: startsWith("${{ github.ref_name }}", "v")
 
     steps:
       - name: checkout
@@ -132,7 +132,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           automatic_release_tag: ${{GITHUB_REF_NAME}}
-          title: "Rarefan ${{GITHUB_REF_NAME}}"
+          title: "Rarefan ${{ github.ref_name}}"
           files: |
             LICENSE
             rarefan.zip
