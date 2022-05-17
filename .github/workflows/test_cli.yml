@@ -78,47 +78,12 @@ jobs:
           exit 0
         shell: bash
 
-  pre-release:
-    needs: build
-    runs-on: "ubuntu-latest"
-
-    steps:
-      - name: context
-        run: echo '${{ toJSON(github) }}'
-
-      - name: checkout
-        uses: actions/checkout@v2
-
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: rarefan
-
-      - name: pack
-        run: |
-          zip -r rarefan.zip rarefan
-        shell: bash
-
-      - name: "Release step"
-        uses: "marvinpinto/action-automatic-releases@latest"
-        with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          automatic_release_tag: "latest"
-          title: "Nightly build"
-          files: |
-            LICENSE
-            rarefan.zip
-
   release:
-    needs: build
+    needs: test
     runs-on: "ubuntu-latest"
+    if: github.ref_name == 'v*.*.*'
 
     steps:
-      - name: context
-        run: echo '${{ toJSON(github) }}'
-      - name: ref_name
-        run: echo '${{ toJSON(github.ref_name) }}'
       - name: checkout
         uses: actions/checkout@v2
 
@@ -129,7 +94,7 @@ jobs:
 
       - name: pack
         run: |
-          zip -r rarefan.zip rarefan
+          zip -r rarefan-${{github.ref_name}}.zip rarefan
         shell: bash
 
       - name: "Release step"
@@ -138,7 +103,7 @@ jobs:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           automatic_release_tag: "${{ github.ref_name}}"
-          title: "Rarefan ${{ github.ref_name}}"
+          title: "RAREFAN ${{ github.ref_name}}"
           files: |
             LICENSE
-            rarefan.zip
+            rarefan-${{github.ref_name}}.zip
