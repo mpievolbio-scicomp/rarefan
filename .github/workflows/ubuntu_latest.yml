@@ -80,6 +80,44 @@ jobs:
           exit 0
         shell: bash
 
+  test_win:
+    needs: build
+
+    runs-on: [windows-latest]
+    container: mpievolbioscicomp/repinpop_base
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: rarefan
+
+      - name: "setup env "
+        uses: s-weigand/setup-conda@v1
+        with:
+          activate-conda: true
+          python-version: 3.8
+        run: conda install blast mcl -c bioconda
+
+      - name: test
+        run: |
+          cd rarefan
+          chmod u+x rarefan
+          ./rarefan ../test/data/neisseria_small -q ../test/data/NMAA_0235.faa -r Nmen_2594.fas -o /tmp/rarefan_out | tee log
+          if [ $(grep -c "^15 RAYTs" log) -ne 1 ]; then exit 1; fi 
+          if [ $(grep -c "^184 21bp long sequences" log) -ne 1 ]; then exit 1; fi 
+          if [ $(grep -c "^48 REPINs" log) -ne 1 ]; then exit 1; fi 
+
+          echo "====> Test passed <===="
+          exit 0
+        shell: powershell
+
+
   test_mac:
     needs: build
 
