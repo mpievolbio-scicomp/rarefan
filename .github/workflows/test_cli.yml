@@ -71,5 +71,11 @@ jobs:
           cd rarefan
           chmod u+x rarefan
           ls -lrt
-          ./rarefan ../test/data/neisseria_small -q ../test/data/yafM_Ecoli.faa -r Nmen_2594.fas -o /tmp/rarefan_out
+          ./rarefan ../test/data/neisseria_small -q ../test/data/NMAA_0235.faa -r Nmen_2594.fas -o /tmp/rarefan_out | tee log
+          if [ $(grep -c "^15 RAYTs" log) -ne 1 ]; then exit 1; fi 
+          if [ $(grep -c "^184 21bp long sequences" log) -ne 1 ]; then exit 1; fi 
+          if [ $(grep -c "^48 REPINs" log) -ne 1 ]; then exit 1; fi 
+
+          echo "====> Test passed <===="
+          exit 0
         shell: bash
