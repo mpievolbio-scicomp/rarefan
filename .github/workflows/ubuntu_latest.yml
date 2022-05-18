@@ -85,35 +85,32 @@ jobs:
 
     runs-on: ["macos-latest"]
     steps:
-      - uses: actions/checkout@v3
+      - name: checkout repo
+        uses: actions/checkout@v3
+
       - name: Set up JDK 11
         uses: actions/setup-java@v3
         with:
           java-version: '11'
           distribution: 'adopt'
+
       - name: Download artifact
         uses: actions/download-artifact@v3
         with:
           name: rarefan
 
+      - name: "setup conda"
+        uses: s-weigand/setup-conda@v1
+        with:
+          activate-conda: true
+
+      - name: "install mcl"
+        run: conda install mcl -c bioconda
+
       - name: "install blast"
         run: |
           brew install blast
           patch /usr/local/bin/legacy_blast.pl patch_mac
-        shell: bash
-      - name: "update gcc"
-        run: |
-          brew reinstall gcc
-          which gcc
-          gcc --version
-      - name: "install mcl"
-        run: |
-          curl https://micans.org/mcl/src/mcl-latest.tar.gz --output mcl-latest.tar.gz
-          tar xzvf mcl-latest.tar.gz
-          cd mcl-14-137
-          ./configure --prefix=/usr/local
-          make
-          make install
         shell: bash
 
       - name: test
