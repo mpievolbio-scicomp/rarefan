@@ -99,6 +99,9 @@ jobs:
         with:
           name: rarefan
 
+      - name: "setup cmake"
+        uses: symbitic/install-cmake@master
+
       - name: "setup conda"
         uses: s-weigand/setup-conda@v1
         with:
@@ -112,6 +115,7 @@ jobs:
       - name: "install clustdist"
         run: |
           cd build
+          cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
           make clustdist
           cd ..
 
