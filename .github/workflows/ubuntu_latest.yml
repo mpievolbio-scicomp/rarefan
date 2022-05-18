@@ -106,8 +106,14 @@ jobs:
 
       - name: "install mcl"
         run: |
-          conda install mcl blast -c bioconda
+          conda install mcl blast andi -c bioconda
           patch /usr/local/miniconda/bin/legacy_blast.pl patch
+
+      - name: "install clustdist"
+        run: |
+          cd build
+          make clustdist
+          cd ..
 
       - name: test
         run: |
