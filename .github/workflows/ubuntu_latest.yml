@@ -114,6 +114,8 @@ jobs:
 
       - name: "install clustdist"
         run: |
+          rm -r build
+          mkdir build
           cd build
           cmake -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX ..
           make clustdist
