@@ -99,8 +99,6 @@ jobs:
         with:
           name: rarefan
 
-        shell: bash
-
       - name: "setup conda"
         uses: s-weigand/setup-conda@v1
         with:
