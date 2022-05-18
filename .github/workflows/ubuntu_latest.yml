@@ -99,10 +99,6 @@ jobs:
         with:
           name: rarefan
 
-      - name: "install blast"
-        run: |
-          brew install blast
-          patch /usr/local/bin/legacy_blast.pl patch_mac
         shell: bash
 
       - name: "setup conda"
@@ -111,7 +107,9 @@ jobs:
           activate-conda: true
 
       - name: "install mcl"
-        run: conda install mcl -c bioconda
+        run: |
+          conda install mcl blast -c bioconda
+          patch /usr/local/miniconda/bin/legacy_blast.pl patch
 
       - name: test
         run: |
