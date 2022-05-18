@@ -99,6 +99,12 @@ jobs:
         with:
           name: rarefan
 
+      - name: "install blast"
+        run: |
+          brew install blast
+          patch /usr/local/bin/legacy_blast.pl patch_mac
+        shell: bash
+
       - name: "setup conda"
         uses: s-weigand/setup-conda@v1
         with:
@@ -106,12 +112,6 @@ jobs:
 
       - name: "install mcl"
         run: conda install mcl -c bioconda
-
-      - name: "install blast"
-        run: |
-          brew install blast
-          patch /usr/local/bin/legacy_blast.pl patch_mac
-        shell: bash
 
       - name: test
         run: |
