@@ -16,15 +16,18 @@ suppressMessages(library(cowplot))
 suppressMessages(library(logging))
 suppressMessages(library(glue))
 suppressMessages(library(ggtext))
+suppressMessages(library(RColorBrewer))
 
 # Set log level
 logging::basicConfig()
 logging::setLevel(30) # 10: debug, 20: info, 30: warning, 40: error
 
-# 6 Colors for plots (corresponding to 6 RAYT rep_rayt_groups)
-colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6")
+# Colors
+# colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6", "#101010", "#DD00DA")
+colors = c(brewer.pal(8, "Accent"), brewer.pal(9, 'Pastel1'))
 
 # Set theme for all plots
+
 logging::logdebug("defining theme")
 rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.key = element_rect(fill = "white"),
@@ -217,7 +220,7 @@ plotREPINs=function(folder,
 }
 
 ######################################################################################
-determineColor=function(associationFile,repin_rayt_group){
+determineColor=function(associationFile){
   logging::logdebug("Determine colors from %s.", associationFile)
   ass=read.delim(associationFile,header=TRUE)
   logging::logdebug(str(ass))
@@ -235,7 +238,8 @@ determineColor=function(associationFile,repin_rayt_group){
      }
      else if(!is.na(ass[i,3])&&nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
-        c=colors[as.integer(split0[[1]][1])+1]
+        position = as.integer(split0[[1]][1])+1
+        c=colors[position]
      }
   	 else{
         c="grey"
@@ -441,7 +445,7 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
   # Read tree file.
   raytTreeFile=rayt_files$raytPhyTreeFile
   nwk=read.tree(raytTreeFile)
-  nwk$node.label = c(1:136)
+  nwk$node.label = c(1:nwk$Nnode)
 
   # Get tree object.
   p <- ggtree(nwk)
@@ -449,7 +453,6 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
   # Get colors
   colorDF = determineColor(paste0(data_dir,"/repin_rayt_association.txt"))
   logging::logdebug(colnames(colorDF))
-  logging::logdebug(colorDF)
 
   # Retain only RAYT colors.
   onlyRAYTs <- colorDF[colorDF[,1] %in% nwk$tip.label, ]
@@ -502,7 +505,6 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
   cols <- onlyRAYTs$color
   names(cols) <- onlyRAYTs$color
   logging::logdebug(cols)
-  print(cols)
   # Add colors
   p <-  p + scale_color_manual(values=cols,guide="none")
 
