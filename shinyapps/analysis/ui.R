@@ -8,18 +8,13 @@ fluidPage(
 				sidebarPanel(
 					textOutput("text"),
 					tableOutput("run_setup"),
-					selectInput(inputId = 'rayt',
-								label="Select REPIN group",
-								choices = list(
-										"0" = 0,
-										"1" = 1,
-										"2" = 2,
-										"3" = 3,
-										"4" = 4,
-										"5" = 5
-								),
-								selected = 0),
-						htmlOutput("back_to_results")
+					numericInput(inputId = 'rayt',
+            								label="Select REPIN group",
+            								value=0,
+            								min=0,
+            								step=1
+					),
+					htmlOutput("back_to_results")
 						),
 				mainPanel(
 				  tabsetPanel(
