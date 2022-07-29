@@ -8,7 +8,7 @@ fluidPage(
 				sidebarPanel(
 					textOutput("text"),
 					tableOutput("run_setup"),
-					numericInputInput(inputId = 'rayt',
+					numericInput(inputId = 'rayt',
             								label="Select REPIN group",
             								value=0,
             								min=0,
