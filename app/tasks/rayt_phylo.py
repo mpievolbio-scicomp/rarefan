@@ -104,7 +104,7 @@ def run_phyml(run_dir, seed=None):
         return "Input data file is empty.", 0
 
 
-    command = 'phyml --quiet -i {} -m GTR'.format(input_fname)
+    command = 'phyml --leave_duplicates --quiet -i {} -m GTR'.format(input_fname)
 
 
     if seed is not None:
