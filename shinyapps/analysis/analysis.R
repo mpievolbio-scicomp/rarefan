@@ -40,11 +40,27 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.position = c(0.80, 1),
             legend.text = element_text(hjust=0),
             panel.spacing=unit(2,"lines"),
-	          # legend.title=element_blank()
+	          legend.title=element_blank()
 )
 
 # Set fontsize globally.
 fontsize=12
+
+blank_theme = theme(axis.text=element_text(size=fontsize),
+                  axis.line = element_blank(),
+                  axis.line.x.bottom = element_blank(),
+                  axis.line.y.left = element_blank(),
+                  axis.title = element_blank(),
+                  axis.ticks = element_blank(),
+                  axis.text.x = element_blank(),
+                  axis.text.y = element_blank(),
+                  panel.grid.major = element_blank(),
+                  panel.grid.minor = element_blank(),
+                  panel.border = element_blank(),
+                  panel.background = element_blank(),
+                  text=element_text(size=fontsize)
+            )
+
 
 
 ######################################################################################
@@ -290,7 +306,7 @@ plotCorrelationSingle=function(folder,
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
             annotate(x=0.5, y=0.5, geom='text', label="No data to correlate.") +
-            theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + rarefan_theme
+            blank_theme
 
 		return(p)
 	}
@@ -444,7 +460,21 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
 
   # Read tree file.
   raytTreeFile=rayt_files$raytPhyTreeFile
+
   nwk=read.tree(raytTreeFile)
+  # If file is empty, return empty plot.
+
+  if(is.null(nwk)) {
+    p <-  ggplot() +
+            geom_blank() +
+            xlim(c(0, 1)) +
+            ylim(c(0,1)) +
+            annotate(x=0.5, y=0.5, geom='text', label="No data in RAYT phylogeny.") +
+            blank_theme
+
+		return(p)
+  }
+
   nwk$node.label = c(1:nwk$Nnode)
 
   # Get tree object.
