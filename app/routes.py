@@ -9,6 +9,7 @@ from flask import flash
 
 from werkzeug.utils import secure_filename
 
+import sys
 import rq
 from rq.job import Job as RQJob
 
@@ -90,8 +91,17 @@ def upload():
 
         # Check if valid fasta files.
         for f in fnames:
+
+            # Convert to unix filetype (see gh issue #9).
+            with open(f, 'rb') as infile:
+                content = infile.read()
+            with open(f, 'wb') as output:
+                for line in content.splitlines():
+                    output.write(line + b'\n')
+
             if f.split('.')[-1] in tree_extensions:
                 continue
+
             is_fasta = validate_fasta(f)
             if not is_fasta:
                 flash("{} is neither a valid fasta file nor a tree file and will be ignored.".format(os.path.basename(f)))
