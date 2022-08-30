@@ -2,6 +2,7 @@ import sys
 import os
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def count_lines(fname):
@@ -78,6 +79,7 @@ def parse_results(outdir,
         try:
             results['counts']['repins'][i] = count_lines(cluster_file)
         except:
+            logger.debug("Could not count lines in cluster file %s.", cluster_file)
             repin_checks[i] = 1
 
         results['status']['repins'] = int(all([r == 1 for r in repin_checks]))
