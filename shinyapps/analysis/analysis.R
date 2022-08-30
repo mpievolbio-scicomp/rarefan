@@ -451,8 +451,14 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
   # Check and get phylogeny data.
   rayt_files = get_rayt_phylogeny(data_dir)
   if(rayt_files$raytAlnFile == "") {
-	  logging::logwarn("Alignment is empty, will return empty plot.")
-	  return(ggplot())
+	 p <- ggplot() +
+            geom_blank() +
+            xlim(c(0, 1)) +
+            ylim(c(0,1)) +
+            annotate(x=0.5, y=0.5, geom='text', label="No RAYTs in dataset") +
+            blank_theme
+
+    return(p)
   }
 
   #
