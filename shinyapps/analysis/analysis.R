@@ -44,7 +44,7 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Set fontsize globally.
-fontsize=14
+fontsize=16
 
 blank_theme = theme(axis.text=element_text(size=fontsize),
                   axis.line = element_blank(),
@@ -355,11 +355,11 @@ plotCorrelationSingle=function(folder,
                shape=RAYTs,
                subset=numRAYT==0,
            ),
-           size=2
+           size=3
        ) +
     # Set correct size of dots.
     scale_size_manual(
-      values=legend_values*2
+      values=legend_values*2 + 1
     ) +
     # Set the shape of numRAYT=0 observations.
     scale_shape_manual(
