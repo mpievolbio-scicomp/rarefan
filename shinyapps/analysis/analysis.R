@@ -44,7 +44,7 @@ rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
 )
 
 # Set fontsize globally.
-fontsize=12
+fontsize=14
 
 blank_theme = theme(axis.text=element_text(size=fontsize),
                   axis.line = element_blank(),
@@ -144,7 +144,7 @@ plotREPINs=function(folder,
   logging::logdebug(paste0("rayt_color=", rayt_color))
 
 
-  num_rayts = length(d$rayts)
+  num_rayts = sum(d$rayts)
   logging::logdebug("Number of rayts: %d", num_rayts)
 
   # REPIN population size.
@@ -190,6 +190,7 @@ plotREPINs=function(folder,
     logging::logdebug("popSize=%s", str(popSize))
     # Add repin population size.
 
+    if(sum(popSize$repins) > 0) {
     p = facet_plot(p
                    , panel='REPIN population size'
                    , data=popSize
@@ -202,6 +203,7 @@ plotREPINs=function(folder,
                    ,color=unique(rayt_color)
                    )
 
+    }
   }
   else {
           p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", rep_rayt_group," is empty."))
@@ -352,18 +354,18 @@ plotCorrelationSingle=function(folder,
                y=numRepin,
                shape=RAYTs,
                subset=numRAYT==0,
-           )
+           ),
+           size=2
        ) +
     # Set correct size of dots.
     scale_size_manual(
-      values=legend_values
+      values=legend_values*2
     ) +
     # Set the shape of numRAYT=0 observations.
     scale_shape_manual(
       values=c(1),
       labels=c("No RAYT"),
-      guide=guide_legend(override.aes = list(shape=1)
-                          )
+      guide=guide_legend(override.aes = list(shape=1))
       )+
     # Legend titles.
     labs(size="RAYTs", shape=NULL) +
