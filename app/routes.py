@@ -86,7 +86,11 @@ def upload():
         dna_extensions = ['fn', 'fna', 'fastn', 'fas', 'fasta']
         aa_extensions = ['fa', 'faa']
         tree_extensions = ['nwk']
-        fnames = [os.path.join(session['tmpdir'], secure_filename(seq.filename)) for seq in seqs]
+
+        # Generate filenames: Intermediate "." by "_" and secure.
+        fnames = [seq.filename for seq in seqs]
+        fnames = ["_".join(fname.split(".")[:-1]) + "." + fname.split(".")[-1] for fname in fnames]
+        fnames = [os.path.join(session['tmpdir'], secure_filename(fname)) for fname in fnames]
         [seq.save(fname) for seq, fname in zip(seqs, fnames)]
 
         # Check if valid fasta files.
