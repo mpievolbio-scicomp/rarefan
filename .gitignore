@@ -27,3 +27,4 @@ test/scripts/neisseria_small.log
 .#*.*
 app/config.py
 mongopass.patch
+*.fas.*

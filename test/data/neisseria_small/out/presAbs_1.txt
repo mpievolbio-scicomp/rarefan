@@ -1,1 +1,0 @@
-strain	numRAYTs	NumREPINsLargestCluster	masterSequence	mastersequenceFreq	allREP	numberOfRepinClusters	allREPINs	REPINNumMasterDist_3
