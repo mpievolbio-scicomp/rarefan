@@ -10,7 +10,16 @@ fluidPage(
 					tableOutput("run_setup"),
 					selectInput(inputId = 'rayt',
             								label="Select REPIN group",
-								choices = list("0" = 0, "1" = 1, "2" = 2, "3" = 3, "4" = 4, "5" = 5),
+								choices = list("0" = 0,
+								               "1" = 1,
+								               "2" = 2,
+								               "3" = 3,
+								               "4" = 4,
+								               "5" = 5,
+								               "6" = 6,
+								               "7" = 7,
+								               "8" = 8
+								               ),
 								selected = 0
 								),
 					htmlOutput("back_to_results")

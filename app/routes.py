@@ -564,29 +564,4 @@ def rerun():
         title='Submit',
         submit_form=submit_form,
     )
-
-
-@app.route('/plot')
-def plot():
-    """ Redirect to the shiny app for the run id given via the request. """
-
-    run_id = request.args['run_id']
-
-    return redirect('http://rarefan.evolbio.mpg.de/shiny/analysis?run_id={}'.format(run_id))
-
-@app.route('/test_task')
-def test_task():
-    job  = app.queue.enqueue(redis_tests.example, 10)
-    logger.info(job.result)
-    return redirect(url_for('index'))
-
-@app.route('/test_mail')
-def test_mail():
-    success, message = email_test()
-    # logger.debug("Attempting to send mail throug redis queue.")
-    # job = app.queue.enqueue(email_test)
-    # logger.debug(job)
-    # time.sleep(3
-               # )
-
-    return message
+    

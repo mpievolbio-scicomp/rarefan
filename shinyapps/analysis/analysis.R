@@ -23,12 +23,9 @@ logging::basicConfig()
 logging::setLevel(30) # 10: debug, 20: info, 30: warning, 40: error
 
 # Colors
-# colors=c("#45BA55", "#5545BA", "#BA5545", "#B6BD42", "#42B6BD", "#BD42B6", "#101010", "#DD00DA")
-colors = c(brewer.pal(8, "Accent"), brewer.pal(9, 'Pastel1'))
+colors = c(brewer.pal(8, "Dark2"), brewer.pal(9, 'Set1'))
 
 # Set theme for all plots
-
-logging::logdebug("defining theme")
 rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.key = element_rect(fill = "white"),
             axis.line.y = element_line(colour = "black"),
@@ -70,24 +67,6 @@ plotREPINs=function(folder,
                     rep_rayt_group,
                     highlight_strain=""){
 
-  logging::logdebug("Enter function 'plotREPINs' with ")
-  logging::logdebug(paste0("    folder = ", folder))
-  logging::logdebug(paste0("    treeFile = ", treeFile))
-  logging::logdebug(paste0("    rep_rayt_group = ", rep_rayt_group))
-
-  # Set theme.
-  themeCurr=theme(axis.line.x = element_line(colour = "black"),
-                  legend.key = element_rect(fill = "white"),
-                  axis.line.y = element_line(colour = "black"),
-                  panel.grid.major = element_blank(),
-                  panel.grid.minor = element_blank(),
-                  panel.border = element_blank(),
-                  panel.background = element_blank(),
-                  legend.position="none",
-                  panel.spacing=unit(2,"lines"),
-                  plot.margin = unit(c(5.5,12,5.5,10.5), "pt"),
-  )
-
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
   logging::logdebug("Attempting to read tree file.")
@@ -105,7 +84,7 @@ plotREPINs=function(folder,
             geom_blank() +
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
-            annotate(x=0.5, y=0.5, geom='text', label="No REPIN tree found.") +
+            annotate(x=0.5, y=0.5, geom='text', label="No REPINs found.") +
             theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + rarefan_theme
 
 		return(p)
@@ -115,35 +94,38 @@ plotREPINs=function(folder,
   logging::loginfo("Plotting ggtree...")
 
   # First facet is the tree itself.
-  p=ggtree(tree)+
+  p <- ggtree(tree)+
       scale_x_continuous(breaks=scales::pretty_breaks(n=3))+
       geom_tiplab(size=fontsize*1/4)
-    p=p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
+
+  # Set limits.
+  p <- p+xlim_tree(layer_scales(p)$x$get_limits()[2]*2)
 
   # RAYT population size.
-  assoc_file = paste0(folder,"/repin_rayt_association_byREPIN.txt")
-  logging::logdebug("Read association data fom %s.", assoc_file)
-
   # Read the REP-RAYT association table.
-  association=read.table(assoc_file,header=TRUE)
-  logging::logdebug(colnames(association))
+  assoc_file <-  paste0(folder,"/repin_rayt_association_byREPIN.txt")
+  logging::logdebug("Read association data fom %s.", assoc_file)
+  association <- read.table(assoc_file,header=TRUE)
 
+  # Take out the rows for the queried rep_rayt_group (alias repintype)
   d <- association[association$repintype==rep_rayt_group,]
 
+  # Setup path to repin_rayt association table file.
   repin_rayt_assoc_table_file = paste0(folder,"/repin_rayt_association.txt")
 
+  # Setup colors
   colorDF = determineColor(repin_rayt_assoc_table_file)
 
+  # Fix the rayt color.
   rayt_color = colorDF[colorDF$repRAYT==rep_rayt_group,2]
-  logging::logdebug(paste0("str(rayt_color)=", str(rayt_color)))
 
-  # In other cases, no color is defined, set it to grey.
+  # If no color is defined, set it to grey.
   if(length(rayt_color) == 0) {
       rayt_color=c("grey")
   }
   logging::logdebug(paste0("rayt_color=", rayt_color))
 
-
+  # Calculate total number of rayts
   num_rayts = sum(d$rayts)
   logging::logdebug("Number of rayts: %d", num_rayts)
 
@@ -152,11 +134,14 @@ plotREPINs=function(folder,
   data_file = paste0(folder,"/presAbs_",rep_rayt_group,".txt")
   logging::logdebug("Reading table from %s.", data_file)
 
+  # Attemt to read presAbs file. If file does not exist or cannot be read,
+  # issue a warning.
   t=tryCatch(read.table(data_file,sep="\t", skip=1),
 		  error=function(e)
 		  logging::logwarn("File %s is empty.", data_file)
           )
 
+  # Check if file was read.
   data_file_is_corrupt = typeof(t) == "logical"
 
   if(!data_file_is_corrupt) {
@@ -173,6 +158,8 @@ plotREPINs=function(folder,
                         , color=unique(rayt_color)
                         )
     }
+
+    # If no rayts found
     else {
         logging::logwarn("No RAYTs in association table %s for RAYT rep_rayt_group %s.", repin_rayt_assoc_table_file, rep_rayt_group)
 
@@ -206,7 +193,12 @@ plotREPINs=function(folder,
     }
   }
   else {
-          p <- p + geom_text(x=0.02, y=10.0, label=paste0("REP/RAYT group ", rep_rayt_group," is empty."))
+          p <- p + annotate(x=layer_scales(p)$x$get_limits()[2]*0.8,
+                            y=10.0,
+                            geom='text',
+                            label=paste0("REP/RAYT group ",
+                                          rep_rayt_group," is empty.")
+                             )
   }
 
   # Apply theme.
@@ -231,8 +223,9 @@ plotREPINs=function(folder,
   }
   # Font size.
   p = p +
-          theme(text=element_text(size=fontsize),axis.text=element_text(size=fontsize)) +
-          themeCurr
+          theme(text=element_text(size=fontsize),
+                axis.text=element_text(size=fontsize)
+                )
 
   return(p)
 }
