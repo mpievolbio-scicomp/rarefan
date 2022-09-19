@@ -4,48 +4,30 @@
     </h2>
     {% if job.overall_status == "complete with warnings" %}
     <p>
-        There have been warning or errors during the postprocessing of your results. Please inspect the output data and logfile (out/rarefan.log) carefully.
+        There have been warning or errors during the postprocessing of your results. Please inspect the logfile (out/rarefan.log) for details.
     </p>
     {% endif %}
 
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>
+        </br>
         <p>
-        {% if job.stages['rarefan']['results']['data_sanity']['rayts'] == 1 %}.
-        <b>
-        There was a problem with the RAYT analysis output data. Please check your results carefully.
-        </b>
-        </p></br>
-        {% endif %}
-        We discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs across all submitted genomes using tblastn with
+        RAREFAN discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs across all submitted genomes using tblastn with
         {{job.setup["query_rayt"]}} at an e-value threshold of {{job.setup["e_value_cutoff"]}}.
         </p>
         </br>
         <h3>Seed sequences</h3>
         <p>
-            {% if job.stages['rarefan']['results']['data_sanity'] == 1 %}
-            <b>
-                There was a problem with the seed sequence output data. Please check your results carefully.
-            </b>
-            </br></br>
-            {% endif %}
-            There are {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
+            RAREFAN identified {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
             occur more frequently than {{job.setup['min_nmer_occurrence']}} times.
             </br></br>
         </p>
         <h3>REPINs</h3>
         <p>
-            {% if job.stages['rarefan']['results']['data_sanity']['repins'] == 1 %}.
-            <b>
-                There was a problem with the REP(IN) analysis output data.
-                Please check your results carefully.
-            </b>
-            </br></br>
-            {% endif %}
             {% if job.setup['analyse_repins'] in ['1', 1, 'y', True] %}
-            We detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs in the reference genome.
+            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs in the reference genome.
             {% else %}
-            We detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs in the reference genome.
+            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs in the reference genome.
             </br></br>
             {% endif %}
         </p>

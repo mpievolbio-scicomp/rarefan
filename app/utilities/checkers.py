@@ -47,14 +47,13 @@ def parse_results(outdir,
     filenames = {"rayts": assoc_fname,
                  "nmers": overrep_fname
                  }
-    results = {"counts":
-               {"rayts": 0,
-                "nmers": 0,
-                "repins": {},
-                },
+    results = {"counts": {"rayts": 0,
+                          "nmers": 0,
+                          "repins": {},
+                          },
                "status": {"rayts": 0,
                           "nmers": 0,
-                          "repins": 0 
+                          "repins": 0,
                           }
                }
 
@@ -63,23 +62,30 @@ def parse_results(outdir,
             results["counts"][fname] = count_lines(filenames[fname])
         except:
             results['status'][fname] = 1
+            logger.warning("Could not count lines in RAYT file", fname)
 
     # RAYTs must be divided by 2 to get the correct number.
     results['counts']['rayts'] = results['counts']['rayts'] // 2
 
     # Aggregate "*_largestCluster" filenames.
-    cluster_files = [os.path.join(outdir,
-                                  f"{reference_strain}_{i}",
-                                  f"{reference_strain}_{i}_largestCluster.nodes")
-                     for i in range(5)]
+    cluster_files = []
 
-    # Count repins for each type 0..5
-    repin_checks = [0]*5
+    # Load cluster files.
+    i = 0
+    while f"{reference_strain}_{i}" in os.listdir(outdir):
+        cluster_files.append(os.path.join(outdir,
+                                          f"{reference_strain}_{i}",
+                                          f"{reference_strain}_{i}_largestCluster.nodes"
+                                          )
+                             )
+        i += 1
+
+    repin_checks = [0]*len(cluster_files)
     for i, cluster_file in enumerate(cluster_files):
         try:
             results['counts']['repins'][i] = count_lines(cluster_file)
         except:
-            logger.debug("Could not count lines in cluster file %s.", cluster_file)
+            logger.warning("Could not count lines in cluster file %s.", cluster_file)
             repin_checks[i] = 1
 
         results['status']['repins'] = int(all([r == 1 for r in repin_checks]))

@@ -55,7 +55,7 @@ class Job(db.Document):
         for stage in stage_names:
             self.set_status(stage)
             logger.debug("%s status= %s", stage, self.stages[stage]['status'] )
-        
+
         overall = 'setup'
         if all([ stage['status'] == "none" for stage in self.stages.values()]):
             overall = "setup"

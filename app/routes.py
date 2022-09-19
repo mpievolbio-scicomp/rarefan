@@ -326,7 +326,7 @@ def submit():
                     connection=app.redis,
                     kwargs={'run_id': run_id},
                 )
-    
+
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
                                depends_on=[rarefan_job, tree_job],
