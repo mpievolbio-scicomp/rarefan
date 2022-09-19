@@ -25,6 +25,13 @@ logging::setLevel(30) # 10: debug, 20: info, 30: warning, 40: error
 # Colors
 colors = c(brewer.pal(8, "Dark2"), brewer.pal(9, 'Set1'))
 
+get_color = function(index) {
+  if(index>=0 && index < 9) {
+    return(colors[index])
+  }
+  return("black")
+}
+
 # Set theme for all plots
 rarefan_theme=theme(axis.line.x = element_line(colour = "black"),
             legend.key = element_rect(fill = "white"),
@@ -250,7 +257,7 @@ determineColor=function(associationFile){
      else if(!is.na(ass[i,3])&&nchar(ass[i,3])>0){
         split0=str_split(ass[i,3],",")
         position = as.integer(split0[[1]][1])+1
-        c=colors[position]
+        c=get_color(position)
      }
   	 else{
         c="grey"
@@ -271,7 +278,7 @@ determineColor=function(associationFile){
            j=as.integer(j)
            pos=as.integer(split[[1]][1])
            if(length(colorAss[colorAss$repRAYT==j,]$color)==0){
-             temp=data.frame(repRAYT=j,color=colors[pos+1])
+             temp=data.frame(repRAYT=j,color=get_color(pos+1))
              colorAss=rbind(colorAss,temp)
 		   logging::logdebug(paste0("i=",i, " j=",j, " pos=", pos, " temp=", temp))
            }
