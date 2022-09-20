@@ -27,23 +27,20 @@
             <table>
                 <tr>
                     <th>REP/REPIN group</th>
+
                     <th>REP/REPIN count</th>
                 </tr>
-                {% for k, v in job.stages['rarefan']['results']['counts'].items() %}
+                {% for k, v in job.stages['rarefan']['results']['counts']['repins'].items() %}
                 <tr>
                     <td>
-                        key
+                        {{key}}
                     </td>
                     <td>
-                        value
+                        {{value}}
                     </td>
                 </tr>
                 {% endfor %}
             </table>
-            {% if job.setup['analyse_repins'] in ['1', 1, 'y', True] %}
-            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs in the reference genome.
-            {% else %}
-            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs in the reference genome.
             </br></br>
             {% endif %}
         </p>
