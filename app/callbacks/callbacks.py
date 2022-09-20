@@ -21,8 +21,6 @@ def rarefan_on_success(job, result):
     # Parse output files and report counts.
     parsed = parse_results(dbjob['setup']['outdir'], dbjob['setup']['reference_strain'])
 
-    logger.debug("Dumping parsed results data: {}", str(parsed) )
-
     dbjob.update(set__stages__rarefan__results__data_sanity__rayts=parsed['status']['rayts'])
     dbjob.update(set__stages__rarefan__results__data_sanity__nmers=parsed['status']['nmers'])
     dbjob.update(set__stages__rarefan__results__data_sanity__repins=parsed['status']['repins'])
