@@ -240,7 +240,7 @@ def submit():
                                   "status": 'setup',
                                   "results": {"returncode": None,
                                               "log": None},
-                              }, 
+                              },
                               "zip": {"redis_job_id": None,
                                       "status": 'setup',
                                       "results": {"returncode": None, "log": ""}}

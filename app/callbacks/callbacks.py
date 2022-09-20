@@ -26,8 +26,16 @@ def rarefan_on_success(job, result):
     dbjob.update(set__stages__rarefan__results__data_sanity__repins=parsed['status']['repins'])
     dbjob.update(set__stages__rarefan__results__counts__rayts=parsed['counts']['rayts'])
     dbjob.update(set__stages__rarefan__results__counts__nmers=parsed['counts']['nmers'])
-    dbjob.update(set__stages__rarefan__results__counts__repins=sum(parsed['counts']['repins'].values()))
-    dbjob.stages.rarefan.results.counts.repins.set(parsed['counts']['repins'])
+    dbjob.update(set__stages__rarefan__results__counts__repins__0=parsed['counts']['repins'].get(0, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__1=parsed['counts']['repins'].get(1, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__2=parsed['counts']['repins'].get(2, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__3=parsed['counts']['repins'].get(3, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__4=parsed['counts']['repins'].get(4, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__5=parsed['counts']['repins'].get(5, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__6=parsed['counts']['repins'].get(6, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__7=parsed['counts']['repins'].get(7, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__8=parsed['counts']['repins'].get(8, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__total=sum(parsed['counts']['repins'].values()))
 
     dbjob.save()
 
