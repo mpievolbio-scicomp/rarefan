@@ -231,8 +231,7 @@ def submit():
                                                               8: 0,
                                                               'total': 0,
                                                               },
-                                                          }
-                                                      },
+                                                          },
                                                       "data_sanity": {
                                                           "rayts": None,
                                                           "nmers": None,
