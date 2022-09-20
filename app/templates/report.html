@@ -24,7 +24,7 @@
         </p>
         <h3>REP/REPINs</h3>
         <p>
-            {% if isinstance(dict, job.stages['rarefan']['results']['counts']) %}
+            {% if mapping(job.stages['rarefan']['results']['counts']) %}
             <table>
                 <tr>
                     <th>Group</th>
