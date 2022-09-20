@@ -38,6 +38,7 @@
                         value
                     </td>
                 </tr>
+                {% endfor %}
             </table>
             {% if job.setup['analyse_repins'] in ['1', 1, 'y', True] %}
             RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPINs in the reference genome.
