@@ -24,11 +24,12 @@
         </p>
         <h3>REP/REPINs</h3>
         <p>
+            {% if isinstance(dict, job.stages['rarefan']['results']['counts']) %}
             <table>
                 <tr>
-                    <th>REP/REPIN group</th>
+                    <th>Group</th>
 
-                    <th>REP/REPIN count</th>
+                    <th>Count</th>
                 </tr>
                 {% for k, v in job.stages['rarefan']['results']['counts']['repins'].items() %}
                 <tr>
@@ -41,6 +42,9 @@
                 </tr>
                 {% endfor %}
             </table>
+            {% else %}
+            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs/REPINs in the reference genome.
+            {% endif %}
             </br></br>
         </p>
     {% endif %}
