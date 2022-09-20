@@ -24,7 +24,7 @@
         </p>
         <h3>REP/REPINs</h3>
         <p>
-            {% if mapping(job.stages['rarefan']['results']['counts']) %}
+            {% if job.stages['rarefan']['results']['counts'] is mapping %}
             <table>
                 <tr>
                     <th>Group</th>
