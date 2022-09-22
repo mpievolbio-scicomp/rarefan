@@ -2,9 +2,10 @@
     <h2>Status:
         {{ job.overall_status }}
     </h2>
-    {% if job.overall_status == "complete with warnings" %}
+    {% if job.overall_status == "complete without tree" %}
     <p>
-        There have been warning or errors during the postprocessing of your results. Please inspect the logfile (out/rarefan.log) for details.
+        The run succeeded but no genome phylogeny was calculated due to the small number of submitted genomes. RAREFAN only
+        calculates a phylogeny for more than genomes.
     </p>
     {% endif %}
 
