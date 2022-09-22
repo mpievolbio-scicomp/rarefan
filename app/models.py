@@ -68,8 +68,8 @@ class Job(db.Document):
         elif all([stage['status'] in ['complete', 'finished'] for stage in self.stages.values()]):
             overall = "complete"
         elif self.stages['rarefan']['status'] in ["complete", "finished"]:
-            if any([self.stages[stage]['status'] == 'failed' for stage in ['tree', 'zip']]):
-                overall = "complete with warnings"
+            if self.stages['tree']['status'] == 'failed':
+                overall = "complete without tree"
             elif any([self.stages[stage]['status'] in ["started", "running"] for stage in ['rayt_alignment', 'rayt_phylogeny', 'tree', 'zip']]):
                 overall = "postprocessing"
 
