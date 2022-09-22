@@ -7,7 +7,6 @@ from app.models import Job as DBJob
 from rq import get_current_job
 from app import app
 app.app_context().push()
-logger = app.logger
 
 def tree_task(run_dir, treefile=None):
     """ Generate a phylogenetic tree from all DNA sequence files in given directory.
@@ -24,6 +23,7 @@ def tree_task(run_dir, treefile=None):
     :raises RuntimeError: Directory does not contain any sequence files in fasta format.
 
     """
+    logger = app.logger
 
     inputs = [os.path.join(run_dir, f) for f in os.listdir(run_dir) if f.split(".")[-1] in ["fas", "fna", "fn", "fasta", "fastn"]]
 
@@ -56,6 +56,8 @@ def tree_task(run_dir, treefile=None):
                             shell=True)
 
     log, _ = proc.communicate()
+
+
 
     # Append stdout and stderr to logfile.
     with open(os.path.join(outdir, 'rarefan.log'), 'ab') as fh:

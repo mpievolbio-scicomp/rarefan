@@ -31,7 +31,6 @@ import shutil
 import tempfile
 import time
 
-
 logger = app.logger
 
 
@@ -265,7 +264,6 @@ def submit():
         logger.debug("Constructed dbjob with job ID %s.", dbjob.run_id)
         logger.debug("Attempting to save dbjob in DB.")
         success = dbjob.save()
-        logger.debug("Return code is %s", str(success))
 
         # If one of the server provided rayt files was selected, copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
