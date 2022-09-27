@@ -35,7 +35,6 @@ def rarefan_on_success(job, result):
     dbjob.update(set__stages__rarefan__results__counts__repins__6=parsed['counts']['repins'].get(6, 0))
     dbjob.update(set__stages__rarefan__results__counts__repins__7=parsed['counts']['repins'].get(7, 0))
     dbjob.update(set__stages__rarefan__results__counts__repins__8=parsed['counts']['repins'].get(8, 0))
-    dbjob.update(set__stages__rarefan__results__counts__repins__total=sum(parsed['counts']['repins'].values()))
 
     dbjob.save()
 

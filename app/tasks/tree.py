@@ -92,6 +92,6 @@ def tree_task(run_dir, treefile=None):
 
 
 def empty_task():
-    return {'returncode': 0,
+    return {'returncode': 2,
             'log': "No treefile as per job parameters."
             }
