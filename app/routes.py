@@ -302,7 +302,6 @@ def submit():
         run_tree_task = len(dbjob.setup['strain_names']) >= 4
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
-                                    depends_on=[rarefan_job],
                                     on_success=on_success,
                                     on_failure=on_failure,
                                     connection=app.redis,
@@ -324,22 +323,24 @@ def submit():
 
         rayt_alignment_job = RQJob.create(
             alignment_task,
-            depends_on=rarefan_job,
-            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            depends_on=[rarefan_job],
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_alignment'},
             connection=app.redis,
             kwargs={'run_id': run_id},
         )
         rayt_phylogeny_job = RQJob.create(
                     phylogeny_task,
-                    depends_on=rayt_alignment_job,
-                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    depends_on=[rayt_alignment_job],
+                    on_success=on_success,
+                    on_failure=on_failure,
+                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_phylogeny'},
                     connection=app.redis,
                     kwargs={'run_id': run_id},
                 )
 
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
-                               depends_on=[rarefan_job, tree_job],
+                               depends_on=[rarefan_job, tree_job, rayt_phylogeny_job, rayt_alignment_job],
                                on_success=on_success,
                                on_failure=on_failure,
                                meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'zip'},
@@ -370,9 +371,8 @@ def submit():
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
+        dbjob.update(set__stages__rayt_alignment__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__rayt_phylogeny__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)

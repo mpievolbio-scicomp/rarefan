@@ -32,7 +32,7 @@ def rarefan_task(**kwargs):
 
     proc = subprocess.Popen(shlex.split(java_command),
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, shell=False)
+                            stderr=subprocess.STDOUT, shell=False, )
 
     log, _ = proc.communicate()
 

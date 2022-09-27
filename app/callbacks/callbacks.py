@@ -52,6 +52,10 @@ def on_success(job, connection, result, *args, **kwargs):
         rarefan_on_success(job, result)
     elif stage == "tree":
         dbjob.update(set__stages__tree__results__returncode=result['returncode'])
+    elif stage == "rayt_alignment":
+        dbjob.update(set__stages__rayt_alignment__results__returncode=result['returncode'])
+    elif stage == "rayt_phylogeny":
+        dbjob.update(set__stages__rayt_phylogeny__results__returncode=result['returncode'])
     elif stage == "zip":
         dbjob.update(set__stages__zip__results__returncode=result['returncode'])
 
@@ -81,6 +85,10 @@ def on_failure(job, connection, type, value, traceback):
         # Even though getting the tree was not successfull, we still want to generate the zip file.
         zip_results = zip_task(dbjob.setup['tmpdir'])
         dbjob.update(set__stages__zip__results__returncode=zip_results['returncode'])
+    elif stage == "rayt_alignment":
+        dbjob.update(set__stages__rayt_alignment__results__returncode=result['returncode'])
+    elif stage == "rayt_phylogeny":
+        dbjob.update(set__stages__rayt_phylogeny__results__returncode=result['returncode'])
     elif stage == "zip":
         dbjob.update(set__stages__zip__results__returncode=1)
 
