@@ -9,7 +9,17 @@
             calculates a phylogeny for more than 4 genomes.
         </p>
     {% endif %}
-    <% if job.stages['
+        {% for stage in job.stages.keys() %}
+            {% if job.stages[stage]['results']['returncode'] not in ["0", None] %}
+                {{ stage }} failed with error code {{ job.stages[stage]['results']['returncode'] }} and log
+                </br>
+                {{  job.stages[stage]['results']['log'] }}
+                <br>
+                <br>
+            {% endif %}
+        {% endfor %}
+
+
 
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>
