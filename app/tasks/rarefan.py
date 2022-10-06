@@ -25,19 +25,26 @@ def rarefan_task(**kwargs):
     logger.info("Java command: %s", java_command)
 
     redis_job = get_current_job()
+    run_id=redis_job.meta['run_id']
     logger.debug("In rarefan.py, redis job id = %s", redis_job.id)
     logger.debug("In rarefan.py, redis job meta = %s", str(redis_job.meta))
-    dbjob = DBJob.objects.get(run_id=redis_job.meta['run_id'])
+    dbjob = DBJob.objects.get(run_id=run_id)
     dbjob.set_status('rarefan')
 
     proc = subprocess.Popen(shlex.split(java_command),
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT, shell=False)
+                            stderr=subprocess.STDOUT, shell=False, )
 
     log, _ = proc.communicate()
 
+    log = log.replace(b"Wrong letter in DNA sequence: |", b"")
+
+    for line in log.split(b"\n"):
+        logger.debug(line)
+
     # Append stdout and stderr to logfile.
     with open(os.path.join(kwargs['tmpdir'], 'out', 'rarefan.log'), 'ab') as fh:
+        fh.write("# RAREFAN run {}\n".format(run_id) )
         fh.write(log)
 
     return {'returncode': proc.returncode,

@@ -82,7 +82,7 @@ class SubmitForm(FlaskForm):
                              )
     distance_group_seeds= IntegerField("Distance group seeds", 
                              default=15, 
-        description="Set the group seeds distance (???)",
+        description="Set the group seeds distance. Determines whether REPINs are grouped accurately. ",
                              validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
                              )
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os, sys
@@ -6,10 +6,16 @@ import subprocess
 from io import StringIO
 import shlex
 
-JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+if "REPIN_ecology.jar" in os.listdir():
+    JAR = 'REPIN_ecology.jar'
+else:
+    JAR = os.path.join(os.environ["CONDA_PREFIX"], "lib", 'REPIN_ecology.jar')
+
+
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
+    
     cmd = " ".join(['java',
                             '-Xmx10g',
                             '-jar',
@@ -23,7 +29,7 @@ def rarefan_command(**kwargs):
                             kwargs['treefile'],
                             '{}'.format(kwargs['e_value_cutoff']),
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
-                            '{}'.format(kwargs.get('num_threads', MCL_THREADS)),
+                            '{}'.format(kwargs.get('mcl_threads', MCL_THREADS)),
                             '{}'.format(kwargs.get('distance_group_seeds', 15)),
                             ]
                            )
@@ -67,7 +73,7 @@ if __name__ == '__main__':
 * RAREFAN is released under the terms of the MIT License.                 *
 * See LICENSE for details.                                                *
 *                                                                         *
-* Copyright (c) 2020 - 2021 Max Planck Institute for Evolutionary Biology *
+* Copyright (c) 2020 - 2022 Max Planck Institute for Evolutionary Biology *
 *                                                                         *
 ***************************************************************************
 
@@ -156,7 +162,7 @@ if __name__ == '__main__':
                         help="Number of threads for parallel cluster analysis with MCL (default: %(default)d).",
                         required=False,
                         default=MCL_THREADS,
-                        type=str,
+                        type=int,
     )
 
     parser.add_argument("-t", "--treefile",
@@ -182,8 +188,6 @@ if __name__ == '__main__':
     # Convert to absolute paths.
     args.outdir = os.path.abspath(args.outdir)
     args.query_rayt = os.path.abspath(args.query_rayt)
-
-    print(args)
 
     # Ask for confirmation if interactive mode.
     if args.interactive:
@@ -241,7 +245,6 @@ if __name__ == '__main__':
     ### Collect results.
     results = parse_results(args.outdir, os.path.basename(args.reference))
     counts = results['counts']
-
 
     print("")
     print("Results")

@@ -43,6 +43,8 @@ class Job(db.Document):
                 raise RuntimeError("Supplied status '{}' is not consistent with status reported from redis queue ({}).".format(value, self.get_status_from_redis(stage)))
 
         if stage == 'rarefan': self.update(set__stages__rarefan__status=value)
+        if stage == 'rayt_alignment': self.update(set__stages__rayt_alignment__status=value)
+        if stage == 'rayt_phylogeny': self.update(set__stages__rayt_phylogeny__status=value)
         if stage == 'tree': self.update(set__stages__tree__status=value)
         if stage == 'zip': self.update(set__stages__zip__status=value)
 
@@ -53,7 +55,7 @@ class Job(db.Document):
         for stage in stage_names:
             self.set_status(stage)
             logger.debug("%s status= %s", stage, self.stages[stage]['status'] )
-        
+
         overall = 'setup'
         if all([ stage['status'] == "none" for stage in self.stages.values()]):
             overall = "setup"
@@ -63,13 +65,13 @@ class Job(db.Document):
             overall = 'running'
         elif self.stages['rarefan']['status'] == "failed":
             overall = 'failed'
-        elif all([stage['status'] in ['complete', 'finished'] for stage in self.stages.values()]):
-            overall = "complete"
+
         elif self.stages['rarefan']['status'] in ["complete", "finished"]:
-            if any([self.stages[stage]['status'] == 'failed' for stage in ['tree', 'zip']]):
-                overall = "complete with warnings"
-            elif any([self.stages[stage]['status'] in ["started", "running"] for stage in ['tree', 'zip']]):
+            if any([self.stages[stage]['status'] in ["started", "running"] for stage in ['rayt_alignment', 'rayt_phylogeny', 'tree', 'zip']]):
                 overall = "postprocessing"
+
+            else:
+                overall = "complete"
 
         self.overall_status = overall
         self.update(set__overall_status=overall)

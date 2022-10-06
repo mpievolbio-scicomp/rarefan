@@ -28,6 +28,7 @@ def zip_task(run_dir):
     run_id = os.path.split(run_dir)[-1]
     zip_command = " ".join(["zip",
                                 "-r",
+                                "--quiet",
                                  run_id + "_out.zip",
                                 'out'
                                 ]
@@ -49,7 +50,7 @@ def zip_task(run_dir):
     logger.debug("proc.stderr: %s", err)
 
     # Append only stderr to logfile.
-    with open(os.path.join('out', 'rarefan.log'), 'ab') as fh:
+    with open(os.path.join('out', 'zip.log'), 'ab') as fh:
         fh.write(err)
 
     os.chdir(oldwd)

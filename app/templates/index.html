@@ -5,11 +5,6 @@
 {% block body %}
     <div class="jumbotron">
         <h1><b>RAREFAN: RAyt/REpin Finder and ANalyzer</b></h1>
-        <h2>
-            <div style="color:red" >
-                <b>Note</b>: this webserver is still under development. The results may be erroneous or not be displayed correctly. In case of issues or questions please do not hesitate to contact us at <a href="mailto:rarefan@evolbio.mpg.de">rarefan@evolbio.mpg.de</a> .
-            </div>
-        </h2>
         <div id="divContainer" style="position: absolute;  border: solid 0 #000; margin-bottom:500px">
             <div id="frameContainer" style="overflow:hidden;">
                 <iframe
@@ -34,12 +29,9 @@
                 Our service provides an analysis of REPIN population size, how it relates to
                 REPIN replication rate and the presence and absence of RAYTs across all submitted genomes.
             </p>
-            {#<p>#}
-            {#    If you use the webserver please cite#}
-            {#</p>#}
             <h2>Third party tools</h2>
             <p>
-                The webserver relies on the following tools for analysis:
+                RAREFAN uses the following tools:
             </p>
             <ul>
                 <li>
@@ -80,22 +72,47 @@
                     <p>Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
                         REPIN population analysis in 4 <i>Dokdonia</i> genomes.
                         Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4117576"
-                                        target="_blank">DOI:10.5281/zenodo.4117576</a>
+                                        target="_blank">DOI:10.5281/zenodo.4117576</a>.
+                        <br>
                     <a href={{url_for('results', run_id='auoms4wi')}}>Visit results</a> </p>
                 </li>
                 <li><p>
                     Frederic Bertels, Carsten Fortmann-Grote, & Paul Rainey.
                     REPIN population analysis in 130 <i>Neisseria meningitidis</i> and <i>N. gonorrhoeae</i> genomes.
                     Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4049437" target="_blank">DOI:10.5281/zenodo.4049437</a>.
-                    <a href={{url_for('results', run_id='7yl7znll')}}>Visit results</a> </p>
+                    <br>
+                    <a href={{url_for('results', run_id='f5ztr_t0')}}>Visit results</a> </p>
                 </li>
-                <li><p>
+                    <li><p>
                     Frederic Bertels, Carsten Fortmann-Grote, & Paul B. Rainey.
                     REPIN population analysis in 42 <i>Pseudomonas chlororaphis</i> genomes.
-                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4043614" target="_blank">DOI:10.5281/zenodo.4043614</a>
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.4043614" target="_blank">DOI:10.5281/zenodo.4043614</a>.
+                    <br>
                     <a href={{url_for('results', run_id='t5dvaibm')}}>Visit results</a> </p>
                 </li>
-            </ul>
+                <li><p>
+                    Julia Balk, Carsten Fortmann-Grote, & Frederic Bertels.
+                    REPIN population analysis in 49 <i>Stenotrophomonas maltophilia</i> genomes.
+                    Zenodo, 2020 <a href="http://doi.org/10.5281/zenodo.6504123" target="_blank">10.5281/zenodo.6504123</a>.
+                    <br>
+                    Follow these links to visualize the results for various <i>Stenotrophomonas maltophilia</i> reference strains:
+                        <a href={{url_for('results', run_id='_1a8l7wu')}}>Sm53</a>,
+                        <a href={{url_for('results', run_id='mknhxpv8')}}>AA1</a>,
+                        <a href={{url_for('results', run_id='pgfmaxx5')}}>FDAARGOS_649</a>,
+                        <a href={{url_for('results', run_id='yy72i755')}}>AB550</a>,
+                        <a href={{url_for('results', run_id='78eu9zl0')}}>ISMMS3</a>
+                </p>
+                </li>
+            <div>
+                <h2>Code availability</h2>
+                The source code for all RAREFAN components is available in our <a href="https://github.com/mpievolbio-scicomp/rarefan" target="_blank" >github repository</a>. A
+                system independent package to run RAREFAN from the commandline  can be downloaded from
+                <a href="https://github.com/mpievolbio-scicomp/rarefan/releases" target="_blank">the github releases page</a>.
+        </div>
+                </br>
+                </br>
+        <div>
+        <b>Note</b>: RAREFAN is still under development. The results may be erroneous or not be displayed correctly. In case of issues or questions please do not hesitate to contact us at <a href="mailto:rarefan@evolbio.mpg.de">rarefan@evolbio.mpg.de</a> .
         </div>
     </div>
 {% endblock %}

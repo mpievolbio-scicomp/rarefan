@@ -1,11 +1,10 @@
 name: repinpop
 channels:
   - conda-forge
-  - defaults
   - bioconda
   - anaconda
-  - r
 dependencies:
+  - python==3.9.7
   - libstdcxx-ng
   - openjdk>=11.0.8
   - cmake>=3.12
@@ -14,27 +13,12 @@ dependencies:
   - gsl>=2.4
   - flask
   - wtforms
-  - r-ggpmisc
-  - r-dplyr
-  - r-stringr
-  - r-cowplot
-  - r-ggplot2
-  - r-rlang>=0.4.10
-  - r-vctrs>=0.3.7
-  - r-lifecycle>=1.0.0
-  - r-shiny
-  - r-plotly
-  - r-logging
-  - r-ggpubr
-  - r-argparse
-  - r-roxygen2
-  - r-base>=4.1.1
-  - bioconductor-ggtree
-  - bioconductor-muscle
-  - bioconductor-biostrings
   - gradle
   - biopython
   - email_validator
+  - rq
+  - redis-py
+  - redis
   - phyml
   - pip
   - pip:
