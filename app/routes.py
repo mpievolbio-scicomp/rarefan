@@ -3,13 +3,11 @@ from flask import request
 from flask import session
 from flask import redirect
 from flask import url_for
-from flask import abort
 from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
 
-import sys
 import rq
 from rq.job import Job as RQJob
 
@@ -228,7 +226,6 @@ def submit():
                                                               '6': 0,
                                                               '7': 0,
                                                               '8': 0,
-                                                              'total': 0,
                                                               },
                                                           },
                                                       "data_sanity": {
@@ -239,7 +236,7 @@ def submit():
                                           },
                               "tree": {"redis_job_id": None,
                                        "status": 'setup',
-                                       "results": {"returncode": None, "log": ""}},
+                                       "results": {"returncode": None, "log": None}},
                               "rayt_alignment": {
                                   "redis_job_id": None,
                                   "status": 'setup',
@@ -254,7 +251,7 @@ def submit():
                               },
                               "zip": {"redis_job_id": None,
                                       "status": 'setup',
-                                      "results": {"returncode": None, "log": ""}}
+                                      "results": {"returncode": None, "log": None}}
                               },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
@@ -324,6 +321,8 @@ def submit():
         rayt_alignment_job = RQJob.create(
             alignment_task,
             depends_on=[rarefan_job],
+            on_success=on_success,
+            on_failure=on_failure,
             meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_alignment'},
             connection=app.redis,
             kwargs={'run_id': run_id},

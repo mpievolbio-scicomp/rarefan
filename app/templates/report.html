@@ -1,13 +1,15 @@
 <p>
     <h2>Status:
+
         {{ job.overall_status }}
     </h2>
     {% if job.stages['tree']['results']['returncode'] == "2" %}
-    <p>
-        The run succeeded but no genome phylogeny was calculated due to the small number of submitted genomes. RAREFAN only
-        calculates a phylogeny for more than 4 genomes.
-    </p>
+        <p>
+            No genome phylogeny was calculated due to the small number of submitted genomes. RAREFAN only
+            calculates a phylogeny for more than 4 genomes.
+        </p>
     {% endif %}
+    <% if job.stages['
 
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>

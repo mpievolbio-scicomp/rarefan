@@ -74,12 +74,9 @@ function(input, output, session) {
                                                          query$run_id,
                                                          sep=""
                                                          )
-                                                         )
-                                                         }
-                                                         )
-#          				paste("  ", "The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.", sep="")
-#          			}
-#			  )
+                                                  )
+              }
+              )
               logging::logdebug(session$clientData$url_search)
               logging::logdebug("Still alive")
               run_dir <- paste0(uploads_path, '/', query$run_id)
