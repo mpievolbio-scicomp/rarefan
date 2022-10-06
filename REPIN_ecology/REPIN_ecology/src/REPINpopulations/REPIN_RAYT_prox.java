@@ -17,7 +17,7 @@ import util.Fasta;
 import util.Info;
 
 public class REPIN_RAYT_prox {
-	int vicinityDistance=200;
+	int vicinityDistance;
 	ArrayList<ProxStats> stats=new ArrayList<ProxStats>();
 	File outFolder;
 	ArrayList<Fasta> allRAYTs=new ArrayList<Fasta>();
@@ -44,7 +44,8 @@ public class REPIN_RAYT_prox {
 		}
 	}
 
-	public REPIN_RAYT_prox(File outFolder,int repinGroups) {
+	public REPIN_RAYT_prox(File outFolder,int repinGroups,int distanceRAYTGene) {
+		this.vicinityDistance=distanceRAYTGene;
 		this.outFolder=outFolder;
 		this.repinGroups=repinGroups;
 	}

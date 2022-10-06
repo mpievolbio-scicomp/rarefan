@@ -18,7 +18,7 @@ public class RAREFAN_MAIN {
     File inFolder;
     int numMuts=1;
     double minFrac=0.01;
-
+    int distanceRAYTGene;
     //distance from repin to rayt, if within vicinity then repin cluster is associated with that rayt
     String legacyBlastPerlLocation;
     File queryRAYT;
@@ -51,7 +51,7 @@ public class RAREFAN_MAIN {
         boolean analyseREPIN=args[8].equalsIgnoreCase("true");
         int MCLThreads=Integer.parseInt(args[9]);
         int distanceGroupSeeds=Integer.parseInt(args[10]);
-
+        int distanceRAYTGene=Integer.parseInt(args[11]);
         File out=new File(outFolder+"/results.txt");
         RAREFAN_MAIN dpf;
         String program="tblastn";
@@ -60,15 +60,15 @@ public class RAREFAN_MAIN {
         String legacyBlastPerlLocation="";
 
         // legacy_blast path given.
-        if(args.length==12) {
-            legacyBlastPerlLocation=args[11];
+        if(args.length==13) {
+            legacyBlastPerlLocation=args[12];
         }
-        dpf=new RAREFAN_MAIN(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads,distanceGroupSeeds);
+        dpf=new RAREFAN_MAIN(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads,distanceGroupSeeds,distanceRAYTGene);
         dpf.print(out);
     }
 	
     // Workhorse function.
-    public RAREFAN_MAIN(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads,int distanceGroupSeeds){
+    public RAREFAN_MAIN(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads,int distanceGroupSeeds,int distanceRAYTGene){
         this.inFolder=inFolder;
         this.outFolder=outFolder;
         this.MCLThreads=MCLThreads;
@@ -79,6 +79,7 @@ public class RAREFAN_MAIN {
         this.focalSeeds=getFocalSeeds(focalSeedGenome,minRepFreq,wordlength,distanceGroupSeeds);
         this.genomeFolder=inFolder;
         this.analyseREPIN=analyseREPIN;
+        this.distanceRAYTGene=distanceRAYTGene;
         e=evalue;
         calculateResults();
         BlastRAYTs.runProgram(inFolder, queryRAYT, outFolder, e, program, getREPtype(), "yafM_relatives.fna",analyseREPIN);
@@ -149,7 +150,7 @@ public class RAREFAN_MAIN {
     private void calculateResults() {
         System.out.println("Calculating Results.");
 
-        REPIN_RAYT_prox rrp=new REPIN_RAYT_prox(this.outFolder,focalSeeds.length);
+        REPIN_RAYT_prox rrp=new REPIN_RAYT_prox(this.outFolder,focalSeeds.length,distanceRAYTGene);
         ArrayList<String> genomeIDs=new ArrayList<String>();
         // TODO: Can we parallelize this loop?
         for(int i=0;i<genomes.size();i++) {
