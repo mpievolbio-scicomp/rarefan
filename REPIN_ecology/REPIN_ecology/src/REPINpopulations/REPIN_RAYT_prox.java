@@ -56,7 +56,7 @@ public class REPIN_RAYT_prox {
 
 	public void addRAYT(ArrayList<Info> raytPos,File genome,ArrayList<REPINGenomePositions> rgp) {
 		ArrayList<Fasta> rayts=makeRAYTFasta(raytPos,genome);
-		ArrayList<Vicinity> vicinity=getVicinityInformation(raytPos,rgp,DeterminePopulationFrequencies.getGenomeID(genome));
+		ArrayList<Vicinity> vicinity=getVicinityInformation(raytPos,rgp,RAREFAN_MAIN.getGenomeID(genome));
 		addRAYTs(rayts,raytPos,vicinity);
 	}
 	
@@ -173,7 +173,7 @@ public class REPIN_RAYT_prox {
 	
 	private static ArrayList<Fasta> makeRAYTFasta(ArrayList<Info> inf/*blast result*/,File in/*genome Fasta sequence*/) {
 		ArrayList<Fasta> seqs=new ArrayList<Fasta>();/*result sequences*/
-		String genomeID=DeterminePopulationFrequencies.getGenomeID(in);
+		String genomeID=RAREFAN_MAIN.getGenomeID(in);
 		for(int i=0;i<inf.size();i++) {
 
 			HashMap<String,String> fas=Fasta.fasToHash(Fasta.readFasta(in), false);
