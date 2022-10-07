@@ -1,25 +1,53 @@
 <p>
+<p>
     <h2>Status:
-
         {{ job.overall_status }}
     </h2>
-    {% if job.stages['tree']['results']['returncode'] == "2" %}
-        <p>
-            No genome phylogeny was calculated due to the small number of submitted genomes. RAREFAN only
-            calculates a phylogeny for more than 4 genomes.
-        </p>
+    {%  if job.overall_status in ['complete with errors'] %}
+        RAREFAN completed this run successfully but there were some issues while postprocessing the results.
+        <br>
+        A detailed account is given below.
+        Please consult the <a href="/manual" target="_blank">User manual</a> for possible solutions
+        or <a href="mailto:rarefan@evolbio.mpg.de">contact support</a>. Please include the run ID {{ job.run_id }} in
+        your email.<br>The plotting of results may be limited or disabled.
     {% endif %}
-        {% for stage in job.stages.keys() %}
-            {% if job.stages[stage]['results']['returncode'] not in ["0", None] %}
-                {{ stage }} failed with error code {{ job.stages[stage]['results']['returncode'] }} and log
-                </br>
-                {{  job.stages[stage]['results']['log'] }}
-                <br>
-                <br>
-            {% endif %}
-        {% endfor %}
-
-
+    </p>
+    <p>
+        <table style="width:30%;">
+        <tr>
+            <th>Stage</th>
+            <th>Status</th>
+            <th>Code</th>
+        </tr>
+    {% for stage in job.stages.keys() %}
+        <tr>
+            <td>
+            {{ stage|replace("_"," ") }}
+            </td>
+            <td>
+                {{ job.stages[stage]['status'] }}
+            </td>
+            <td>
+                {% if job.stages[stage]['results']['returncode'] in [None, 'None', 0, '0'] %}
+                    {{ ok }}
+                {%  else  %}
+                    error {{ job.stages[stage]['results']['returncode'] }}
+                {%  endif %}
+            </td>
+        </tr>
+        {%  endfor %}
+        </table>
+    {% for stage in job.stages.keys() %}
+        {% if job.stages[stage]['results']['returncode'] not in [0, '0', None, 'None'] %}
+            <h3>{{ stage|replace("_", " ")|title() }} failed with error code {{ job.stages[stage]['results']['returncode']}}<h3>
+            <p>
+            <h4>Log:</h4>
+            {{  job.stages[stage]['results']['log']|replace('\n', '<br>')|safe()|replace('. ', '')  }}
+            <br>
+            </p>
+        {% endif %}
+    {% endfor %}
+    </p>
 
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>

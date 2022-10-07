@@ -36,15 +36,14 @@ def rarefan_task(**kwargs):
                             stderr=subprocess.STDOUT, shell=False, )
 
     log, _ = proc.communicate()
+    logger.debug(log)
 
-    log = log.replace(b"Wrong letter in DNA sequence: |", b"")
-
-    for line in log.split(b"\n"):
-        logger.debug(line)
+    log = log.replace(b'Wrong letter in DNA sequence: |', b'')
 
     # Append stdout and stderr to logfile.
     with open(os.path.join(kwargs['tmpdir'], 'out', 'rarefan.log'), 'ab') as fh:
-        fh.write("# RAREFAN run {}\n".format(run_id) )
+        run_id_str = "# RAREFAN run {}\n".format(run_id)
+        fh.write(run_id_str.encode('ascii'))
         fh.write(log)
 
     return {'returncode': proc.returncode,
