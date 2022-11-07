@@ -78,7 +78,7 @@ class SubmitForm(FlaskForm):
     nmer_length = IntegerField("Seed length",
                                default=21,
                                description="set the seed length (in basepairs). only sequences of this length that occur more frequently than 'min. seed occurrence (see above) will be considered in the rep/repin analysis.",
-                               validators=[validators.datarequired(message="please enter the nmer length as an integer!")]
+                               validators=[validators.DataRequired(message="please enter the nmer length as an integer!")]
                                )
     distance_group_seeds= IntegerField("Distance group seeds",
                                        default=15,
