@@ -45,7 +45,7 @@ public class GroupSeedSequences {
 		while(searchStringFile.length()>1){
 
 			String word=getWord(searchStringFile);
-			System.out.println(word);
+			System.out.println("Most common sequence in group "+i+" in the reference genome: "+word);
 			wordPositions.addAll(getPositions(Fasta.readFasta(genome).get(0).getSequence(),word,"Group_"+i));
 			seedSeqs.add(word);
 			Iterator<Entry<String,StringBuilder>> it=genomeFasta.entrySet().iterator();
