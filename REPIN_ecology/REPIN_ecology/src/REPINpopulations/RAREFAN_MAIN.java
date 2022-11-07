@@ -34,9 +34,9 @@ public class RAREFAN_MAIN {
     public static void main(String args[]) {
 
         // Handle wrong number of arguments.
-        if(args.length<11 || args.length>12) {
-            System.out.println("Usage: java -jar REPIN_ecology.jar IN_DIR OUT_DIR REFERENCE_STRAIN NMER_OCCURENCE MIN_NMER_LENGTH QUERY_RAYT TREEFILE E_VALUE_CUTOFF ANALYZE_REPINS MCL_THREADS DISTANCE_GROUP_SEEDS [PATH_TO_LEGACY_BLAST.PL]");
-
+        System.out.println(args.length);
+        if(args.length<12 || args.length>13) {
+            System.out.println("Usage: java -jar REPIN_ecology.jar IN_DIR OUT_DIR REFERENCE_STRAIN NMER_OCCURENCE MIN_NMER_LENGTH QUERY_RAYT TREEFILE E_VALUE_CUTOFF ANALYZE_REPINS MCL_THREADS DISTANCE_GROUP_SEEDS DISTANCE_RAYT_GENE [PATH_TO_LEGACY_BLAST.PL]");
             System.exit(1);
         }
 
