@@ -10,7 +10,7 @@ import util.*;
 //this data will then be displayed on a tree using R
 import util.phylogenetics.RunTreePrograms;
 
-public class DeterminePopulationFrequencies {
+public class RAREFAN_MAIN {
 
     //requires mcl, andi, clustDist and BLAST+
     String focalSeeds[];
@@ -53,7 +53,7 @@ public class DeterminePopulationFrequencies {
         int distanceGroupSeeds=Integer.parseInt(args[10]);
 
         File out=new File(outFolder+"/results.txt");
-        DeterminePopulationFrequencies dpf;
+        RAREFAN_MAIN dpf;
         String program="tblastn";
 
         // legacy_blast path not given.
@@ -63,12 +63,12 @@ public class DeterminePopulationFrequencies {
         if(args.length==12) {
             legacyBlastPerlLocation=args[11];
         }
-        dpf=new DeterminePopulationFrequencies(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads,distanceGroupSeeds);
+        dpf=new RAREFAN_MAIN(inFolder, outFolder,focalSeedGenome,minRepFreq,wordlength,queryRAYT,program,treeFile,legacyBlastPerlLocation,evalue,analyseREPIN,MCLThreads,distanceGroupSeeds);
         dpf.print(out);
     }
 	
     // Workhorse function.
-    public DeterminePopulationFrequencies(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads,int distanceGroupSeeds){
+    public RAREFAN_MAIN(File inFolder,File outFolder,String focalSeedGenome,int minRepFreq,int wordlength,File queryRAYT,String program,File treeFile,String legacyBlastPerlLocation,String evalue,boolean analyseREPIN,int MCLThreads,int distanceGroupSeeds){
         this.inFolder=inFolder;
         this.outFolder=outFolder;
         this.MCLThreads=MCLThreads;

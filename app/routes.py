@@ -3,13 +3,11 @@ from flask import request
 from flask import session
 from flask import redirect
 from flask import url_for
-from flask import abort
 from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
 
-import sys
 import rq
 from rq.job import Job as RQJob
 
@@ -30,7 +28,6 @@ import os
 import shutil
 import tempfile
 import time
-
 
 logger = app.logger
 
@@ -219,7 +216,18 @@ def submit():
                                                       "counts": {
                                                           "rayts": None,
                                                           "nmers": None,
-                                                          "repins": None},
+                                                          "repins": {
+                                                              '0': 0,
+                                                              '1': 0,
+                                                              '2': 0,
+                                                              '3': 0,
+                                                              '4': 0,
+                                                              '5': 0,
+                                                              '6': 0,
+                                                              '7': 0,
+                                                              '8': 0,
+                                                              },
+                                                          },
                                                       "data_sanity": {
                                                           "rayts": None,
                                                           "nmers": None,
@@ -228,7 +236,7 @@ def submit():
                                           },
                               "tree": {"redis_job_id": None,
                                        "status": 'setup',
-                                       "results": {"returncode": None, "log": ""}},
+                                       "results": {"returncode": None, "log": None}},
                               "rayt_alignment": {
                                   "redis_job_id": None,
                                   "status": 'setup',
@@ -240,10 +248,10 @@ def submit():
                                   "status": 'setup',
                                   "results": {"returncode": None,
                                               "log": None},
-                              }, 
+                              },
                               "zip": {"redis_job_id": None,
                                       "status": 'setup',
-                                      "results": {"returncode": None, "log": ""}}
+                                      "results": {"returncode": None, "log": None}}
                               },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
@@ -253,7 +261,6 @@ def submit():
         logger.debug("Constructed dbjob with job ID %s.", dbjob.run_id)
         logger.debug("Attempting to save dbjob in DB.")
         success = dbjob.save()
-        logger.debug("Return code is %s", str(success))
 
         # If one of the server provided rayt files was selected, copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
@@ -292,7 +299,6 @@ def submit():
         run_tree_task = len(dbjob.setup['strain_names']) >= 4
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
-                                    depends_on=[rarefan_job],
                                     on_success=on_success,
                                     on_failure=on_failure,
                                     connection=app.redis,
@@ -314,22 +320,26 @@ def submit():
 
         rayt_alignment_job = RQJob.create(
             alignment_task,
-            depends_on=rarefan_job,
-            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            depends_on=[rarefan_job],
+            on_success=on_success,
+            on_failure=on_failure,
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_alignment'},
             connection=app.redis,
             kwargs={'run_id': run_id},
         )
         rayt_phylogeny_job = RQJob.create(
                     phylogeny_task,
-                    depends_on=rayt_alignment_job,
-                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    depends_on=[rayt_alignment_job],
+                    on_success=on_success,
+                    on_failure=on_failure,
+                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_phylogeny'},
                     connection=app.redis,
                     kwargs={'run_id': run_id},
                 )
-    
+
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
-                               depends_on=[rarefan_job, tree_job],
+                               depends_on=[rarefan_job, tree_job, rayt_phylogeny_job, rayt_alignment_job],
                                on_success=on_success,
                                on_failure=on_failure,
                                meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'zip'},
@@ -360,9 +370,8 @@ def submit():
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
+        dbjob.update(set__stages__rayt_alignment__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__rayt_phylogeny__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)

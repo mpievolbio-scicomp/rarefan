@@ -3,7 +3,7 @@ package identifyRAYTs;
 import java.io.*;
 import java.util.*;
 
-import REPINpopulations.DeterminePopulationFrequencies;
+import REPINpopulations.RAREFAN_MAIN;
 import blastTools.*;
 import util.*;
 
@@ -38,7 +38,7 @@ public class BlastRAYTs {
 			File[] dbs=inFolder.listFiles();
 
 			for(int i=0;i<dbs.length;i++) {
-				if(DeterminePopulationFrequencies.hasCorrectExtension(dbs[i])) {
+				if(RAREFAN_MAIN.hasCorrectExtension(dbs[i])) {
 					File db=dbs[i];
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
 					String seqName=getName(dbs[i]);
@@ -65,7 +65,7 @@ public class BlastRAYTs {
 	}
 	
 	private static String getName(File in) {
-		String parts=DeterminePopulationFrequencies.getGenomeID(in);
+		String parts=RAREFAN_MAIN.getGenomeID(in);
 		return parts;
 	}
 	

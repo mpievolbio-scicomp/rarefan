@@ -1,3 +1,5 @@
+#! /usr/bin/env R
+
 suppressMessages(library(Biostrings))
 suppressMessages(library(ape))
 suppressMessages(library(muscle))

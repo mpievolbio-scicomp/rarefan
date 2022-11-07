@@ -37,7 +37,7 @@ jar {
     manifest {
         attributes (
             'Class-Path': '.',
-            'Main-Class': 'REPINpopulations.DeterminePopulationFrequencies'
+            'Main-Class': 'REPINpopulations.RAREFAN_MAIN'
                     )
             }
         }
