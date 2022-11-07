@@ -49,62 +49,68 @@ class UploadForm(FlaskForm):
 class SubmitForm(FlaskForm):
 
     reference_strain = SelectField(
-            'Reference sequence',
-            choices=[],
+        'Reference sequence',
+        choices=[],
         description="Select the reference strain from your uploaded genome sequences.",
-            )
+    )
 
     query_rayt = SelectField(
-            "Query rayt",
-            choices = ['yafM_Ecoli',
-                       'yafM_SBW25',
-                       ], 
-            description="Select the RAYT protein sequence to use for identfying RAYT sequences in the provided genomes. 'yafM_Ecoli' and 'yafM_SBW25' are provided by default. You can supply your own RAYTs in the 'Upload' step.",
-            validators=[validators.DataRequired()]
-            )
+        "Query rayt",
+        choices = ['yafM_Ecoli',
+                   'yafM_SBW25',
+                   ],
+        description="Select the RAYT protein sequence to use for identfying RAYT sequences in the provided genomes. 'yafM_Ecoli' and 'yafM_SBW25' are provided by default. You can supply your own RAYTs in the 'Upload' step.",
+        validators=[validators.DataRequired()]
+    )
 
     treefile = SelectField(
-            "Tree file",
-            choices=[],
+        "Tree file",
+        choices=[],
         description="Optional: If your uploaded data contains a '.nwk'  phylogenetic tree file, you may select it here and it will be used in the postprocessing step. Inferred RAYT and REP/REPIN population frequencies will be plotted against the phylogeny. Select 'None' to calculate the tree from the submitted genomes.",
-            )
+    )
 
-    min_nmer_occurrence = IntegerField("Min. seed sequence occurrence", 
-                          default=55,
-        description="Set the seed sequence occurrence cutoff. Only seeds of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
-                          validators=[validators.DataRequired(message="Please enter the minimal seed occurrence as an integer!")]
-                          )
+    min_nmer_occurrence = IntegerField("Min. seed sequence occurrence",
+                                       default=55,
+                                       description="Set the seed sequence occurrence cutoff. Only seeds of 'Seed length' basepairs (see below) that occur more frequently than this number will be considered in the REP/REPIN analysis.",
+                                       validators=[validators.DataRequired(message="Please enter the minimal seed occurrence as an integer!")]
+                                       )
 
-    nmer_length = IntegerField("Seed length", 
-                             default=21, 
-        description="Set the Seed length (in basepairs). Only sequences of this length that occur more frequently than 'min. Seed occurrence (see above) will be considered in the REP/REPIN analysis.",
-                             validators=[validators.DataRequired(message="Please enter the nmer length as an integer!")]
-                             )
-    distance_group_seeds= IntegerField("Distance group seeds", 
-                             default=15, 
-        description="Set the group seeds distance. Determines whether REPINs are grouped accurately. ",
-                             validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
-                             )
+    nmer_length = IntegerField("Seed length",
+                               default=21,
+                               description="set the seed length (in basepairs). only sequences of this length that occur more frequently than 'min. seed occurrence (see above) will be considered in the rep/repin analysis.",
+                               validators=[validators.DataRequired(message="please enter the nmer length as an integer!")]
+                               )
+    distance_group_seeds= IntegerField("Distance group seeds",
+                                       default=15,
+                                       description="Set the group seeds distance. Determines whether REPINs are grouped accurately. ",
+                                       validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
+                                       )
+
+    distance_repin_rayt= IntegerField("Association distance REPIN-RAYT",
+                                      default=200,
+                                      description="Set the association distance (in bp) between REPINs and RAYTs. REPINs and RAYTs separated by more than this value will not be considered associated.",
+                                      validators=[validators.DataRequired(message="Please enter an integer number > 0.")]
+                                      )
 
     e_value_cutoff = FloatField("e value cutoff",
                                 default=1.0e-30,
-        description="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.",
+                                description="Set the e-value cutoff for 'tblastn'  alignment of query RAYT protein sequence (selected above in 'Query RAYT') to input genomes. The e-value should be given in scientific 'e' notation.",
                                 validators=[validators.DataRequired(message="Please enter the e value cutoff in scientific notation (e.g. 1e-30)")]
                                 )
 
     analyse_repins = BooleanField("Analyse REPINs",
                                   default=True,
-        description="Toggle REPIN analysis. If unchecked, only REPs will be analysed.",
+                                  description="Toggle REPIN analysis. If unchecked, only REPs will be analysed.",
                                   )
 
     email = StringField("Optional: Your email address.",
                         validators=[OptionalEmail()],
-        description="Provide your email address to receive a notification when the job is finished.",
+                        description="Provide your email address to receive a notification when the job is finished.",
                         )
 
     submit = SubmitField("Go!",
-        description="Click here to submit the job.",
-    )
+                         description="Click here to submit the job.",
+                         )
 
 
 class RunForm(FlaskForm):

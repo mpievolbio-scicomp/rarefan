@@ -37,15 +37,15 @@
             {{ submit_form.nmer_length.label }}
     </br>
     {{ submit_form.nmer_length(title=submit_form.nmer_length.description) }}
-            </br>
-            {% for error in submit_form.nmer_length.errors %}
-            <span style="color: red;">
-                [{{ error }}]</span>
-            {% endfor %}
-            </br>
-        </p>
-        <p>
-            {{ submit_form.distance_group_seeds.label }}
+    </br>
+    {% for error in submit_form.nmer_length.errors %}
+    <span style="color: red;">
+        [{{ error }}]</span>
+    {% endfor %}
+    </br>
+    </p>
+    <p>
+        {{ submit_form.distance_group_seeds.label }}
     </br>
     {{ submit_form.distance_group_seeds(title=submit_form.distance_group_seeds.description) }}
     </br>
@@ -54,19 +54,30 @@
         [{{ error }}]</span>
     {% endfor %}
     </br>
-        </p>
-        <p>
-            {{ submit_form.e_value_cutoff.label }}
+    </p>
+    <p>
+        {{ submit_form.distance_repin_rayt.label }}
     </br>
-    {{ submit_form.e_value_cutoff(title=submit_form.e_value_cutoff.description) }}</br>
-    {% for error in submit_form.e_value_cutoff.errors %}
+    {{ submit_form.distance_repin_rayt(title=submit_form.distance_repin_rayt.description) }}
+    </br>
+    {% for error in submit_form.distance_repin_rayt.errors %}
     <span style="color: red;">
-        [{{ error }}]
-    </span>
+        [{{ error }}]</span>
     {% endfor %}
     </br>
-        </p>
-        <p>
+    </p><p>
+        {{ submit_form.e_value_cutoff.label }}
+        </br>
+        {{ submit_form.e_value_cutoff(title=submit_form.e_value_cutoff.description) }}
+        </br>
+        {% for error in submit_form.e_value_cutoff.errors %}
+        <span style="color: red;">
+            [{{ error }}]
+        </span>
+        {% endfor %}
+        </br>
+    </p>
+    <p>
             {{ submit_form.analyse_repins.label }}
     </br>
     {{ submit_form.analyse_repins(title=submit_form.analyse_repins.description) }}</br>
