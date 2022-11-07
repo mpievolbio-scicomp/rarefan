@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-Main-Class: REPINpopulations.DeterminePopulationFrequencies
+Main-Class: REPINpopulations.RAREFAN_MAIN
 Class-Path: .
 

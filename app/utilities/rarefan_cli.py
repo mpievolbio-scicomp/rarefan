@@ -15,6 +15,7 @@ else:
 MCL_THREADS = max(os.cpu_count()//2, 1)
 
 def rarefan_command(**kwargs):
+    
     cmd = " ".join(['java',
                             '-Xmx10g',
                             '-jar',
@@ -28,7 +29,7 @@ def rarefan_command(**kwargs):
                             kwargs['treefile'],
                             '{}'.format(kwargs['e_value_cutoff']),
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
-                            '{}'.format(kwargs.get('num_threads', MCL_THREADS)),
+                            '{}'.format(kwargs.get('mcl_threads', MCL_THREADS)),
                             '{}'.format(kwargs.get('distance_group_seeds', 15)),
                             ]
                            )
@@ -161,7 +162,7 @@ if __name__ == '__main__':
                         help="Number of threads for parallel cluster analysis with MCL (default: %(default)d).",
                         required=False,
                         default=MCL_THREADS,
-                        type=str,
+                        type=int,
     )
 
     parser.add_argument("-t", "--treefile",

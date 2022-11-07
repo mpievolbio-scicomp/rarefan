@@ -26,7 +26,15 @@ def rarefan_on_success(job, result):
     dbjob.update(set__stages__rarefan__results__data_sanity__repins=parsed['status']['repins'])
     dbjob.update(set__stages__rarefan__results__counts__rayts=parsed['counts']['rayts'])
     dbjob.update(set__stages__rarefan__results__counts__nmers=parsed['counts']['nmers'])
-    dbjob.update(set__stages__rarefan__results__counts__repins=sum(parsed['counts']['repins'].values()))
+    dbjob.update(set__stages__rarefan__results__counts__repins__0=parsed['counts']['repins'].get(0, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__1=parsed['counts']['repins'].get(1, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__2=parsed['counts']['repins'].get(2, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__3=parsed['counts']['repins'].get(3, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__4=parsed['counts']['repins'].get(4, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__5=parsed['counts']['repins'].get(5, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__6=parsed['counts']['repins'].get(6, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__7=parsed['counts']['repins'].get(7, 0))
+    dbjob.update(set__stages__rarefan__results__counts__repins__8=parsed['counts']['repins'].get(8, 0))
 
     dbjob.save()
 
@@ -43,8 +51,16 @@ def on_success(job, connection, result, *args, **kwargs):
         rarefan_on_success(job, result)
     elif stage == "tree":
         dbjob.update(set__stages__tree__results__returncode=result['returncode'])
+        dbjob.update(set__stages__tree__results__log=result['log'])
+    elif stage == "rayt_alignment":
+        dbjob.update(set__stages__rayt_alignment__results__returncode=result['returncode'])
+        dbjob.update(set__stages__rayt_alignment__results__log=result['log'])
+    elif stage == "rayt_phylogeny":
+        dbjob.update(set__stages__rayt_phylogeny__results__returncode=result['returncode'])
+        dbjob.update(set__stages__rayt_phylogeny__results__log=result['log'])
     elif stage == "zip":
         dbjob.update(set__stages__zip__results__returncode=result['returncode'])
+        dbjob.update(set__stages__zip__results__log=result['log'])
 
     dbjob.set_overall()
 
@@ -72,6 +88,10 @@ def on_failure(job, connection, type, value, traceback):
         # Even though getting the tree was not successfull, we still want to generate the zip file.
         zip_results = zip_task(dbjob.setup['tmpdir'])
         dbjob.update(set__stages__zip__results__returncode=zip_results['returncode'])
+    elif stage == "rayt_alignment":
+        dbjob.update(set__stages__rayt_alignment__results__returncode=1)
+    elif stage == "rayt_phylogeny":
+        dbjob.update(set__stages__rayt_phylogeny__results__returncode=1)
     elif stage == "zip":
         dbjob.update(set__stages__zip__results__returncode=1)
 

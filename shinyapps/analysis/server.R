@@ -68,16 +68,15 @@ function(input, output, session) {
               output$run_setup <- renderTable(setup, rownames = T, colnames = F)
               output$back_to_results <- renderUI({
                                                   tags$a("Back to results summary page",
-                                                         href=paste("http://rarefan.evolbio.mpg.de/results?run_id=",
+                                                         href=paste(
+                                                         session$clientData$url_hostname,
+                                                         "/results?run_id=",
                                                          query$run_id,
                                                          sep=""
                                                          )
-                                                         )
-                                                         }
-                                                         )
-#          				paste("  ", "The plots can be reproduced with the R script 'run_analysis.R' which is part of the zip archive on the results page.", sep="")
-#          			}
-#			  )
+                                                  )
+              }
+              )
               logging::logdebug(session$clientData$url_search)
               logging::logdebug("Still alive")
               run_dir <- paste0(uploads_path, '/', query$run_id)

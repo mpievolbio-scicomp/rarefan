@@ -1,17 +1,23 @@
 {% extends "base.html" %}
 {% block head %}
 <head>
-    <meta http-equiv="refresh" content='30'></meta>
+    <meta http-equiv="refresh" content='10'></meta>
 </head>
 {% endblock %}
 {% block body %}
 		    <p>
 		        <h1>{{title}}</h1>
-            {% if job.parent_run  %}
-            <p>
-                {{job.run_id}} is a rerun of <a href={{url_for('results')}}?run_id={{job.parent_run}}>{{job.parent_run}}</a>.
-            </p>
-            {% endif %}
+                <p>
+                    <h2>Parameters</h2>
+                    {% for k in ['reference_strain', 'nmer_length', 'min_nmer_occurrence', 'query_rayt', 'distance_group_seeds', 'analyse_repins', 'e_value_cutoff'] %}
+                        <b>{{k}}:</b> {{ job.setup[k] }} </br>
+                    {% endfor %}
+                </p>
+                {% if job.parent_run  %}
+                    <p>
+                        {{job.run_id}} is a rerun of <a href={{url_for('results')}}?run_id={{job.parent_run}}>{{job.parent_run}}</a>.
+                    </p>
+                {% endif %}
 		    </p>
         {% include 'report.html' %}
         {% if job.stages['rarefan']['results']['counts']['repins'] == 0 %}
@@ -19,7 +25,7 @@
         {% endif %}
         {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
             {%  if render_plots %}
-            <h2><a href="{{url_for('index', _external=True )}}/shiny/analysis/?run_id={{run_id}}" target="_top" title="Visualize your results.">Plot data</a></h2>
+            <h2><a href="{{url_for('index', _external=True )}}/shiny/analysis/?run_id={{run_id}}" target="_blank" title="Visualize your results.">Plot data</a></h2>
             {% endif %}
         {% endif %}
         <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
@@ -29,13 +35,8 @@
         </p>
         {% endif %}
         <p>
-            <h2><a href={{url_for('rerun')}}?run_id={{job.run_id}} title="Click here modify the parameters of this run and resubmit.">Rerun this job</a></h2>
+            <h2><a href={{url_for('rerun')}}?run_id={{job.run_id}} title="Click here to resubmit this run with modified parameters (optional)." target="_blank">Rerun this job</a></h2>
         </p>
-        <p>
-            <h2> Parameters for this run </h2>
-            {% for k in ['reference_strain', 'nmer_length', 'min_nmer_occurrence', 'query_rayt', 'distance_group_seeds', 'analyse_repins', 'e_value_cutoff'] %}
-                <b>{{k}}:</b> {{ job.setup[k] }} </br>
-            {% endfor %}
-        </p>
+
 {% endblock %}
 
