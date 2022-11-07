@@ -47,7 +47,6 @@ def tree_task(run_dir, treefile=None):
 
     # else (no treefile exists.)
     andi_command = "andi -j {}".format(" ".join(inputs))
-                                  # | clustDist > {}", out_treefile)
 
     logger.debug("tree generation command: %s", andi_command)
 
@@ -93,5 +92,5 @@ def tree_task(run_dir, treefile=None):
 
 def empty_task():
     return {'returncode': 2,
-            'log': "No treefile as per job parameters."
+            'log': "Must provide at least 2 sequences to compute a distance matrix with `andi`. Plotting is disabled."
             }

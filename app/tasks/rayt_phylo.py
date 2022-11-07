@@ -82,7 +82,7 @@ def run_alignment(run_dir):
 
     logger.debug(log)
 
-    return log, proc.returncode
+    return log.decode('UTF-8'), proc.returncode
 
 def run_phyml(run_dir, seed=None):
     """ Workhorse function to run the phyml tool.
@@ -122,7 +122,7 @@ def run_phyml(run_dir, seed=None):
 
     logger.debug(log)
 
-    return log, proc.returncode
+    return log.decode('ascii'), proc.returncode
 
 
 
