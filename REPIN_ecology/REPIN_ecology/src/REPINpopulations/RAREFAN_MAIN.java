@@ -88,31 +88,25 @@ public class RAREFAN_MAIN {
         // 			generateTree(treeFile);
         // 		}
     }
-
-    private void generateTree(File treeFile) {
-      
-        System.out.println("Generating Tree.");
-
-        String filenames=generateFileNameString();
-        String treeID=treeFile.getName().split("\\.")[0];
-        File distFile=new File(outFolder+"/"+treeID+".dist");
-        System.out.println("Running andi.");
-        RunTreePrograms.runProgram("andi "+filenames, "", outFolder,distFile);
-        System.out.println("Running clustDist.");
-        RunTreePrograms.runProgram("clustDist "+distFile, "", outFolder, treeFile);
-    }
-
-    private String generateFileNameString() {
-        StringBuffer sb=new StringBuffer();
-        File[] files=inFolder.listFiles();
-        for(int i=0;i<files.length;i++) {
-            if(hasCorrectExtension(files[i])) {
-                sb.append(" "+files[i]);
-            }
-        }
-        return sb.toString();
-    }
-
+// this is now done outside of RAREFAN
+	/*
+	 * private void generateTree(File treeFile) {
+	 * 
+	 * System.out.println("Generating Tree.");
+	 * 
+	 * String filenames=generateFileNameString(); String
+	 * treeID=treeFile.getName().split("\\.")[0]; File distFile=new
+	 * File(outFolder+"/"+treeID+".dist"); System.out.println("Running andi.");
+	 * RunTreePrograms.runProgram("andi "+filenames, "", outFolder,distFile);
+	 * System.out.println("Running clustDist.");
+	 * RunTreePrograms.runProgram("clustDist "+distFile, "", outFolder, treeFile); }
+	 *
+	 *
+	 * private String generateFileNameString() { StringBuffer sb=new StringBuffer();
+	 * File[] files=inFolder.listFiles(); for(int i=0;i<files.length;i++) {
+	 * if(hasCorrectExtension(files[i])) { sb.append(" "+files[i]); } } return
+	 * sb.toString(); }
+	 */
     private String[] getREPtype() {
         ArrayList<String> list=new ArrayList<String>();
         for(int i=0;i<focalSeeds.length;i++) {
@@ -131,10 +125,14 @@ public class RAREFAN_MAIN {
         try {
             BufferedWriter bw = new BufferedWriter(new FileWriter(out));
             String[] genomes=results.keySet().toArray(new String[0]);
+            bw.write("Genome name\tGroup number\tmost frequent sequence in group\tfrequency\n");
             for(int i=0;i<genomes.length;i++) {
                 String[] seeds=results.get(genomes[i]).keySet().toArray(new String[0]);
                 for(int j=0;j<seeds.length;j++) {
-                    bw.write(genomes[i].replace("_", "\t")+"\t"+seeds[j]+"\t"+results.get(genomes[i]).get(seeds[j])+"\n");
+                	String split[]=genomes[i].split("_");
+                	int group=Integer.parseInt(split[split.length-1]);
+                	String id=cutOffLastUnderscore(genomes[i]);
+                    bw.write(id+"\t"+group+"\t"+seeds[j]+"\t"+results.get(genomes[i]).get(seeds[j])+"\n");
                 }
             }
             bw.close();
@@ -144,6 +142,17 @@ public class RAREFAN_MAIN {
             System.exit(-1);
         }
     }
+    
+    private String cutOffLastUnderscore(String genome) {
+    	String split[]=genome.split("_");
+    	StringBuffer id=new StringBuffer();
+    	for(int i=0;i<split.length-2;i++) {
+    		id.append(split[i]+"_");
+    	}
+    	id.append(split[split.length-2]);
+    	return id.toString();
+    }
+    
     public static String getGenomeID(File in) {
         return in.getName().split("\\.")[0];
     }
@@ -189,7 +198,7 @@ public class RAREFAN_MAIN {
             System.out.println("REPIN RAYT proximity calculation for "+onlyGenome+"...");
 
             rrp.addRAYT(raytPos, genomes.get(i), rgp);
-            System.out.println("rgp: "+rgp.size()+"\n rrp: "+rrp.allRAYTs.size());
+            //System.out.println("rgp: "+rgp.size()+"\n rrp: "+rrp.allRAYTs.size());
 
         }
         rrp.write(new File(outFolder+"/repin_rayt_association.txt"));

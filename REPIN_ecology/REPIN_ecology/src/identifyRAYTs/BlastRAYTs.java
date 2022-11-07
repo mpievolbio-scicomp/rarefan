@@ -43,9 +43,9 @@ public class BlastRAYTs {
 					ArrayList<Info> bi=blastQuery(db, query, outFolder, e,program);
 					String seqName=getName(dbs[i]);
 					String maxREPIN=getMaxREPIN(seqName,outFolder,repType[k],analyseREPIN);
-					System.out.println(seqName+" "+outFolder+" "+repType[k]);
+					//System.out.println(seqName+" "+outFolder+" "+repType[k]);
 					if(!maxREPIN.equals("-1")){
-						System.out.println(maxREPIN);
+						//System.out.println(maxREPIN);
 						int maxREPINNum=Integer.parseInt(maxREPIN.split("_|\\s+")[1]);
 
 						int masterSeqs=Integer.parseInt(maxREPIN.split("_")[2]);
@@ -288,8 +288,8 @@ public class BlastRAYTs {
 				end=end>start?end:temp;
 				rev=true;
 			}
-			System.out.println(fasIdent+" "+in);
-			System.out.println(start+" "+end);
+			//System.out.println(fasIdent+" "+in);
+			//System.out.println(start+" "+end);
 		
 			String seq=getSeq(fas.get(fasIdent),start,end,rev);
 		
@@ -341,7 +341,7 @@ public class BlastRAYTs {
 				int multi=program.equals("blastn")?1:3;
 				int adjstart=end>start?start-rb.getStartQuery().get(i)*multi:start+rb.getStartQuery().get(i)*multi;
 				int adjend=end>start?end+(querylength-rb.getEndQuery().get(i))*multi:end-(querylength-rb.getEndQuery().get(i))*multi;
-				System.out.println(adjstart-adjend);
+				//System.out.println(adjstart-adjend);
 				if(adjend>seqlength) {
 					adjend=seqlength;
 				}

@@ -42,7 +42,7 @@ public class AnalyseForRecombinations {
 				for(int j=0;j<infos.size();j++){
 					if(i==j)continue;
 					String name2=infos.get(j).name;
-					System.out.println(name1+"\t"+name2);
+					//System.out.println(name1+"\t"+name2);
 					File inGenome=new File(inFolderGenome+"/"+name1+"/"+name2+".out");
 					File inREP=new File(inFolderREP+"/"+name1+"/"+name2+".out");
 					File out=new File(currentFolder+"/"+name2+".out");

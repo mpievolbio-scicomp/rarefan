@@ -25,7 +25,7 @@ public class PerformBlast {
 			}
 			char filter=Filter?'T':'F';
 			String blastcom=blastpath+" -p "+ program+" -m 8 -o "+output+" -i "+input+" -e "+eValue+" -d "+database+" -F "+filter+" -b 50000000";
-			if(!verbose)System.out.println(blastcom);
+			if(verbose)System.out.println(blastcom);
 			Process p=Runtime.getRuntime().exec(blastcom);
 			if(p.waitFor()!=0){
 				System.err.println(blastcom);

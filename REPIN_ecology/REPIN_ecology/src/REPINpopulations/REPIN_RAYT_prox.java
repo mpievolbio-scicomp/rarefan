@@ -192,8 +192,8 @@ public class REPIN_RAYT_prox {
 				end=end>start?end:temp;
 				rev=true;
 			}
-			System.out.println(fasIdent+" "+in);
-			System.out.println(start+" "+end);
+			//System.out.println(fasIdent+" "+in);
+			//System.out.println(start+" "+end);
 			String seq=getSeq(fas.get(fasIdent),start,end,rev);
 		
 			seqs.add(new Fasta(name,seq));
