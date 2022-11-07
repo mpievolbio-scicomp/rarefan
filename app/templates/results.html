@@ -9,7 +9,7 @@
 		        <h1>{{title}}</h1>
                 <p>
                     <h2>Parameters</h2>
-                    {% for k in ['reference_strain', 'nmer_length', 'min_nmer_occurrence', 'query_rayt', 'distance_group_seeds', 'analyse_repins', 'e_value_cutoff'] %}
+                    {% for k in ['reference_strain', 'nmer_length', 'min_nmer_occurrence', 'query_rayt', 'distance_group_seeds', 'distance_repin_rayt', 'analyse_repins', 'e_value_cutoff'] %}
                         <b>{{k}}:</b> {{ job.setup[k] }} </br>
                     {% endfor %}
                 </p>
