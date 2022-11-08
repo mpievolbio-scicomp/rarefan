@@ -28,6 +28,7 @@ import os
 import shutil
 import tempfile
 import time
+import pandas
 
 logger = app.logger
 
@@ -416,10 +417,52 @@ def results():
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
 
+        # Initialize repin_counts to None. If handling legacy data, this will block html rendering.
+        repin_counts = None
+        # Get rep/repin counts per strain and group.
+        repin_count_dict = dbjob['stages']['rarefan']['results']['counts']['repins']
+
+        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete']:
+            if all([isinstance(v, dict) for k,v in repin_count_dict.items()]):
+                # Construct multiindexed dataframe from nested dict
+                repin_counts = pandas.concat([pandas.DataFrame.from_dict(val,
+                                                                          orient='index')
+                                               for val in repin_count_dict.values()],
+                                              keys=repin_count_dict.keys())
+
+                # Turn index levels to columns.
+                repin_counts.reset_index(inplace=True)
+
+                # Assign proper column names.
+                repin_counts.rename(inplace=True, axis=1, mapper={'level_0': 'Group', 'level_1': 'Strain'})
+
+                # Swap levels, rename and sort.
+                repin_counts = repin_counts.pivot(index='Group', columns='Strain', values=['allREP', 'allREPINs'])\
+                    .swaplevel(0, 1, axis=1)\
+                    .rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+
+                # Convert to int treating NaN as 0
+                repin_counts = repin_counts.fillna(0).astype(int).T
+
+                # repin_counts.style.set_table_styles(
+                #     [{'selector': 'td',
+                #       'props': 'color:blue;'},
+                #      {'selector':'table',
+                #       'props': 'color:red;'},
+                #      ],
+                # )
+
+                # Convert to html
+                repin_counts=repin_counts.to_html(col_space='150px')
+
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
                                run_id=run_id,
                                job=dbjob,
+                               repin_counts=repin_counts,
                                render_plots=render_plots,
                                )
 
