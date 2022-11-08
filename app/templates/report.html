@@ -1,3 +1,10 @@
+{#<style>
+    table {
+                      column-width: 150px;
+                      text-align: right;
+        background-color: #954F72;
+    }
+</style>#}
 <p>
 <p>
     <h2>Status:
@@ -63,8 +70,11 @@
             </br></br>
         </p>
         <h3>REP/REPINs</h3>
-        <p>
             {% if job.stages['rarefan']['results']['counts']['repins'] is mapping %}
+                {%  if repin_counts is not none %}
+                {{ repin_counts | safe }}
+                    {% else %}
+
             <table style="width:20%;">
                 <tr>
                     <th>Group</th>
@@ -81,6 +91,7 @@
                 </tr>
                 {% endfor %}
             </table>
+                    {% endif %}
             {% else %}
             RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs/REPINs in the reference genome.
             {% endif %}
