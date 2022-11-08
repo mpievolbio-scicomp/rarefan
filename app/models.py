@@ -8,6 +8,15 @@ from rq.exceptions import NoSuchJobError
 from app import app, db
 logger = app.logger
 
+class Stage(db.Document):
+    """ class to represent a stage in a rarefan run"""
+    pass
+
+class Results(db.Document):
+    """ :class Results: Represents results from a rarefan run"""
+    returncode = db.StringField()
+    log = db.StringField()
+    counts = db
 
 class Job(db.Document):
     """ :class Job: Represents all parameters, statuses, and results for a rarefan job. """
