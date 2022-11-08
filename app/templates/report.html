@@ -1,10 +1,3 @@
-{#<style>
-    table {
-                      column-width: 150px;
-                      text-align: right;
-        background-color: #954F72;
-    }
-</style>#}
 <p>
 <p>
     <h2>Status:
@@ -59,13 +52,13 @@
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>
         <p>
-        RAREFAN discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs across all submitted genomes using tblastn with
+        RAREFAN discovered {{job.stages['rarefan']['results']['counts']['rayts']|replace("None", "0")}} RAYTs across all submitted genomes using tblastn with
         {{job.setup["query_rayt"]}} at an e-value threshold of {{job.setup["e_value_cutoff"]}}.
         </p>
         </br>
         <h3>Seed sequences</h3>
         <p>
-            RAREFAN identified {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
+            RAREFAN identified {{job.stages['rarefan']['results']['counts']['nmers']|replace("None", "0")}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
             occur more frequently than {{job.setup['min_nmer_occurrence']}} times.
             </br></br>
         </p>
@@ -93,7 +86,7 @@
             </table>
                     {% endif %}
             {% else %}
-            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs/REPINs in the reference genome.
+            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']|replace("None", "0")}} REPs/REPINs in the reference genome.
             {% endif %}
             </br></br>
         </p>

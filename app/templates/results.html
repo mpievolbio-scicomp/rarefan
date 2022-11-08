@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block head %}
 <head>
-    {% if job.stages['rarefan']['status'] in ['running'] %}
+    {% if job['overall_status'] in ['queued', 'started', 'running', 'setup', 'postprocessing'] %}
     <meta http-equiv="refresh" content='10'></meta>
     {%  endif %}
 </head>
