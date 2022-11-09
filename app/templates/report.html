@@ -17,7 +17,7 @@
         <tr>
             <th>Stage</th>
             <th>Status</th>
-            <th>Code</th>
+            <th>Return code</th>
         </tr>
     {% for stage in job.stages.keys() %}
         <tr>
@@ -62,7 +62,11 @@
             occur more frequently than {{job.setup['min_nmer_occurrence']}} times.
             </br></br>
         </p>
-        <h3>REP/REPINs</h3>
+        {%  if job.setup['analyse_repins']=='y' %}
+            <h3>REP singlet and REPIN counts</h3>
+        {%  else %}
+            <h3>REP counts</h3>
+        {%  endif %}
             {% if job.stages['rarefan']['results']['counts']['repins'] is mapping %}
                 {%  if repin_counts is not none %}
                 {{ repin_counts | safe }}
