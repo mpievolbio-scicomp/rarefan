@@ -1,6 +1,8 @@
+import glob
 import sys
 import os
 import logging
+import pandas
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -67,31 +69,24 @@ def parse_results(outdir,
     # RAYTs must be divided by 2 to get the correct number.
     results['counts']['rayts'] = results['counts']['rayts'] // 2
 
-    # Aggregate "*_largestCluster" filenames.
-    cluster_files = []
+    # Parse presAbs files into pandas dataframes
+    pres_abs_frames = dict()
 
-    # Load cluster files.
-    i = 0
-    while f"{reference_strain}_{i}" in os.listdir(outdir):
-        cluster_files.append(os.path.join(outdir,
-                                          f"{reference_strain}_{i}",
-                                          f"{reference_strain}_{i}_largestCluster.nodes"
-                                          )
-                             )
-        i += 1
-
-    repin_checks = [0]*len(cluster_files)
-    for i, cluster_file in enumerate(cluster_files):
+    pres_abs_fnames = glob.glob(os.path.join(outdir, "presAbs_*.txt"))
+    pres_abs_fnames = sorted(pres_abs_fnames)
+    repin_checks = [0]*len(pres_abs_fnames)
+    for i,pres_abs_fname in enumerate(pres_abs_fnames):
         try:
-            results['counts']['repins'][i] = count_lines(cluster_file)
+            pres_abs_frames[i] = pandas.read_csv(pres_abs_fname, sep="\t", index_col=0).to_dict(orient='index')
+            repin_checks[i] = 0
         except:
-            logger.warning("Could not count lines in cluster file %s.", cluster_file)
+            pres_abs_frames[i] = pandas.DataFrame()
             repin_checks[i] = 1
+            logger.warning("Could not count lines in RAYT file", fname)
 
-        results['status']['repins'] = int(all([r == 1 for r in repin_checks]))
+    results['counts']['repins'] = pres_abs_frames
 
     return results
-
 
 if __name__ == "__main__":
     parsed = parse_results(sys.argv[1], 'Nmen_2594.fas')

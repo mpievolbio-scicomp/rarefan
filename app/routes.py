@@ -28,6 +28,7 @@ import os
 import shutil
 import tempfile
 import time
+import pandas
 
 logger = app.logger
 
@@ -219,16 +220,7 @@ def submit():
                                                           "rayts": None,
                                                           "nmers": None,
                                                           "repins": {
-                                                              '0': 0,
-                                                              '1': 0,
-                                                              '2': 0,
-                                                              '3': 0,
-                                                              '4': 0,
-                                                              '5': 0,
-                                                              '6': 0,
-                                                              '7': 0,
-                                                              '8': 0,
-                                                              },
+                                                          },
                                                           },
                                                       "data_sanity": {
                                                           "rayts": None,
@@ -425,10 +417,49 @@ def results():
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
 
+        # Initialize repin_counts to None. If handling legacy data, this will block html rendering.
+        repin_counts = None
+        # Get rep/repin counts per strain and group.
+        repin_count_dict = dbjob['stages']['rarefan']['results']['counts']['repins']
+
+        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] and repin_count_dict is not None:
+            if all([isinstance(v, dict) for k,v in repin_count_dict.items()]):
+                # Construct multiindexed dataframe from nested dict
+                repin_counts = pandas.concat([pandas.DataFrame.from_dict(val,
+                                                                          orient='index')
+                                               for val in repin_count_dict.values()],
+                                              keys=repin_count_dict.keys())
+
+                # Turn index levels to columns.
+                repin_counts.reset_index(inplace=True)
+
+                # Assign proper column names.
+                repin_counts.rename(inplace=True, axis=1, mapper={'level_0': 'Group', 'level_1': 'Strain'})
+
+                # Swap levels, rename and sort.
+                repin_counts = repin_counts.pivot(index='Group', columns='Strain', values=['allREP', 'allREPINs'])\
+                    .swaplevel(0, 1, axis=1)
+
+                if dbjob['setup']['analyse_repins']:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REP Singlets", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+
+                else:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                    repin_counts = repin_counts.drop(labels="REPINs", axis=1, level=1).droplevel(axis=1, level=1)
+                # Convert to int treating NaN as 0
+                repin_counts = repin_counts.fillna(0).astype(int).T
+
+                # Convert to html
+                repin_counts=repin_counts.to_html(col_space='150px')
+
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
                                run_id=run_id,
                                job=dbjob,
+                               repin_counts=repin_counts,
                                render_plots=render_plots,
                                )
 
