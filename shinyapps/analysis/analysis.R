@@ -201,7 +201,7 @@ plotREPINs=function(folder,
     }
   }
   else {
-    if(analyse_repins) {
+    if(analyse_repins == 'y') {
       message <-  paste0("No REPIN sequences could be identified in Group ", rep_rayt_group,".")
     }
     else {
