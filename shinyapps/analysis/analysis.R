@@ -73,7 +73,7 @@ plotREPINs=function(folder,
                     treeFile,
                     rep_rayt_group,
                     highlight_strain="",
-                    analyse_repins=TRUE){
+                    analyse_repins="y"){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
@@ -201,17 +201,18 @@ plotREPINs=function(folder,
     }
   }
   else {
-    if(analyse_repins == 'y') {
-      message <-  paste0("No REPIN sequences could be identified in Group ", rep_rayt_group,".")
-    }
-    else {
-      message <-  paste0("No REP sequences could be identified in Group ", rep_rayt_group,".")
-
-    }
+    msg <-  analyse_repins
+    # if(analyse_repins == 'y') {
+    #   message <-  paste0("No REPIN sequences could be identified in Group ", rep_rayt_group,".")
+    # }
+    # else {
+    #   message <-  paste0("No REP sequences could be identified in Group ", rep_rayt_group,".")
+    #
+    # }
           p <- p + annotate(x=layer_scales(p)$x$get_limits()[2]*0.8,
                             y=10,#layer_scales(p)$y$get_limits()[2]*0.8,
                             geom='text',
-                            label=message
+                            label=msg
                              )
   }
 
