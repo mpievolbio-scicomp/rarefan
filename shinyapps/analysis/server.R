@@ -69,9 +69,9 @@ function(input, output, session) {
               output$back_to_results <- renderUI({
                                                   tags$a("Back to results summary page",
                                                          href=paste(
-                                                         session$clientData$url_hostname,
-                                                         "/results?run_id=",
-                                                         query$run_id,
+                                                           "http://rarefan.evolbio.mpg.de",
+                                                           "/results?run_id=",
+                                                           query$run_id,
                                                          sep=""
                                                          )
                                                   )
