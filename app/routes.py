@@ -422,7 +422,7 @@ def results():
         # Get rep/repin counts per strain and group.
         repin_count_dict = dbjob['stages']['rarefan']['results']['counts']['repins']
 
-        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] and repin_count_dict is not None:
+        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] and isinstance(repin_count_dict, dict):
             if all([isinstance(v, dict) for k,v in repin_count_dict.items()]):
                 # Construct multiindexed dataframe from nested dict
                 repin_counts = pandas.concat([pandas.DataFrame.from_dict(val,
@@ -454,6 +454,9 @@ def results():
 
                 repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
                 repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+
+            else:
+                repin_counts = repin_count_dict
 
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
