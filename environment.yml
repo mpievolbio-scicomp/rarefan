@@ -19,6 +19,7 @@ dependencies:
   - rq
   - redis-py
   - redis
+  - pandas
   - phyml
   - pip
   - pip:
