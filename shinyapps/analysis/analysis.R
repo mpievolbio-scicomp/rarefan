@@ -209,7 +209,7 @@ plotREPINs=function(folder,
 
     }
           p <- p + annotate(x=layer_scales(p)$x$get_limits()[2]*0.8,
-                            y=layer_scales(p)$y$get_limits()[2]*0.8,
+                            y=10,#layer_scales(p)$y$get_limits()[2]*0.8,
                             geom='text',
                             label=message
                              )
