@@ -72,7 +72,8 @@ blank_theme = theme(axis.text=element_text(size=fontsize),
 plotREPINs=function(folder,
                     treeFile,
                     rep_rayt_group,
-                    highlight_strain=""){
+                    highlight_strain="",
+                    analyse_repins=TRUE){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
@@ -200,11 +201,17 @@ plotREPINs=function(folder,
     }
   }
   else {
+    if(analyse_repins) {
+      message <-  paste0("No REPIN sequences could be identified in Group ", rep_rayt_group,".")
+    }
+    else {
+      message <-  paste0("No REP sequences could be identified in Group ", rep_rayt_group,".")
+
+    }
           p <- p + annotate(x=layer_scales(p)$x$get_limits()[2]*0.8,
-                            y=10.0,
+                            y=layer_scales(p)$y$get_limits()[2]*0.8,
                             geom='text',
-                            label=paste0("REP/RAYT group ",
-                                          rep_rayt_group," is empty.")
+                            label=message
                              )
   }
 

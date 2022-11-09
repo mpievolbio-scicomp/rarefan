@@ -36,7 +36,8 @@ function(input, output, session) {
                                                query_rayt,
                                                nmer_length,
                                                min_nmer_occurrence,
-                                               e_value_cutoff
+                                               e_value_cutoff,
+                                               analyse_repins
                                                )
               if('distance_group_seeds' %in% colnames(db_run_setup)) {
                 setup$distance_group_seeds <- db_run_setup$distance_group_seeds
@@ -45,13 +46,22 @@ function(input, output, session) {
                 setup$distance_group_seeds <- 30
               }
 
+               if('distance_repin_rayt' %in% colnames(db_run_setup)) {
+                setup$distance_repin_rayt <- db_run_setup$distance_repin_rayt
+              }
+              else {
+                setup$distance_repin_rayt <- 200
+              }
+
               # Change order
               setup <- setup %>% select(reference_strain,
                                                query_rayt,
                                                nmer_length,
                                                min_nmer_occurrence,
                                                distance_group_seeds,
-                                               e_value_cutoff
+                                               distance_repin_rayt,
+                                               e_value_cutoff,
+                                               analyse_repins
               )
               setup <- t(setup)
               rownames(setup) <- c("Ref. strain",
@@ -59,7 +69,9 @@ function(input, output, session) {
                                          "Seed length",
                                          "Min. seed count",
                                          "Dist. group seeds",
-                                         "e-value cutoff"
+                                         "Dist. REPIN-RAYT",
+                                         "e-value cutoff",
+                                         "Analyse REPINS?"
               )
               output$text <- renderText({
           				paste("Run ID ", query$run_id, sep=" ")
@@ -102,7 +114,9 @@ function(input, output, session) {
               output$repin_tree <-  renderPlot({
                 plotREPINs(out_dir,
                            treefile,
-                           input$rayt
+                           input$rayt,
+                           "",
+                           setup$analyse_repins
                 )
               },
               height=plot_height, width=plot_width
