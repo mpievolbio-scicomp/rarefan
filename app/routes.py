@@ -187,6 +187,17 @@ def submit():
 
         os.mkdir(session['outdir'])
 
+        shutil.copyfile(
+            src=os.path.join(
+                os.path.dirname(
+                    app.root_path
+                ),
+                'doc',
+                'files_readme.md'
+            ),
+            dst=os.path.join(session['outdir'], 'readme.md')
+        )
+
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurrence'] = request.form.get('min_nmer_occurrence')
