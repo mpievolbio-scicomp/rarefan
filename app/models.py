@@ -66,7 +66,7 @@ class Job(db.Document):
             logger.debug("%s status= %s", stage, self.stages[stage]['status'] )
 
         overall = 'setup'
-        if all([ stage['status'] == "none" for stage in self.stages.values()]):
+        if all([ stage['status'] in ["none", "setup"] for stage in self.stages.values()]):
             overall = "setup"
         elif self.stages['rarefan']['status'] == "queued":
             overall = "queued"
@@ -76,6 +76,7 @@ class Job(db.Document):
             overall = 'failed'
 
         elif self.stages['rarefan']['status'] in ["complete", "finished"]:
+            overall = "complete"
             for stage in ['rayt_alignment', 'rayt_phylogeny', 'tree', 'zip']:
                 if hasattr(self, stage):
                     if self.stages[stage]['status'] in ["queued", "started", "running"]:
@@ -85,8 +86,6 @@ class Job(db.Document):
                         overall = "complete with errors"
                 else:
                     continue
-        else:
-            overall = "complete"
 
         self.overall_status = overall
         self.update(set__overall_status=overall)
