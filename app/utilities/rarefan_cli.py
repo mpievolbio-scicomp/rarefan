@@ -261,7 +261,7 @@ if __name__ == '__main__':
     print("-------")
     print(f"{counts['rayts']} RAYTs across all submitted genomes using tblastn with {args.query_rayt} at an e-value threshold of {args.e_value_cutoff}.")
     print(f"{counts['nmers']} {args.nmer_length}bp long sequences in the reference genome that occur more frequently than {args.min_nmer_occurrence} times.")
-    print(f"{sum(counts['repins'].values())} REPINs in the reference genome.")
+    print(f"REP/REPINs: {counts['repins']}")
     print("")
 
     ### Generate tree.
@@ -282,11 +282,3 @@ if __name__ == '__main__':
 
     if proc.returncode != 0:
         sys.exit(proc.returncode)
-
-    print(f"""
-
-Your RAREFAN run is complete. Data was written to {args.outdir} You can now visualize your results with the command
-
-    $> rarefan_plots -d DIR -r QUERY_RAYT_ID -t TREEFILE -o OUTFILE
-
-    """)
