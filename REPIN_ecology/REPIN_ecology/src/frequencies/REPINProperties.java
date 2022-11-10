@@ -179,7 +179,7 @@ public class REPINProperties {
 			if(analyseREPIN ){
                 //>>> DEBUG
                 System.out.println("Working Directory = " + System.getProperty("user.dir"));
-                String mcl_command =mclPath+" "+simNet+" "+" -te "+MCLThreads+" -I 1.2 --abc -o "+mclout;
+                String mcl_command = mclPath+" "+simNet+" "+" -te "+MCLThreads+" -I 1.2 --abc -o " + mclout + " -V all" ;
                 System.out.println("mcl_command = " + mcl_command);
                 //<<< DEBUG
 				RunTreePrograms.runProgram(
