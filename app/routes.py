@@ -561,7 +561,7 @@ def queue():
 @app.route('/manual', methods=['GET'])
 def manual():
     """Return the rarefan manual."""
-    return render_template('manual.html')
+    return render_template('RAREFAN_Manual.html')
 
 
 @app.route('/rerun')
