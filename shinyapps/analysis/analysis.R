@@ -186,7 +186,7 @@ plotREPINs=function(folder,
 
     if(sum(popSize$repins) > 0) {
     p = facet_plot(p
-                   , panel='REPIN population size'
+                   , panel='Largest REPIN population size'
                    , data=popSize
                    , geom=geom_segment
                    , aes(x=0
@@ -377,7 +377,7 @@ plotCorrelationSingle=function(folder,
         xlim(c(0,1)) + ylim(c(0,max(t$numRepin+0.1*t$numRepin)))+
         rarefan_theme +
         xlab("Proportion master sequence (~Replication rate)") +
-        ylab("REPIN population size")
+        ylab("Largest REPIN population size")
 
 	logging::logdebug("Adding theme.")
   p <- p + theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize))
