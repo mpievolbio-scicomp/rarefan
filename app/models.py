@@ -76,16 +76,13 @@ class Job(db.Document):
             overall = 'failed'
 
         elif self.stages['rarefan']['status'] in ["complete", "finished"]:
-            overall = "complete"
-            for stage in ['rayt_alignment', 'rayt_phylogeny', 'tree', 'zip']:
-                if hasattr(self, stage):
-                    if self.stages[stage]['status'] in ["queued", "started", "running"]:
-                        overall = "postprocessing"
-
-                    elif self.stages[stage]['results']['returncode'] not in [0, '0', None, 'None']:
-                        overall = "complete with errors"
+            if any([stage['status'] in ["queued", "started", "running"] for stage in self.stages.values()]):
+                overall = "postprocessing"
+            else:
+                if any([stage['results']['returncode'] not in [0, '0', None, 'None'] for stage in self.stages.values()]):
+                    overall = "complete with errors"
                 else:
-                    continue
+                    overall = "complete"
 
         self.overall_status = overall
         self.update(set__overall_status=overall)
