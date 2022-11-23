@@ -39,7 +39,7 @@
         </table>
     {% for stage in job.stages.keys() %}
         {% if job.stages[stage]['results']['returncode'] not in [0, '0', None, 'None'] %}
-            <h3>{{ stage|replace("_", " ")|title() }} failed with error code {{ job.stages[stage]['results']['returncode']}}<h3>
+            <h3>{{ stage|replace("_", " ")|title() }} failed with error code {{ job.stages[stage]['results']['returncode']}}</h3>
             <p>
             <h4>Log:</h4>
             {{  job.stages[stage]['results']['log']|replace('\n', '<br>')|safe()|replace('. ', '')  }}
