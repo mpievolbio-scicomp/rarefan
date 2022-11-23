@@ -1,9 +1,7 @@
 {% extends "base.html" %}
 {% block head %}
 <head>
-    {% if job['overall_status'] in ['queued', 'started', 'running', 'setup', 'postprocessing'] %}
-    <meta http-equiv="refresh" content='10'></meta>
-    {%  endif %}
+    <meta http-equiv="refresh" content="60;URL={{ url_for('results') }}?run_id={{ job.run_id }}"/>
 </head>
 {% endblock %}
 {% block body %}
@@ -30,7 +28,7 @@
             <h2><a href="{{url_for('index', _external=True )}}/shiny/analysis/?run_id={{run_id}}" target="_blank" title="Visualize your results.">Plot data</a></h2>
             {% endif %}
         {% endif %}
-        <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a> </h2>
+        <h2 topmargin=800px> <a href={{url_for('files', req_path=run_id)}} title="Browse through all submitted data and the results.">Browse data</a></h2>
         {% if job.stages['zip'].status in ['finished', 'complete'] %}
         <h2> <a href="/static/uploads/{{run_id}}/{{run_id}}_out.zip" title="Click here to download your results as a zip file.">Download results</a></h2>
         <p>
