@@ -433,7 +433,9 @@ def results():
         # Get rep/repin counts per strain and group.
         repin_count_dict = dbjob['stages']['rarefan']['results']['counts']['repins']
 
-        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] and isinstance(repin_count_dict, dict):
+        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] \
+           and isinstance(repin_count_dict, dict) \
+           and len(repin_count_dict.items()) > 0:
             if all([isinstance(v, dict) for k,v in repin_count_dict.items()]):
                 # Construct multiindexed dataframe from nested dict
                 repin_counts = pandas.concat([pandas.DataFrame.from_dict(val,
@@ -451,12 +453,8 @@ def results():
                 repin_counts = repin_counts.pivot(index='Group', columns='Strain', values=['allREP', 'allREPINs'])\
                     .swaplevel(0, 1, axis=1)
 
-                if dbjob['setup']['analyse_repins']:
-                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REP Singlets", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
 
-                else:
-                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
-                    repin_counts = repin_counts.drop(labels="REPINs", axis=1, level=1).droplevel(axis=1, level=1)
                 # Convert to int treating NaN as 0
                 repin_counts = repin_counts.fillna(0).astype(int).T
 
