@@ -454,7 +454,7 @@ def results():
                     .swaplevel(0, 1, axis=1)
 
                 if dbjob['setup']['analyse_repins']:
-                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REP Singlets", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
 
                 else:
                     repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
