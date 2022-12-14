@@ -453,7 +453,13 @@ def results():
                 repin_counts = repin_counts.pivot(index='Group', columns='Strain', values=['allREP', 'allREPINs'])\
                     .swaplevel(0, 1, axis=1)
 
-                repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                if dbjob['setup']['analyse_repins']:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REP/REPINs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+
+                else:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                    repin_counts = repin_counts.drop(labels="REPINs", axis=1, level=1).droplevel(axis=1, level=1)
+
 
                 # Convert to int treating NaN as 0
                 repin_counts = repin_counts.fillna(0).astype(int).T
