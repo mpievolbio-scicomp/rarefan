@@ -162,7 +162,9 @@ public class RAREFAN_MAIN {
         ArrayList<String> genomeIDs=new ArrayList<String>();
         // TODO: Can we parallelize this loop?
         for(int i=0;i<genomes.size();i++) {
+
             String onlyGenome=getGenomeID(genomes.get(i));
+
             // parallelize?
             genomeIDs.add(onlyGenome);
             ArrayList<REPINGenomePositions> rgp=new ArrayList<REPINGenomePositions>();
@@ -208,11 +210,13 @@ public class RAREFAN_MAIN {
     private ArrayList<Info> writeRAYTLocation(File genome) {
         String genomeID=getGenomeID(genome);
         ArrayList<Info> RAYTLocations;
+
         if(legacyBlastPerlLocation!="") {
             RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn",legacyBlastPerlLocation);
         }else {
             RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn");
         }
+
         WriteArtemis.write(RAYTLocations, new File(outFolder+"/rayt_"+genomeID+".tab"));
         return RAYTLocations;
     }
