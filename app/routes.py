@@ -29,6 +29,7 @@ import shutil
 import tempfile
 import time
 import pandas
+import re
 
 logger = app.logger
 
@@ -43,6 +44,53 @@ def get_status_code(run_id_path):
     status = is_started * 1 + is_java_finished * 10 + is_zip_finished * 100
 
     return status
+
+def validate_dna_fasta(filename):
+    """
+    Validate input from passed file as fasta formatted DNA sequence data.
+
+    :param filename: The filename of the file to validate.
+    """
+    logger.info("Validating fasta file %s.", filename)
+
+    # Regular expression for DNA Sequences with Ns and gaps.
+    rgxp = re.compile(r'^[acgtnACGTN\.\-\s]+$')
+    with open(filename, 'r') as fp:
+        logger.debug("Matching against DNA alphabet using regex.")
+        fasta = [f for f in SeqIO.parse(fp, "fasta")]
+        if len(fasta) == 0:
+            return False
+
+        # Check if regular fasta file with DNA sequence(s).
+        logger.debug("Loading sequence data.")
+        is_dna_fasta = all([rgxp.match(str(f.seq)) is not None for f in fasta])
+
+        if not is_dna_fasta:
+            logger.warning("%s is not a valid DNA fasta file.", filename)
+        return is_dna_fasta
+
+def validate_protein_fasta(filename):
+    """
+    Validate input from passed file as fasta formatted protein sequence data.
+
+    :param filename: The filename of the file to validate.
+    """
+    logger.info("Validating fasta file %s.", filename)
+
+    # Regular expression for Protein Sequences with gaps.
+    rgxp = re.compile(r'^[a-zA-Z\.\-\s]+$')
+    with open(filename, 'r') as fp:
+        # Loading sequence data.
+        fasta = [f for f in  SeqIO.parse(fp, "fasta")]
+        if len(fasta) == 0:
+            return False
+
+        # Check if regular fasta file with DNA sequence(s).
+        is_protein_fasta = all([rgxp.match(str(f.seq)) is not None for f in fasta])
+
+        if not is_protein_fasta:
+            logger.warning("%s is not a valid protein fasta file.", filename)
+        return is_protein_fasta
 
 
 def validate_fasta(filename):
@@ -70,7 +118,6 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     """Upload files to server."""
-    logger.debug("upload/%s", request.method)
     if request.method == 'POST':
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -115,6 +162,25 @@ def upload():
         rayt_names = [bn for bn in basenames if bn.split(".")[-1] in aa_extensions]
         tree_names = [bn for bn in basenames if bn.split(".")[-1] in tree_extensions]
 
+
+        for strain_name in strain_names:
+            fname = os.path.join(session['tmpdir'], strain_name)
+            is_dna_fasta = validate_dna_fasta(fname)
+
+            if not is_dna_fasta:
+                flash("{} contains non-DNA sequences and will be removed.".format(strain_name))
+                os.remove(fname)
+                strain_names.remove(strain_name)
+
+        for rayt_name in rayt_names:
+            fname = os.path.join(session['tmpdir'], rayt_name)
+            is_protein_fasta = validate_protein_fasta(fname)
+
+            if not is_dna_fasta:
+                flash("{} contains non-protein sequences and will be removed.".format(rayt_name))
+                os.remove(fname)
+                rayt_names.remove(rayt_name)
+
         session['strain_names'] = strain_names
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
@@ -122,7 +188,7 @@ def upload():
         for k, v in session.items():
             logger.debug("session[%s] = %s", k, str(v))
 
-        return redirect(url_for('submit', _method='GET'))
+        return "Easter egg: You should never see this."
 
     form = RunForm()
     session['tmpdir'] = None
@@ -151,10 +217,14 @@ def upload():
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     """Submit job to server."""
-    logger.debug("submit/%s", request.method)
     submit_form = SubmitForm()
 
     strain_names = session.get('strain_names')
+
+    if strain_names is None or len(strain_names) == 0:
+        flash("No valid DNA sequences found, please submit at least one DNA sequence in fasta file format.")
+        return redirect(url_for('upload', _method='GET'))
+
     submit_form.reference_strain.choices.extend(strain_names)
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
