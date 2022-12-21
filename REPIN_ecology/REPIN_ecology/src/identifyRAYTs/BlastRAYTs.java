@@ -328,6 +328,7 @@ public class BlastRAYTs {
 		PerformBlast.blast(legacyBlastPerlLocation+"legacy_blast.pl blastall",legacyBlastPerlLocation+"legacy_blast.pl formatdb",program, Double.parseDouble(e), out, query, db, false,false,true,false);
 		ReadBlast rb=new ReadBlast(out);
 		int querylength=Fasta.readFasta(query).get(0).getSequence().length();
+
 		for(int i=0;i<rb.getDatabase().size();i++){
 			HashMap<String,Fasta> fas=Fasta.fasToFastaHash(Fasta.readFasta(db), false);
 			int seqlength=fas.get(rb.getDatabase().get(i)).getSequence().length();
