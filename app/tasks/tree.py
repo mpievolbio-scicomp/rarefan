@@ -92,5 +92,6 @@ def tree_task(run_dir, treefile=None):
 
 def empty_task():
     return {'returncode': 2,
-            'log': "Must provide at least 2 sequences to compute a distance matrix with `andi`. Plotting is disabled."
+            'log': """A phylogeny is only computed for more than 3 submitted genomes.
+             Plotting is disabled."""
             }

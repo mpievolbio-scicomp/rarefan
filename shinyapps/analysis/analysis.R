@@ -72,7 +72,8 @@ blank_theme = theme(axis.text=element_text(size=fontsize),
 plotREPINs=function(folder,
                     treeFile,
                     rep_rayt_group,
-                    highlight_strain=""){
+                    highlight_strain="",
+                    analyse_repins="y"){
 
   ### Process tree file
   tree_file = paste0(folder,"/",treeFile)
@@ -91,7 +92,7 @@ plotREPINs=function(folder,
             geom_blank() +
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
-            annotate(x=0.5, y=0.5, geom='text', label="No REPINs found.") +
+            ggtitle("No REPINs found.") +
             theme(axis.text=element_text(size=fontsize),text=element_text(size=fontsize)) + rarefan_theme
 
 		return(p)
@@ -200,12 +201,21 @@ plotREPINs=function(folder,
     }
   }
   else {
-          p <- p + annotate(x=layer_scales(p)$x$get_limits()[2]*0.8,
-                            y=10.0,
-                            geom='text',
-                            label=paste0("REP/RAYT group ",
-                                          rep_rayt_group," is empty.")
-                             )
+          if(is.na(analyse_repins)) {
+              msg <- paste0("No REP sequences could be identified in Group ", rep_rayt_group, ".")
+          }
+          else if(analyse_repins == "y") {
+              msg <- paste0("No REPIN sequences could be identified in Group ", rep_rayt_group, ".")
+          }
+          else {
+              msg <- paste0("No REP sequences could be identified in Group ", rep_rayt_group, ".")
+          }
+          p <- p + ggtitle(msg)
+          # annotate(x=0.0,
+          #                   y=layer_scales(p)$y$get_limits()[2]*0.95,
+          #                   geom='text',
+          #                   label=msg
+          #                    )
   }
 
   # Apply theme.
@@ -307,7 +317,7 @@ plotCorrelationSingle=function(folder,
             geom_blank() +
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
-            annotate(x=0.5, y=0.5, geom='text', label="No data to correlate.") +
+            ggtitle("No data to correlate.") +
             blank_theme
 
 		return(p)
@@ -457,7 +467,7 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
             geom_blank() +
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
-            annotate(x=0.5, y=0.5, geom='text', label="No RAYTs in dataset") +
+            ggtitle("No RAYT sequences could be identified.") +
             blank_theme
 
     return(p)
@@ -477,7 +487,7 @@ drawRAYTphylogeny=function(data_dir, reference_strain=""){
             geom_blank() +
             xlim(c(0, 1)) +
             ylim(c(0,1)) +
-            annotate(x=0.5, y=0.5, geom='text', label="No data in RAYT phylogeny.") +
+            ggtitle("No data in RAYT phylogeny.") +
             blank_theme
 
 		return(p)
