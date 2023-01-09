@@ -8,6 +8,15 @@ from rq.exceptions import NoSuchJobError
 from app import app, db
 logger = app.logger
 
+class Stage(db.Document):
+    """ class to represent a stage in a rarefan run"""
+    pass
+
+class Results(db.Document):
+    """ :class Results: Represents results from a rarefan run"""
+    returncode = db.StringField()
+    log = db.StringField()
+    counts = db
 
 class Job(db.Document):
     """ :class Job: Represents all parameters, statuses, and results for a rarefan job. """
@@ -57,7 +66,7 @@ class Job(db.Document):
             logger.debug("%s status= %s", stage, self.stages[stage]['status'] )
 
         overall = 'setup'
-        if all([ stage['status'] == "none" for stage in self.stages.values()]):
+        if all([ stage['status'] in ["none", "setup"] for stage in self.stages.values()]):
             overall = "setup"
         elif self.stages['rarefan']['status'] == "queued":
             overall = "queued"
@@ -65,13 +74,15 @@ class Job(db.Document):
             overall = 'running'
         elif self.stages['rarefan']['status'] == "failed":
             overall = 'failed'
-        elif all([stage['status'] in ['complete', 'finished'] for stage in self.stages.values()]):
-            overall = "complete"
+
         elif self.stages['rarefan']['status'] in ["complete", "finished"]:
-            if self.stages['tree']['status'] == 'failed':
-                overall = "complete without tree"
-            elif any([self.stages[stage]['status'] in ["started", "running"] for stage in ['rayt_alignment', 'rayt_phylogeny', 'tree', 'zip']]):
+            if any([stage['status'] in ["queued", "started", "running"] for stage in self.stages.values()]):
                 overall = "postprocessing"
+            else:
+                if any([stage['results']['returncode'] not in [0, '0', None, 'None'] for stage in self.stages.values()]):
+                    overall = "complete with errors"
+                else:
+                    overall = "complete"
 
         self.overall_status = overall
         self.update(set__overall_status=overall)

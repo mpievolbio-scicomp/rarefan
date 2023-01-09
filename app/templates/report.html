@@ -1,35 +1,80 @@
 <p>
+<p>
     <h2>Status:
         {{ job.overall_status }}
     </h2>
-    {% if job.overall_status == "complete without tree" %}
-    <p>
-        The run succeeded but no genome phylogeny was calculated due to the small number of submitted genomes. RAREFAN only
-        calculates a phylogeny for more than genomes.
-    </p>
+    {%  if job.overall_status in ['complete with errors'] %}
+        RAREFAN completed this run successfully but there were some issues while postprocessing the results.
+        <br>
+        A detailed account is given below.
+        Please consult the <a href="/manual" target="_blank">User manual</a> for possible solutions
+        or <a href="mailto:rarefan@evolbio.mpg.de">contact support</a>. Please include the run ID {{ job.run_id }} in
+        your email.<br>The plotting of results may be limited or disabled.
     {% endif %}
+    </p>
+    <p>
+        <table style="width:30%;">
+        <tr>
+            <th>Stage</th>
+            <th>Status</th>
+            <th>Return code</th>
+        </tr>
+    {% for stage in job.stages.keys() %}
+        <tr>
+            <td>
+            {{ stage|replace("_"," ") }}
+            </td>
+            <td>
+                {{ job.stages[stage]['status'] }}
+            </td>
+            <td>
+                {% if job.stages[stage]['results']['returncode'] in [None, 'None', 0, '0'] %}
+                    {{ ok }}
+                {%  else  %}
+                    error {{ job.stages[stage]['results']['returncode'] }}
+                {%  endif %}
+            </td>
+        </tr>
+        {%  endfor %}
+        </table>
+    {% for stage in job.stages.keys() %}
+        {% if job.stages[stage]['results']['returncode'] not in [0, '0', None, 'None'] %}
+            <h3>{{ stage|replace("_", " ")|title() }} failed with error code {{ job.stages[stage]['results']['returncode']}}</h3>
+            <p>
+            <h4>Log:</h4>
+            {{  job.stages[stage]['results']['log']|replace('\n', '<br>')|safe()|replace('. ', '')  }}
+            <br>
+            </p>
+        {% endif %}
+    {% endfor %}
+    </p>
 
     {% if job.stages['rarefan']['status'] in ['finished', 'complete'] %}
         <h3>RAYTs</h3>
-        </br>
         <p>
-        RAREFAN discovered {{job.stages['rarefan']['results']['counts']['rayts']}} RAYTs across all submitted genomes using tblastn with
+        RAREFAN discovered {{job.stages['rarefan']['results']['counts']['rayts']|replace("None", "0")}} RAYTs across all submitted genomes using tblastn with
         {{job.setup["query_rayt"]}} at an e-value threshold of {{job.setup["e_value_cutoff"]}}.
         </p>
         </br>
         <h3>Seed sequences</h3>
         <p>
-            RAREFAN identified {{job.stages['rarefan']['results']['counts']['nmers']}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
+            RAREFAN identified {{job.stages['rarefan']['results']['counts']['nmers']|replace("None", "0")}} {{job.setup['nmer_length']}}bp long sequences  in the reference genome that
             occur more frequently than {{job.setup['min_nmer_occurrence']}} times.
             </br></br>
         </p>
-        <h3>REP/REPINs</h3>
-        <p>
+        {%  if job.setup['analyse_repins']=='y' %}
+            <h3>REP/REPIN counts</h3>
+        {%  else %}
+            <h3>REP counts</h3>
+        {%  endif %}
             {% if job.stages['rarefan']['results']['counts']['repins'] is mapping %}
-            <table>
-                <tr>
-                    <th>Group </th>
+                {%  if repin_counts is not none %}
+                {{ repin_counts | safe }}
+                    {% else %}
 
+            <table style="width:20%;">
+                <tr>
+                    <th>Group</th>
                     <th>Count</th>
                 </tr>
                 {% for k, v in job.stages['rarefan']['results']['counts']['repins'].items() %}
@@ -43,8 +88,9 @@
                 </tr>
                 {% endfor %}
             </table>
+                    {% endif %}
             {% else %}
-            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']}} REPs/REPINs in the reference genome.
+            RAREFAN detected {{job.stages['rarefan']['results']['counts']['repins']|replace("None", "0")}} REPs/REPINs in the reference genome.
             {% endif %}
             </br></br>
         </p>

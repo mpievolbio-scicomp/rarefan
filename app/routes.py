@@ -3,13 +3,11 @@ from flask import request
 from flask import session
 from flask import redirect
 from flask import url_for
-from flask import abort
 from flask import send_from_directory
 from flask import flash
 
 from werkzeug.utils import secure_filename
 
-import sys
 import rq
 from rq.job import Job as RQJob
 
@@ -30,7 +28,8 @@ import os
 import shutil
 import tempfile
 import time
-
+import pandas
+import re
 
 logger = app.logger
 
@@ -45,6 +44,53 @@ def get_status_code(run_id_path):
     status = is_started * 1 + is_java_finished * 10 + is_zip_finished * 100
 
     return status
+
+def validate_dna_fasta(filename):
+    """
+    Validate input from passed file as fasta formatted DNA sequence data.
+
+    :param filename: The filename of the file to validate.
+    """
+    logger.info("Validating fasta file %s.", filename)
+
+    # Regular expression for DNA Sequences with Ns and gaps.
+    rgxp = re.compile(r'^[acgtnACGTN\.\-\s]+$')
+    with open(filename, 'r') as fp:
+        logger.debug("Matching against DNA alphabet using regex.")
+        fasta = [f for f in SeqIO.parse(fp, "fasta")]
+        if len(fasta) == 0:
+            return False
+
+        # Check if regular fasta file with DNA sequence(s).
+        logger.debug("Loading sequence data.")
+        is_dna_fasta = all([rgxp.match(str(f.seq)) is not None for f in fasta])
+
+        if not is_dna_fasta:
+            logger.warning("%s is not a valid DNA fasta file.", filename)
+        return is_dna_fasta
+
+def validate_protein_fasta(filename):
+    """
+    Validate input from passed file as fasta formatted protein sequence data.
+
+    :param filename: The filename of the file to validate.
+    """
+    logger.info("Validating fasta file %s.", filename)
+
+    # Regular expression for Protein Sequences with gaps.
+    rgxp = re.compile(r'^[a-zA-Z\.\-\s]+$')
+    with open(filename, 'r') as fp:
+        # Loading sequence data.
+        fasta = [f for f in  SeqIO.parse(fp, "fasta")]
+        if len(fasta) == 0:
+            return False
+
+        # Check if regular fasta file with DNA sequence(s).
+        is_protein_fasta = all([rgxp.match(str(f.seq)) is not None for f in fasta])
+
+        if not is_protein_fasta:
+            logger.warning("%s is not a valid protein fasta file.", filename)
+        return is_protein_fasta
 
 
 def validate_fasta(filename):
@@ -72,7 +118,6 @@ def index():
 @app.route('/upload', methods=['GET', 'POST'])
 def upload():
     """Upload files to server."""
-    logger.debug("upload/%s", request.method)
     if request.method == 'POST':
         session['tmpdir'] = tempfile.mkdtemp(
             suffix=None,
@@ -117,6 +162,25 @@ def upload():
         rayt_names = [bn for bn in basenames if bn.split(".")[-1] in aa_extensions]
         tree_names = [bn for bn in basenames if bn.split(".")[-1] in tree_extensions]
 
+
+        for strain_name in strain_names:
+            fname = os.path.join(session['tmpdir'], strain_name)
+            is_dna_fasta = validate_dna_fasta(fname)
+
+            if not is_dna_fasta:
+                flash("{} contains non-DNA sequences and will be removed.".format(strain_name))
+                os.remove(fname)
+                strain_names.remove(strain_name)
+
+        for rayt_name in rayt_names:
+            fname = os.path.join(session['tmpdir'], rayt_name)
+            is_protein_fasta = validate_protein_fasta(fname)
+
+            if not is_dna_fasta:
+                flash("{} contains non-protein sequences and will be removed.".format(rayt_name))
+                os.remove(fname)
+                rayt_names.remove(rayt_name)
+
         session['strain_names'] = strain_names
         session['rayt_names'] = rayt_names
         session['tree_names'] = tree_names
@@ -124,7 +188,7 @@ def upload():
         for k, v in session.items():
             logger.debug("session[%s] = %s", k, str(v))
 
-        return redirect(url_for('submit', _method='GET'))
+        return "Easter egg: You should never see this."
 
     form = RunForm()
     session['tmpdir'] = None
@@ -137,6 +201,7 @@ def upload():
     session['treefile'] = None
     session['min_nmer_occurrence'] = None
     session['distance_group_seeds'] = None
+    session['distance_repin_rayt'] = None
     session['nmer_length'] = None
     session['e_value_cutoff'] = None
     session['analyse_repins'] = None
@@ -152,10 +217,14 @@ def upload():
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     """Submit job to server."""
-    logger.debug("submit/%s", request.method)
     submit_form = SubmitForm()
 
     strain_names = session.get('strain_names')
+
+    if strain_names is None or len(strain_names) == 0:
+        flash("No valid DNA sequences found, please submit at least one DNA sequence in fasta file format.")
+        return redirect(url_for('upload', _method='GET'))
+
     submit_form.reference_strain.choices.extend(strain_names)
     submit_form.query_rayt.choices.extend(session.get('rayt_names'))
     submit_form.treefile.choices.extend(["None"] + session.get('tree_names'))
@@ -188,6 +257,17 @@ def submit():
 
         os.mkdir(session['outdir'])
 
+        shutil.copyfile(
+            src=os.path.join(
+                os.path.dirname(
+                    app.root_path
+                ),
+                'doc',
+                'files_readme.md'
+            ),
+            dst=os.path.join(session['outdir'], 'readme.md')
+        )
+
         session['reference_strain'] = request.form.get('reference_strain')
         session['query_rayt'] = request.form.get('query_rayt')
         session['min_nmer_occurrence'] = request.form.get('min_nmer_occurrence')
@@ -197,6 +277,7 @@ def submit():
         session['treefile'] = treefile
         session['nmer_length'] = request.form.get('nmer_length')
         session['distance_group_seeds'] = request.form.get('distance_group_seeds', 15)
+        session['distance_repin_rayt'] = request.form.get('distance_repin_rayt', 200)
         session['e_value_cutoff'] = request.form.get('e_value_cutoff')
         session['analyse_repins'] = request.form.get('analyse_repins')
         session['email'] = request.form.get('email', None)
@@ -220,17 +301,7 @@ def submit():
                                                           "rayts": None,
                                                           "nmers": None,
                                                           "repins": {
-                                                              '0': 0,
-                                                              '1': 0,
-                                                              '2': 0,
-                                                              '3': 0,
-                                                              '4': 0,
-                                                              '5': 0,
-                                                              '6': 0,
-                                                              '7': 0,
-                                                              '8': 0,
-                                                              'total': 0,
-                                                              },
+                                                          },
                                                           },
                                                       "data_sanity": {
                                                           "rayts": None,
@@ -240,7 +311,7 @@ def submit():
                                           },
                               "tree": {"redis_job_id": None,
                                        "status": 'setup',
-                                       "results": {"returncode": None, "log": ""}},
+                                       "results": {"returncode": None, "log": None}},
                               "rayt_alignment": {
                                   "redis_job_id": None,
                                   "status": 'setup',
@@ -255,7 +326,7 @@ def submit():
                               },
                               "zip": {"redis_job_id": None,
                                       "status": 'setup',
-                                      "results": {"returncode": None, "log": ""}}
+                                      "results": {"returncode": None, "log": None}}
                               },
                     setup=copy.deepcopy(session),
                     overall_status="setup",
@@ -265,7 +336,6 @@ def submit():
         logger.debug("Constructed dbjob with job ID %s.", dbjob.run_id)
         logger.debug("Attempting to save dbjob in DB.")
         success = dbjob.save()
-        logger.debug("Return code is %s", str(success))
 
         # If one of the server provided rayt files was selected, copy it to the working dir. In the dropdown menu,
         # the server provided rayts are listed without filename extension, so have to append that here.
@@ -293,6 +363,7 @@ def submit():
                 "min_nmer_occurrence": session['min_nmer_occurrence'],
                 "nmer_length": session['nmer_length'],
                 "distance_group_seeds": session.get('distance_group_seeds', 15),
+                "distance_repin_rayt": session.get('distance_repin_rayt', 200),
                 "query_rayt_fname": query_rayt_fname,
                 "treefile": session['treefile'],
                 "e_value_cutoff": session['e_value_cutoff'],
@@ -304,7 +375,6 @@ def submit():
         run_tree_task = len(dbjob.setup['strain_names']) >= 4
         if run_tree_task:
             tree_job = RQJob.create(tree_task,
-                                    depends_on=[rarefan_job],
                                     on_success=on_success,
                                     on_failure=on_failure,
                                     connection=app.redis,
@@ -326,22 +396,26 @@ def submit():
 
         rayt_alignment_job = RQJob.create(
             alignment_task,
-            depends_on=rarefan_job,
-            meta={'run_id': run_id, "stage":'rayt_alignment'},
+            depends_on=[rarefan_job],
+            on_success=on_success,
+            on_failure=on_failure,
+            meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_alignment'},
             connection=app.redis,
             kwargs={'run_id': run_id},
         )
         rayt_phylogeny_job = RQJob.create(
                     phylogeny_task,
-                    depends_on=rayt_alignment_job,
-                    meta={'run_id': run_id, "stage":'rayt_phylogeny'},
+                    depends_on=[rayt_alignment_job],
+                    on_success=on_success,
+                    on_failure=on_failure,
+                    meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage":'rayt_phylogeny'},
                     connection=app.redis,
                     kwargs={'run_id': run_id},
                 )
 
         logger.debug("Constructed tree job %s.", str(tree_job))
         zip_job = RQJob.create(zip_task,
-                               depends_on=[rarefan_job, tree_job],
+                               depends_on=[rarefan_job, tree_job, rayt_phylogeny_job, rayt_alignment_job],
                                on_success=on_success,
                                on_failure=on_failure,
                                meta={'run_id': run_id, 'dbjob_id': dbjob.id, "stage": 'zip'},
@@ -372,9 +446,8 @@ def submit():
 
         dbjob.update(set__stages__rarefan__redis_job_id=rarefan_job.id)
         dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=tree_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_alignment_job.id)
-        dbjob.update(set__stages__tree__redis_job_id=rayt_phylogeny_job.id)
+        dbjob.update(set__stages__rayt_alignment__redis_job_id=rayt_alignment_job.id)
+        dbjob.update(set__stages__rayt_phylogeny__redis_job_id=rayt_phylogeny_job.id)
         dbjob.update(set__stages__zip__redis_job_id=zip_job.id)
 
         time.sleep(2)
@@ -425,10 +498,56 @@ def results():
         # Only show plots if more than 3 strains.
         render_plots = len(dbjob.setup.get('strain_names', [])) > 3
 
+        # Initialize repin_counts to None. If handling legacy data, this will block html rendering.
+        repin_counts = None
+        # Get rep/repin counts per strain and group.
+        repin_count_dict = dbjob['stages']['rarefan']['results']['counts']['repins']
+
+        if dbjob['stages']['rarefan']['status'] in ['finished', 'complete'] \
+           and isinstance(repin_count_dict, dict) \
+           and len(repin_count_dict.items()) > 0:
+            if all([isinstance(v, dict) for k,v in repin_count_dict.items()]):
+                # Construct multiindexed dataframe from nested dict
+                repin_counts = pandas.concat([pandas.DataFrame.from_dict(val,
+                                                                          orient='index')
+                                               for val in repin_count_dict.values()],
+                                              keys=repin_count_dict.keys())
+
+                # Turn index levels to columns.
+                repin_counts.reset_index(inplace=True)
+
+                # Assign proper column names.
+                repin_counts.rename(inplace=True, axis=1, mapper={'level_0': 'Group', 'level_1': 'Strain'})
+
+                # Swap levels, rename and sort.
+                repin_counts = repin_counts.pivot(index='Group', columns='Strain', values=['allREP', 'allREPINs'])\
+                    .swaplevel(0, 1, axis=1)
+
+                if dbjob['setup']['analyse_repins']:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REP/REPINs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+
+                else:
+                    repin_counts = repin_counts.rename(axis=1, mapper={"allREP": "REPs", "allREPINs": "REPINs"}).sort_index(axis=1, level='Strain')
+                    repin_counts = repin_counts.drop(labels="REPINs", axis=1, level=1).droplevel(axis=1, level=1)
+
+
+                # Convert to int treating NaN as 0
+                repin_counts = repin_counts.fillna(0).astype(int).T
+
+                # Convert to html
+                repin_counts=repin_counts.to_html(col_space='150px')
+
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+                repin_counts = repin_counts.replace('<tr>', '<tr align="right">')
+
+            else:
+                repin_counts = repin_count_dict
+
         return render_template('results.html',
                                title="Results for RAREFAN run {}".format(run_id),
                                run_id=run_id,
                                job=dbjob,
+                               repin_counts=repin_counts,
                                render_plots=render_plots,
                                )
 
@@ -553,6 +672,8 @@ def rerun():
     submit_form.nmer_length.data = dbjob.setup.get('nmer_length')
     session['distance_group_seeds'] = dbjob.setup.get('distance_group_seeds', 15)
     submit_form.distance_group_seeds.data = dbjob.setup.get('distance_group_seeds', 15)
+    session['distance_repin_rayt'] = dbjob.setup.get('distance_repin_rayt', 200)
+    submit_form.distance_repin_rayt.data = dbjob.setup.get('distance_repin_rayt', 200)
     session['analyse_repins'] = dbjob.setup.get('analyse_repins')
     submit_form.analyse_repins.data = dbjob.setup.get('analyse_repins')
     session['e_value_cutoff'] = dbjob.setup.get('e_value_cutoff')

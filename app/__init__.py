@@ -8,6 +8,7 @@ from flask_mongoengine import MongoEngine, MongoEngineSessionInterface
 from redis import Redis
 import datetime
 import logging
+
 import datetime
 
 app = Flask(__name__, instance_relative_config=True, static_url_path='/static')
@@ -45,7 +46,7 @@ db.init_app(app)
 mail = Mail(app)
 
 app.redis = Redis.from_url(app.config['REDIS_URL'])
-app.queue = rq.Queue('rarefan', connection=app.redis)
+app.queue = rq.Queue('rarefan', connection=app.redis, default_timeout=43200)
 
 
 # Has to be the last import to avoid cyclic dependencies.

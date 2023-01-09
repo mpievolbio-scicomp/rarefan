@@ -31,6 +31,7 @@ def rarefan_command(**kwargs):
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
                             '{}'.format(kwargs.get('mcl_threads', MCL_THREADS)),
                             '{}'.format(kwargs.get('distance_group_seeds', 15)),
+                            '{}'.format(kwargs.get('distance_repin_rayt', 200)),
                             ]
                            )
 
@@ -182,6 +183,14 @@ if __name__ == '__main__':
                         help="Interactive mode. Ask for confirmation before starting the analysis run."
     )
 
+    parser.add_argument("-a", "--distance_repin_rayt",
+                        dest="distance_repin_rayt",
+                        required=False,
+                        default=200,
+                        type=int,
+                        help="Association distance between REPIN and RAYT. REPIN and RAYT are associated if their distance is smaller or equal than this value.",
+                        )
+
     # Parse arguments.
     args = parser.parse_args()
 
@@ -219,6 +228,7 @@ if __name__ == '__main__':
                                 analyse_repins=(not args.no_repins),
                                 mcl_threads=args.num_threads,
                                 distance_group_seeds=args.distance_group_seeds,
+                                distance_repin_rayt=args.distance_repin_rayt,
                                 )
 
     # Log the command.
@@ -251,7 +261,7 @@ if __name__ == '__main__':
     print("-------")
     print(f"{counts['rayts']} RAYTs across all submitted genomes using tblastn with {args.query_rayt} at an e-value threshold of {args.e_value_cutoff}.")
     print(f"{counts['nmers']} {args.nmer_length}bp long sequences in the reference genome that occur more frequently than {args.min_nmer_occurrence} times.")
-    print(f"{sum(counts['repins'].values())} REPINs in the reference genome.")
+    print(f"REP/REPINs: {counts['repins']}")
     print("")
 
     ### Generate tree.
@@ -272,11 +282,3 @@ if __name__ == '__main__':
 
     if proc.returncode != 0:
         sys.exit(proc.returncode)
-
-    print(f"""
-
-Your RAREFAN run is complete. Data was written to {args.outdir} You can now visualize your results with the command
-
-    $> rarefan_plots -d DIR -r QUERY_RAYT_ID -t TREEFILE -o OUTFILE
-
-    """)

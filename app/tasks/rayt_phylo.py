@@ -29,10 +29,6 @@ def phylogeny_task(**kwargs):
 
     log, ret = run_phyml(run_dir)
 
-    # Append stdout and stderr to logfile.
-    with open(os.path.join(run_dir, 'out', 'rarefan.log'), 'ab') as fh:
-        fh.write(log)
-
     return {'returncode': ret,
             'log': log
             }
@@ -50,10 +46,6 @@ def alignment_task(**kwargs):
     run_dir = dbjob.setup['tmpdir']
 
     log, ret = run_alignment(run_dir)
-
-    # Append stdout and stderr to logfile.
-    with open(os.path.join(run_dir, 'out', 'rarefan.log'), 'ab') as fh:
-        fh.write(log)
 
     return {'returncode': ret,
             'log': log
@@ -83,9 +75,14 @@ def run_alignment(run_dir):
                             cwd=os.path.join(run_dir, 'out'))
 
     log, _ = proc.communicate()
+
+    # Append stdout and stderr to logfile.
+    with open(os.path.join(run_dir, 'out', 'rayt_align.log'), 'ab') as fh:
+        fh.write(log)
+
     logger.debug(log)
 
-    return log, proc.returncode
+    return log.decode('UTF-8'), proc.returncode
 
 def run_phyml(run_dir, seed=None):
     """ Workhorse function to run the phyml tool.
@@ -118,9 +115,14 @@ def run_phyml(run_dir, seed=None):
                             cwd=os.path.join(run_dir, 'out'))
 
     log, _ = proc.communicate()
+
+    # Append stdout and stderr to logfile.
+    with open(os.path.join(run_dir, 'out', 'rayt_phylo.log'), 'ab') as fh:
+        fh.write(log)
+
     logger.debug(log)
 
-    return log, proc.returncode
+    return log.decode('ascii'), proc.returncode
 
 
 
