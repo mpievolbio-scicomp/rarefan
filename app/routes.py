@@ -54,7 +54,7 @@ def validate_dna_fasta(filename):
     logger.info("Validating fasta file %s.", filename)
 
     # Regular expression for DNA Sequences with Ns and gaps.
-    rgxp = re.compile(r'^[acgtnACGTN\.\-\s]+$')
+    rgxp = re.compile(r'^[acgtnwsmkrybdhvzACGTNWSMKRYBDHVZ]+$')
     with open(filename, 'r') as fp:
         logger.debug("Matching against DNA alphabet using regex.")
         fasta = [f for f in SeqIO.parse(fp, "fasta")]
