@@ -219,7 +219,7 @@ public class RAREFAN_MAIN {
         File RAYTTabOut=new File(outFolder+"/rayt_"+genomeID+".tab");
         File RAYTGffOut=new File(outFolder+"/rayt_"+genomeID+".gff3");
         WriteGenomeAnnotation.writeTab(RAYTLocations, RAYTTabOut);
-        WriteGenomeAnnotation.writeGff(RAYTLocations, RAYTGffOut,genomeID,null);
+        WriteGenomeAnnotation.writeGff(RAYTLocations, RAYTGffOut,genomeID,null,false,"RAYT");
 
         return RAYTLocations;
     }
@@ -237,7 +237,7 @@ public class RAREFAN_MAIN {
             File REPINTabOut=new File(in.getParent()+"/"+genomeID+".tab");
             File REPINGffOut=new File(in.getParent()+"/"+genomeID+".gff3");
             WriteGenomeAnnotation.writeTab(pos, REPINTabOut);
-            WriteGenomeAnnotation.writeGff(pos, REPINGffOut,seqid,null);
+            WriteGenomeAnnotation.writeGff(pos, REPINGffOut,seqid,null,true,"REPIN");
 
 
         }

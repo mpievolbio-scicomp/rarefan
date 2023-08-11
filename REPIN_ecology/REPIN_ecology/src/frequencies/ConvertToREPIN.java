@@ -265,7 +265,7 @@ public class ConvertToREPIN {
 		ArrayList<Boolean> orientation=new ArrayList<Boolean>();
 		ArrayList<Info> infoREP=getInfo(orientation);
 		WriteGenomeAnnotation.writeTab(infoREP, new File(outprefix+".tab"));
-		WriteGenomeAnnotation.writeGff(infoREP,new File(outprefix+".gff3"),seqid,orientation);
+		WriteGenomeAnnotation.writeGff(infoREP,new File(outprefix+".gff3"),seqid,orientation,true,"REP");
 	}
 	
 	public void write(File out){

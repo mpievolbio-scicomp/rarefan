@@ -41,11 +41,37 @@ public class WriteGenomeAnnotation {
 		return newseq.toString();
 	}
 	
-	public static void writeGff(ArrayList<Info> info,File art,String seqId,ArrayList<Boolean> orientation){ 
+	private static int getMinStart(ArrayList<Info> info) {
+		int min=Integer.MAX_VALUE;
+		for(int i=0;i<info.size();i++) {
+			int curr=Math.min(info.get(i).getStart(),info.get(i).getEnd());
+			min=curr<min?curr:min;
+		}
+		return min;
+	}
+
+	private static int getMaxEnd(ArrayList<Info> info) {
+		int max=Integer.MIN_VALUE;
+		for(int i=0;i<info.size();i++) {
+			int curr=Math.max(info.get(i).getEnd(),info.get(i).getStart());
+			max=curr>max?curr:max;
+		}
+		return max;
+	}
+
+	
+	public static void writeGff(ArrayList<Info> info,File art,String seqId,ArrayList<Boolean> orientation,boolean deleteUnderscore,String name){ 
 		try{
 			BufferedWriter bw=new BufferedWriter(new FileWriter(art));
-			seqId=deleteLastUnderscore(seqId);
+			seqId=deleteUnderscore?deleteLastUnderscore(seqId):seqId;
+			
 			for(int i=0;i<info.size();i++){
+				if(i==0) {
+				   int startAnn=getMinStart(info);
+				   int endAnn=getMaxEnd(info);
+				   bw.write("##gff-version 3.1.26\n");
+				   bw.write("##sequence-region\t"+seqId+"\t"+startAnn+"\t"+endAnn+"\n");
+				}
 				StringBuilder sb=new StringBuilder();
 				String source="RAREFAN";
 				String type="terminal_inverted_repeat_element";
@@ -53,13 +79,19 @@ public class WriteGenomeAnnotation {
 				int end=info.get(i).end;
 				int score=0;
 				String strand="+";
+				if(start>end) {
+					strand="-";
+					int temp=start;
+					start=end;
+					end=temp;
+				}
 				if(orientation!=null) {
 					if(orientation.get(i)==false) {
 						strand="-";
 					}
 				}
 				String phase="0";
-				String attributes="none";
+				String attributes="Name="+name+"_"+i;
 				sb.append(seqId+"\t");
 				sb.append(source+"\t");
 				sb.append(type+"\t");

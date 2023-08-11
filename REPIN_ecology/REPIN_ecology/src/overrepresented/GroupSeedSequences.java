@@ -62,7 +62,7 @@ public class GroupSeedSequences {
 		File artemisOut=new File(outputFolder+"/"+id+"_words.tab");
 		File gffOut=new File(outputFolder+"/"+id+"_words.gff3");
 		WriteGenomeAnnotation.writeTab(wordPositions, artemisOut);
-		WriteGenomeAnnotation.writeGff(wordPositions,gffOut,id,null);
+		WriteGenomeAnnotation.writeGff(wordPositions,gffOut,id,null,true,"WORDS");
 
 		return seedSeqs.toArray(new String[0]);
 	}
