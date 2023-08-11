@@ -14,7 +14,7 @@ public class BlastToArtemis {
 		File blast=new File(args[0]);
 		File artout=new File(args[1]);
 		ReadBlast rb=new ReadBlast(blast);
-		WriteGenomeAnnotation.write(rb.getStartDB(),rb.getEndDB(),rb.getQuery(),artout); 
+		WriteGenomeAnnotation.writeTab(rb.getStartDB(),rb.getEndDB(),rb.getQuery(),artout); 
 	}
 
 }
