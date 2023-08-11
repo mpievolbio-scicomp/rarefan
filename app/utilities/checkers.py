@@ -70,19 +70,22 @@ def parse_results(outdir,
     results['counts']['rayts'] = results['counts']['rayts'] // 2
 
     # Parse presAbs files into pandas dataframes
-    pres_abs_frames = dict()
+    pres_abs_frames = {}
 
     pres_abs_fnames = glob.glob(os.path.join(outdir, "presAbs_*.txt"))
-    pres_abs_fnames = sorted(pres_abs_fnames)
+
+    # Sort according to group ID (issue #48).
+    pres_abs_fnames.sort(key=lambda x: int(x.split("_")[1].split(".")[0]))
+
     repin_checks = [0]*len(pres_abs_fnames)
     for i,pres_abs_fname in enumerate(pres_abs_fnames):
         try:
             pres_abs_frames[i] = pandas.read_csv(pres_abs_fname, sep="\t", index_col=0).to_dict(orient='index')
             repin_checks[i] = 0
-        except:
+        except BaseException:
             pres_abs_frames[i] = pandas.DataFrame()
             repin_checks[i] = 1
-            logger.warning("Could not count lines in RAYT file", fname)
+            logger.warning("Could not count lines in RAYT file %s.", fname)
 
     results['counts']['repins'] = pres_abs_frames
 
