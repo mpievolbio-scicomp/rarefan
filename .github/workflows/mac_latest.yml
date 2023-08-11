@@ -64,7 +64,7 @@ jobs:
           make clustdist patch_blast link_lapack
           cd ..
           source activate repinpop
-          conda install pytest 
+          conda install pytest pandas
         shell: bash
       - name: test
         run: |
