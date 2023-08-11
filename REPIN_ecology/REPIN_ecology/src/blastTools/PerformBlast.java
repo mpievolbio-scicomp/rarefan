@@ -41,7 +41,7 @@ public class PerformBlast {
 				String blastcom=builderpath+" -p "+dbType+" -i "+database;
 
 				Process p=Runtime.getRuntime().exec(blastcom);
-		        System.out.println("test: "+blastcom);
+		        System.out.println("Blast command: "+blastcom);
 	            // any error message?
 	            StreamGobbler errorGobbler = new 
 	                StreamGobbler(p.getErrorStream(), "ERROR");            
@@ -68,7 +68,6 @@ public class PerformBlast {
 				}
 
 			}
-	        System.out.println("test: ");
 
 			char filter=Filter?'T':'F';
 			String blastcom=blastpath+" -p "+ program+" -m 8 -o "+output+" -i "+input+" -e "+eValue+" -d "+database+" -F "+filter+" -b 50000000";

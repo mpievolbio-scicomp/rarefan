@@ -242,8 +242,31 @@ public class ConvertToREPIN {
 
 		return posOrient;
 	}
+	//turn the arraylist of treelists positions into a linear info file that contains the start,end and name of each REP sequence
+	//it also contains the sequence, which we do not need here
+	private ArrayList<Info> getInfo(ArrayList<Boolean> orientation){
+		ArrayList<Info> REPpositions=new ArrayList<Info>();
+		for(int i=0;i<positions.size();i++) {
+			TreeMap<Integer,OrientationSequence> tm=positions.get(i);
+			ArrayList<Integer> pos=new ArrayList<>(tm.descendingKeySet());
+			for(int j=0;j<pos.size();j++) {
+				OrientationSequence os=tm.get(pos.get(j));
+				String name=os.sequence;
+				int  start=pos.get(j);
+				int  end=pos.get(j)+name.length();
+				orientation.add(os.orientation);
+				REPpositions.add(new Info(start,end,name));
+			}
+		}
+		return REPpositions;
+	}
 	
-
+	public void writeREPAnnotation(File outprefix,String seqid) {
+		ArrayList<Boolean> orientation=new ArrayList<Boolean>();
+		ArrayList<Info> infoREP=getInfo(orientation);
+		WriteGenomeAnnotation.writeTab(infoREP, new File(outprefix+".tab"));
+		WriteGenomeAnnotation.writeGff(infoREP,new File(outprefix+".gff3"),seqid,orientation);
+	}
 	
 	public void write(File out){
 		Fasta.write(REPINSeeds, out);

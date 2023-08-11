@@ -17,7 +17,7 @@ import util.Find;
 import util.Histogram;
 import util.Info;
 import util.ReadFasta;
-import util.WriteArtemis;
+import util.WriteGenomeAnnotation;
 
 public class GroupSeedSequences {
 	public static void main(String args[]){
@@ -60,7 +60,9 @@ public class GroupSeedSequences {
 			i++;
 		}
 		File artemisOut=new File(outputFolder+"/"+id+"_words.tab");
-		WriteArtemis.write(wordPositions, artemisOut);
+		File gffOut=new File(outputFolder+"/"+id+"_words.gff3");
+		WriteGenomeAnnotation.writeTab(wordPositions, artemisOut);
+		WriteGenomeAnnotation.writeGff(wordPositions,gffOut,id,null);
 
 		return seedSeqs.toArray(new String[0]);
 	}

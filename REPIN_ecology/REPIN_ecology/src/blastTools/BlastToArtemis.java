@@ -2,7 +2,7 @@ package blastTools;
 
 import java.io.File;
 
-import util.WriteArtemis;
+import util.WriteGenomeAnnotation;
 
 //creates an artemis output of a blast tabular file
 //input blast tab
@@ -14,7 +14,7 @@ public class BlastToArtemis {
 		File blast=new File(args[0]);
 		File artout=new File(args[1]);
 		ReadBlast rb=new ReadBlast(blast);
-		WriteArtemis.write(rb.getStartDB(),rb.getEndDB(),rb.getQuery(),artout); 
+		WriteGenomeAnnotation.write(rb.getStartDB(),rb.getEndDB(),rb.getQuery(),artout); 
 	}
 
 }

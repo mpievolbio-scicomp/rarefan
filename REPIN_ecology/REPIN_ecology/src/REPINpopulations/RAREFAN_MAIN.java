@@ -180,14 +180,14 @@ public class RAREFAN_MAIN {
                 int wl=focalSeeds[j].length();
         
                 REPINProperties rp=new REPINProperties(outFolder,genomeID,genomes.get(i),wl,numMuts,minFrac,null,focalSeeds[j],false,analyseREPIN,MCLThreads);
-                System.out.println("Write REPINs as artemis files for "+genomeID+"...");
+                System.out.println("Write REPINs as artemis and gff files for "+genomeID+"...");
 
-                writeREPINArtemis(new File(outFolder+"/"+genomeID+"_largestCluster.ss"),j);
-                writeREPINArtemis(new File(outFolder+"/"+genomeID+".ss"),j);
+                writeREPINAnnotation(new File(outFolder+"/"+genomeID+"_largestCluster.ss"),j,genomeID);
+                writeREPINAnnotation(new File(outFolder+"/"+genomeID+".ss"),j,genomeID);
                 File cluster;
                 int k=0;
                 while((cluster=new File(outFolder+"/"+genomeID+"_"+k+".ss")).exists()){
-                    writeREPINArtemis(cluster,k);
+                    writeREPINAnnotation(cluster,k,genomeID);
                     k++;
                 }
                 System.out.println("Write RAYT locations "+genomeID+"...");
@@ -216,13 +216,16 @@ public class RAREFAN_MAIN {
         }else {
             RAYTLocations=BlastRAYTs.blastQuery(genome, queryRAYT, outFolder, e, "tblastn");
         }
+        File RAYTTabOut=new File(outFolder+"/rayt_"+genomeID+".tab");
+        File RAYTGffOut=new File(outFolder+"/rayt_"+genomeID+".gff3");
+        WriteGenomeAnnotation.writeTab(RAYTLocations, RAYTTabOut);
+        WriteGenomeAnnotation.writeGff(RAYTLocations, RAYTGffOut,genomeID,null);
 
-        WriteArtemis.write(RAYTLocations, new File(outFolder+"/rayt_"+genomeID+".tab"));
         return RAYTLocations;
     }
 
 
-    private void writeREPINArtemis(File in,int group) {
+    private void writeREPINAnnotation(File in,int group,String seqid) {
         if(in.exists()) {
             ArrayList<Fasta> fas=Fasta.readFasta(in);
             ArrayList<Info> pos=new ArrayList<Info>();
@@ -231,7 +234,11 @@ public class RAREFAN_MAIN {
                 pos.addAll(getPos(ident,"Gr_"+group));
             }
             String genomeID=getGenomeID(in);
-            WriteArtemis.write(pos, new File(in.getParent()+"/"+genomeID+".tab"));
+            File REPINTabOut=new File(in.getParent()+"/"+genomeID+".tab");
+            File REPINGffOut=new File(in.getParent()+"/"+genomeID+".gff3");
+            WriteGenomeAnnotation.writeTab(pos, REPINTabOut);
+            WriteGenomeAnnotation.writeGff(pos, REPINGffOut,seqid,null);
+
 
         }
     }
