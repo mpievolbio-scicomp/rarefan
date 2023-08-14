@@ -70,10 +70,7 @@ jobs:
         run: |
           source activate repinpop
           cd rarefan
-          chmod u+x rarefan
-          andi ../test/data/neisseria_small/*.fas > test.dist
-          cat test.dist | clustDist > test.nwk
-          ls test.*
+          chmod u+x rarefanls test.*
           ./rarefan ../test/data/neisseria_small -q ../test/data/NMAA_0235.faa -r Nmen_2594.fas -o /tmp/rarefan_out | tee log
           if [ $(grep -c "^15 RAYTs" log) -ne 1 ]; then echo "Testing for 15 RAYTs failed."; exit 1;  fi 
           if [ $(grep -c "^184 21bp long sequences" log) -ne 1 ]; then echo "Testing for 184 seeds failed."; exit 1; fi
