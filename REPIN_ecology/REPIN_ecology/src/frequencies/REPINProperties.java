@@ -505,17 +505,17 @@ public class REPINProperties {
 		ArrayList<String> rawWords=new ArrayList<String>();
 		rawWords.add(maxWord.getMaxWord());
 		File seedSequenceREP=new File(seedSequence+".REP");
+		//Only look for related words if it has not been done yet
+		//If it has not been done yet, then write all sequences into the seedSequenceREP file
 		if(!seedSequenceREP.exists())WriteSeedSequences.writeSeedSequencesConnected(rawWords, fas,  numMuts, seedSequenceREP);
-		//if(!seedSequence.exists()) {//&& !ecoli){
-			ConvertToREPIN ctr=new ConvertToREPIN(seedSequenceREP,fas,maxREPINDistance,maxWord.getMaxWord());
-			ctr.write(seedSequence);
-			repinPositions=ctr.getPositions();
+		
+	    //Once all REP sequences have been identified, we can look for REPINs	
+    	ConvertToREPIN ctr=new ConvertToREPIN(seedSequenceREP,fas,maxREPINDistance,maxWord.getMaxWord());
+		ctr.write(seedSequence);
+		ctr.writeREPAnnotation(seedSequenceREP,genomeID);
+		repinPositions=ctr.getPositions();
 
-		//}else {
-		//	if(ecoli) {
-		//		util.FileHandler.copy(seedSequenceREP, seedSequence);
-		//	}
-		//}
+
 
 	}
 //	private void writeMutationFrequencies(){
