@@ -269,7 +269,7 @@ if __name__ == '__main__':
     print("===============")
     tree_command = tree_command(args.indir, args.outdir, args.treefile)
 
-    print("Command for tree generation:\n\t{}\n".format(tree_command))
+    print(tree_command)
 
     with subprocess.Popen(tree_command,
                           shell=True,
