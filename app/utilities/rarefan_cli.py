@@ -269,6 +269,8 @@ if __name__ == '__main__':
     print("===============")
     tree_command = tree_command(args.indir, args.outdir, args.treefile)
 
+    print(tree_command)
+
     with subprocess.Popen(tree_command,
                           shell=True,
                           stdout=subprocess.PIPE,

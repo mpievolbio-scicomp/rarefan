@@ -9,7 +9,7 @@ import util.GenerateMutatedSequences;
 import util.ReadBitSetSearch;
 import util.ReadFasta;
 import util.SortPositions;
-import util.WriteArtemis;
+import util.WriteGenomeAnnotation;
 import extragenicSequenceSimulation.GenerateExtragenicSequences;
 
 
@@ -33,7 +33,7 @@ public class WriteSeedsArtemis {
 		System.out.println("Mutated sequences...");
 		ArrayList<Integer> seqPositions=subtractOverLaps(bsih.getPosMap(gm.getList(mutations)),size/2);
 		ReadBitSetSearch rbs=new ReadBitSetSearch(seqPositions,size/2);
-		WriteArtemis.write(seqPositions, rbs.getEnd(), rbs.getQuery(), outArt);
+		WriteGenomeAnnotation.writeTab(seqPositions, rbs.getEnd(), rbs.getQuery(), outArt);
 		System.out.println("Done.");
 
 	}
