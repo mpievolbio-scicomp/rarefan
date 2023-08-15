@@ -31,7 +31,7 @@ def rarefan_command(**kwargs):
                             {"y": "true", True: 'true', False: 'false', None: "false"}[kwargs['analyse_repins']],
                             '{}'.format(kwargs.get('mcl_threads', MCL_THREADS)),
                             '{}'.format(kwargs.get('distance_group_seeds', 15)),
-                            '{}'.format(kwargs.get('distance_repin_rayt', 200)),
+                            '{}'.format(kwargs.get('distance_repin_rayt', 130)),
                             ]
                            )
 
@@ -74,7 +74,7 @@ if __name__ == '__main__':
 * RAREFAN is released under the terms of the MIT License.                 *
 * See LICENSE for details.                                                *
 *                                                                         *
-* Copyright (c) 2020 - 2022 Max Planck Institute for Evolutionary Biology *
+* Copyright (c) 2020 - 2023 Max Planck Institute for Evolutionary Biology *
 *                                                                         *
 ***************************************************************************
 
@@ -186,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument("-a", "--distance_repin_rayt",
                         dest="distance_repin_rayt",
                         required=False,
-                        default=200,
+                        default=130,
                         type=int,
                         help="Association distance between REPIN and RAYT. REPIN and RAYT are associated if their distance is smaller or equal than this value.",
                         )
