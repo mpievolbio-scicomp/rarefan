@@ -75,7 +75,7 @@ def parse_results(outdir,
     pres_abs_fnames = glob.glob(os.path.join(outdir, "presAbs_*.txt"))
 
     # Sort according to group ID (issue #48).
-    pres_abs_fnames.sort(key=lambda x: int(x.split("_")[1].split(".")[0]))
+    pres_abs_fnames.sort(key=lambda x: int(x.split("presAbs_")[1].split(".")[0]))
 
     repin_checks = [0]*len(pres_abs_fnames)
     for i,pres_abs_fname in enumerate(pres_abs_fnames):
