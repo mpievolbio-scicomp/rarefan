@@ -41,14 +41,7 @@ public class WriteGenomeAnnotation {
 		return newseq.toString();
 	}
 	
-	private static int getMinStart(ArrayList<Info> info) {
-		int min=Integer.MAX_VALUE;
-		for(int i=0;i<info.size();i++) {
-			int curr=Math.min(info.get(i).getStart(),info.get(i).getEnd());
-			min=curr<min?curr:min;
-		}
-		return min;
-	}
+	
 
 	private static int getMaxEnd(ArrayList<Info> info) {
 		int max=Integer.MIN_VALUE;
@@ -67,10 +60,9 @@ public class WriteGenomeAnnotation {
 			
 			for(int i=0;i<info.size();i++){
 				if(i==0) {
-				   int startAnn=getMinStart(info);
 				   int endAnn=getMaxEnd(info);
 				   bw.write("##gff-version 3.1.26\n");
-				   bw.write("##sequence-region\t"+seqId+"\t"+startAnn+"\t"+endAnn+"\n");
+				   bw.write("##sequence-region\t"+seqId+"\t"+1+"\t"+endAnn+"\n");
 				}
 				StringBuilder sb=new StringBuilder();
 				String source="RAREFAN";
